@@ -1,0 +1,45 @@
+# Copyright 2004-2005 Gentoo Foundation.
+# Distributed under the terms of the GNU General Public License, v2
+# $Header: /var/cvsroot/gentoo-x86/profiles/default-bsd/fbsd/6.2/package.mask,v 1.9 2008/05/18 15:39:14 aballier Exp $
+
+# Diego Pettenò <flameeyes@gentoo.org>
+# Make sure we don't get wrong versions
+<sys-freebsd/freebsd-pam-modules-7.0_alpha
+>sys-freebsd/freebsd-pam-modules-7.0.99
+<sys-freebsd/freebsd-rescue-7.0_alpha
+>sys-freebsd/freebsd-rescue-7.0.99
+<sys-freebsd/freebsd-pf-7.0_alpha
+>sys-freebsd/freebsd-pf-7.0.99
+<sys-freebsd/freebsd-mk-defs-7.0_alpha
+>sys-freebsd/freebsd-mk-defs-7.0.99
+<sys-freebsd/freebsd-lib-7.0_alpha
+>sys-freebsd/freebsd-lib-7.0.99
+<sys-freebsd/freebsd-libexec-7.0_alpha
+>sys-freebsd/freebsd-libexec-7.0.99
+<sys-freebsd/freebsd-bin-7.0_alpha
+>sys-freebsd/freebsd-bin-7.0.99
+<sys-freebsd/freebsd-sbin-7.0_alpha
+>sys-freebsd/freebsd-sbin-7.0.99
+<sys-freebsd/freebsd-ubin-7.0_alpha
+>sys-freebsd/freebsd-ubin-7.0.99
+<sys-freebsd/freebsd-usbin-7.0_alpha
+>sys-freebsd/freebsd-usbin-7.0.99
+<sys-freebsd/freebsd-share-7.0_alpha
+>sys-freebsd/freebsd-share-7.0.99
+<sys-freebsd/freebsd-contrib-7.0_alpha
+>sys-freebsd/freebsd-contrib-7.0.99
+<sys-freebsd/boot0-7.0_alpha
+>sys-freebsd/boot0-7.0.99
+<sys-freebsd/freebsd-sources-7.0_alpha
+>sys-freebsd/freebsd-sources-7.0.99
+
+# And this masked as we cannot use this anymore
+sys-freebsd/freebsd-baselayout
+<sys-apps/baselayout-1.13.0_alpha1
+
+# Diego Pettenò <flameeyes@gentoo.org> (21 Oct 2006)
+# We need a newer version of sandbox, as it's the only one working
+# for us
+->=sys-apps/sandbox-1.2.20_alpha1
+<sys-apps/sandbox-1.2.20_alpha2
+>=sys-devel/libtool-2.2.4
