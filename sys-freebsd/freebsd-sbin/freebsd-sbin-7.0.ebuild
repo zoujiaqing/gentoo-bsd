@@ -72,8 +72,6 @@ src_install() {
 	insinto /etc
 	doins defaults/pccard.conf minfree sysctl.conf
 
-	doenvd "${FILESDIR}/00freebsd"
-
 	# Install a crontab for adjkerntz
 	insinto /etc/cron.d
 	newins "${FILESDIR}/adjkerntz-crontab" adjkerntz
