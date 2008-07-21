@@ -287,7 +287,7 @@ diff -ruN share.orig/mk/bsd.links.mk share/mk/bsd.links.mk
  		shift; \
  		${ECHO} $$t -\> $$l; \
 +		d=`dirname $$t`; \
-+		test -d $$d || mkdir $$d;
++		test -d $$d || mkdir $$d; \
  		ln -f $$l $$t; \
  	done; true
  .endif
@@ -296,7 +296,7 @@ diff -ruN share.orig/mk/bsd.links.mk share/mk/bsd.links.mk
  		shift; \
  		${ECHO} $$t -\> $$l; \
 +		d=`dirname $$t`; \
-+		test -d $$d || mkdir $$d;
++		test -d $$d || mkdir $$d; \
  		ln -fs $$l $$t; \
  	done; true
  .endif
