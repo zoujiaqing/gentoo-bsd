@@ -50,6 +50,8 @@ src_unpack() {
 	sed -i -e 's:pbm.5::' "${S}/man/man5/Makefile"
 	# Remove builtins manpage
 	sed -i -e '/builtins\.1/d' "${S}/man/man1/Makefile"
+	# Remove rc manpages
+	sed -i -e '/rc.8/d' "${S}/man/man8/Makefile"
 
 	# Don't install the arch-specific directories in subdirectories
 	sed -i -e '/MANSUBDIR/d' "${S}"/man/man4/man4.{i386,sparc64}/Makefile
@@ -57,8 +59,14 @@ src_unpack() {
 	# Remove them so that they can't be included by error
 	rm -rf "${S}"/mk/*.mk
 
-	# Change the order, colldef has to go after mklocale or it creates symlinks
-	# with the names of directories
+	# Make proper symlinks by defining the full target.
+	local sdir
+	for sdir in colldef mklocale monetdef msgdef numericdef timedef
+	do
+		sed -e 's:\${enc2}$:\${enc2}/\${FILESNAME}:g' -i \
+			"${S}/${sdir}/Makefile" || \
+			die "Error fixing ${sdir}/Makefile"
+	done
 }
 
 src_compile() {
@@ -70,13 +78,5 @@ src_compile() {
 }
 
 src_install() {
-	# Fugly hack, symlinks get created instead of these 
-	# if they don't exist already.
-	cd ${S}/colldef
-	local lldir
-	for lldir in *.src
-	do
-		mkdir "${D}"/usr/share/locale/${lldir%%.out}
-	done
 	mkmake -j1 DESTDIR="${D}" DOCDIR=/usr/share/doc/${PF} install || die "Install failed"
 }

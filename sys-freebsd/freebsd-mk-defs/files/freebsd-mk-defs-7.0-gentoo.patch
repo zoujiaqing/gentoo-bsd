@@ -279,3 +279,24 @@ diff -ruN share.orig/mk/sys.mk share/mk/sys.mk
  # Default executable format
  # XXX hint for bsd.port.mk
  OBJFORMAT?=	elf
+diff -ruN share.orig/mk/bsd.links.mk share/mk/bsd.links.mk
+--- share.orig/mk/bsd.links.mk	2002-07-03 09:28:03 -0300
++++ share/mk/bsd.links.mk	2008-07-21 18:58:44 -0300
+@@ -15,6 +15,8 @@
+ 		t=${DESTDIR}$$1; \
+ 		shift; \
+ 		${ECHO} $$t -\> $$l; \
++		d=`dirname $$t`; \
++		test -d $$d || mkdir $$d;
+ 		ln -f $$l $$t; \
+ 	done; true
+ .endif
+@@ -26,6 +28,8 @@
+ 		t=${DESTDIR}$$1; \
+ 		shift; \
+ 		${ECHO} $$t -\> $$l; \
++		d=`dirname $$t`; \
++		test -d $$d || mkdir $$d;
+ 		ln -fs $$l $$t; \
+ 	done; true
+ .endif
