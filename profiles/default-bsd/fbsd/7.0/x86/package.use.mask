@@ -11,5 +11,5 @@ x11-drivers/nvidia-drivers acpi
 # afs not keyworded
 >=gnome-base/gdm-2.20 afs
 
-# Thing not keyworded.
-sys-auth/pambase passwdqc
+# pam_ssh depends on Linux-PAM
+sys-auth/pambase ssh
