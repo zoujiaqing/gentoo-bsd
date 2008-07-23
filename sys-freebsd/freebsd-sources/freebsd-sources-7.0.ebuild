@@ -55,6 +55,11 @@ src_unpack() {
 	grep -Zlr -- -ffreestanding "${S}" | xargs -0 sed -i -e \
 		"s:-ffreestanding:-ffreestanding $(test-flags -fno-stack-protector -fno-stack-protector-all):g"
 
+	# By adding -DGENTOO_LIVECD to CFLAGS activate this stub
+	# vop_whiteout to tmpfs, so it can be used as an overlay
+	# unionfs filesystem over the cd9660 readonly filesystem.
+	epatch "${FILESDIR}/${PN}-7.0-tmpfs_whiteout_stub.patch"
+
 	# See http://sourceware.org/bugzilla/show_bug.cgi?id=5391
 	# ld doesn't provide symbols constructed as the __start_set_(s) ones
 	# are on FreeBSD modules.
@@ -62,6 +67,7 @@ src_unpack() {
 	# as undefined references to ld's commandline to get them.
 	# Without this kernel modules will not load.
 	epatch "${FILESDIR}/${PN}-7.0-binutils_link.patch"
+
 	# Support my damned network card.
 	epatch "${FILESDIR}/${PN}-7.0-rl8168c.patch"
 }
