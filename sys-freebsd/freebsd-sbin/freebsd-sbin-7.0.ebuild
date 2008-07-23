@@ -58,6 +58,8 @@ src_unpack() {
 src_install() {
 	freebsd_src_install
 	keepdir /var/log
+	# Needed by ldconfig:
+	keepdir /var/run
 
 	# Allow users to use ping and other commands
 	dodir /bin
@@ -89,5 +91,4 @@ src_install() {
 	use ipfilter && doperiodic security \
 		security/*.ipf6denied \
 		security/*.ipfdenied
-
 }
