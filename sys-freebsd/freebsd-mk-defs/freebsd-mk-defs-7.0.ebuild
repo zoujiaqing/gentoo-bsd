@@ -27,7 +27,7 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-${PV}-gentoo.patch"
 
 	[[ ${CHOST} != *-*bsd* || ${CHOST} == *-gnu ]] && \
-		epatch "${FILESDIR}/${PN}-6.0-gnu.patch"
+		epatch "${FILESDIR}/${PN}-7.0-gnu.patch"
 }
 
 src_compile() { :; }
