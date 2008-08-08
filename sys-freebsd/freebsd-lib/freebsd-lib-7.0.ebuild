@@ -8,7 +8,7 @@ DESCRIPTION="FreeBSD's base system libraries"
 SLOT="7.0"
 KEYWORDS="~x86-fbsd ~amd64-fbsd ~sparc-fbsd"
 
-IUSE="atm bluetooth ssl hesiod ipv6 kerberos nis gpib build bootstrap"
+IUSE="atm bluetooth ssl hesiod ipv6 kerberos nis gpib build bootstrap crosscompile_opts_headers-only"
 
 # Crypto is needed to have an internal OpenSSL header
 # sys is needed for libalias, probably we can just extract that instead of
@@ -187,12 +187,13 @@ src_compile() {
 		$(freebsd_get_bmake) ${mymakeopts} || die "make csu failed"
 
 		append-flags "-isystem /usr/${CTARGET}/usr/include"
+		append-flags "-isystem ${WORKDIR}/lib/libutil"
+		append-flags "-isystem ${WORKDIR}/lib/msun/${machine/i386/i387}"
 		append-flags "-B ${csudir}"
 		append-ldflags "-B ${csudir}"
 		cd "${S}/libc"
 		$(freebsd_get_bmake) ${mymakeopts} || die "make libc failed"
 
-		append-flags "-isystem ${WORKDIR}/lib/msun/${machine/i386/i387}"
 		cd "${S}/msun"
 		$(freebsd_get_bmake) ${mymakeopts} || die "make libc failed"
 	else
@@ -259,7 +260,12 @@ src_install() {
 	fi
 
 	# Don't install the rest of the configuration files if crosscompiling
-	[ "${CTARGET}" != "${CHOST}" ] && return 0
+	if [ "${CTARGET}" != "${CHOST}" ] ; then
+		# This is to get it stripped with the correct tools, otherwise it gets
+		# stripped with the host strip.
+		export CHOST=${CTARGET}
+		return 0
+	fi
 
 	# Add symlinks (-> libthr) for legacy threading libraries, since these are
 	# not built by us (they are disabled in FreeBSD-7 anyway).
