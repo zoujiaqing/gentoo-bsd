@@ -8,7 +8,7 @@ DESCRIPTION="FreeBSD libexec things"
 SLOT="0"
 KEYWORDS="~sparc-fbsd ~x86-fbsd"
 
-IUSE="pam ssl kerberos ipv6 nis"
+IUSE="pam ssl kerberos ipv6 nis xinetd"
 
 SRC_URI="mirror://gentoo/${LIBEXEC}.tar.bz2
 	mirror://gentoo/${UBIN}.tar.bz2
@@ -23,6 +23,8 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	=sys-freebsd/freebsd-sources-${RV}*"
+RDEPEND="${RDEPEND}
+	xinetd? ( sys-apps/xinetd )"
 
 S="${WORKDIR}/libexec"
 
@@ -58,9 +60,15 @@ src_compile() {
 src_install() {
 	freebsd_src_install
 
-	newinitd "${FILESDIR}/bootpd.initd"
-	newconfd "${FILESDIR}/bootpd.confd"
-
 	insinto /etc
 	doins "${WORKDIR}/etc/gettytab"
+	newinitd "${FILESDIR}/bootpd.initd" bootpd
+	newconfd "${FILESDIR}/bootpd.confd" bootpd
+
+	if use xinetd; then
+		for rpcd in rstatd rusersd walld rquotad sprayd; do
+			insinto /etc/xinetd.d
+			newins "${FILESDIR}/${rpcd}.xinetd" ${rpcd}
+		done
+	fi
 }

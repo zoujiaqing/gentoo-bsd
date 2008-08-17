@@ -1,28 +1,20 @@
 #!/sbin/runscript
 # Copyright 1999-2008 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header$
 
 depend() {
         need net rpcbind
 }
 
 start() {
-        # Don't start rpc.statd if already started by init.d/nfsmount
-        killall -0 rpc.statd 2>/dev/null && return 0
         ebegin "Starting NFS statd"
         start-stop-daemon --start --quiet --exec \
-                $statd -- $RPCSTATDOPTS 1>&2
+                /usr/sbin/rpc.statd -- $rpcstatdopts
         eend $? "Error starting NFS statd"
 }
 
 stop() {
-        # Don't stop rpc.statd if it's in use by init.d/nfsmount.
-        mount -t nfs | grep -q . && return 0
-        # Make sure it's actually running
-        killall -0 rpc.statd 2>/dev/null || return 0
-        # Okay, all tests passed, stop rpc.statd
         ebegin "Stopping NFS statd"
-        start-stop-daemon --stop --quiet --exec $statd 1>&2
+        start-stop-daemon --stop --quiet --exec /usr/sbin/rpc.statd
         eend $? "Error stopping NFS statd"
 }
