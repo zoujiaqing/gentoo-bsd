@@ -82,7 +82,8 @@ PATCHES="${FILESDIR}/${PN}-bsdxml.patch
 	${FILESDIR}/${PN}-6.0-flex-2.5.31.patch
 	${FILESDIR}/${PN}-6.1-csu.patch
 	${FILESDIR}/${PN}-6.2-bluetooth.patch
-	${FILESDIR}/${PN}-new_as.patch"
+	${FILESDIR}/${PN}-new_as.patch
+	${FILESDIR}/${PN}-7.0-CVE-2008-1391.patch"
 
 # Here we disable and remove source which we don't need or want
 # In order:
