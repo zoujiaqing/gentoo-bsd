@@ -18,7 +18,7 @@ diff -ur ../src.orig/sys/boot/i386/boot2/Makefile sys/boot/i386/boot2/Makefile
  	-fomit-frame-pointer \
  	-fno-unit-at-a-time \
 -	-mno-align-long-strings \
-+	-march=i386 \
++	-march=i586 \
  	-mrtd \
  	-mno-mmx -mno-3dnow -mno-sse -mno-sse2 -mno-sse3 \
  	-D${BOOT2_UFS} \
