@@ -42,8 +42,6 @@ sys-freebsd/freebsd-baselayout
 # for us
 ->=sys-apps/sandbox-1.2.20_alpha1
 <sys-apps/sandbox-1.2.20_alpha2
->=sys-devel/libtool-2.2.4
-
 
 # Alexis Ballier <aballier@gentoo.org> (19 Jul 2008)
 # JDK/JRE 1.5 are specific to fbsd 6 and 5
