@@ -8,6 +8,7 @@
 -mmxext
 -sse
 -sse2
+-sse3
 -ssse3
 -win32codecs
 

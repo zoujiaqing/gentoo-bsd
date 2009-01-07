@@ -37,11 +37,9 @@
 sys-freebsd/freebsd-baselayout
 <sys-apps/baselayout-1.13.0_alpha1
 
-# Diego Pettenò <flameeyes@gentoo.org> (21 Oct 2006)
-# We need a newer version of sandbox, as it's the only one working
-# for us
-->=sys-apps/sandbox-1.2.20_alpha1
-<sys-apps/sandbox-1.2.20_alpha2
+# Javier Villavicencio <the_paya@gentoo.org> (04 Jan 2009)
+# vapier fixored this one for us.
+<sys-apps/sandbox-1.3.2
 
 # Alexis Ballier <aballier@gentoo.org> (19 Jul 2008)
 # JDK/JRE 1.5 are specific to fbsd 6 and 5

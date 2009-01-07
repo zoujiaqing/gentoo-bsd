@@ -46,8 +46,8 @@ src_unpack() {
 	sed -i -e 's:make.conf.5::' "${S}/man/man5/Makefile"
 	# Remove mailer.conf manpage
 	sed -i -e 's:mailer.conf.5::' "${S}/man/man5/Makefile"
-	# Remove pbm manpage
-	sed -i -e 's:pbm.5::' "${S}/man/man5/Makefile"
+	# Remove pbm and moduli(ssh) manpages
+	sed -i -e 's:pbm.5::' -e 's:moduli.5::' "${S}/man/man5/Makefile"
 	# Remove builtins manpage
 	sed -i -e '/builtins\.1/d' "${S}/man/man1/Makefile"
 	# Remove rc manpages

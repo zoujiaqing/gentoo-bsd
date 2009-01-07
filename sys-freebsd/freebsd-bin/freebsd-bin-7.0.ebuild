@@ -27,11 +27,11 @@ S=${WORKDIR}/bin
 
 PATCHES="${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 
+# csh and tcsh are provided by tcsh package, rmail is sendmail stuff.
+REMOVE_SUBDIRS="csh rmail ed"
+
 pkg_setup() {
 	use nls || mymakeopts="${mymakeopts} NO_NLS= "
 
 	mymakeopts="${mymakeopts} NO_TCSH= NO_SENDMAIL= NO_OPENSSL= NO_CRYPT= NO_RCMDS= "
 }
-
-# csh and tcsh are provided by tcsh package, rmail is sendmail stuff.
-REMOVE_SUBDIRS="csh rmail ed"

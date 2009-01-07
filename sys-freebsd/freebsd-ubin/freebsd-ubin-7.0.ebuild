@@ -63,9 +63,10 @@ PATCHES="${FILESDIR}/${PN}-6.0-bsdcmp.patch
 # - less stuff
 # - bind utils
 # - rsh stuff
+# - binutils gprof
 # and the rest are misc utils we already provide somewhere else.
 REMOVE_SUBDIRS="bzip2 bzip2recover tar
-	gzip
+	gzip gprof
 	tput tset
 	less lessecho lesskey
 	dig hesinfo nslookup nsupdate host

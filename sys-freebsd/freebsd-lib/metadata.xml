@@ -2,4 +2,8 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 <herd>bsd</herd>
+<use>
+    <flag name='gpib'>Enable General Purpose Interface Bus support</flag>
+    <flag name='hesiod'>Enable support for net-dns/hesiod</flag>
+</use>
 </pkgmetadata>
