@@ -75,6 +75,16 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar
 	c99 c89
 	whois tftp"
 
+pkg_preinst() {
+    # bison installs a /usr/bin/yacc symlink ...
+    # we need to remove it to avoid triggering
+    # collision-protect errors
+    if [[ -L ${ROOT}/usr/bin/yacc ]] ; then
+        rm -f "${ROOT}"/usr/bin/yacc
+    fi
+}
+
+
 src_unpack() {
 	freebsd_src_unpack
 
@@ -118,4 +128,12 @@ pkg_postinst() {
 		"${ROOT}"usr/bin/cap_mkdb	-f "${ROOT}"etc/login.conf "${ROOT}"etc/login.conf
 		elog "Remember to run cap_mkdb /etc/login.conf after making changes to it"
 	fi
+}
+
+pkg_postrm() {
+    # and if we uninstall yacc but keep bison,
+    # lets restore the /usr/bin/yacc symlink
+    if [[ ! -e ${ROOT}/usr/bin/yacc ]] && [[ -e ${ROOT}/usr/bin/yacc.bison ]] ; then
+        ln -s yacc.bison "${ROOT}"/usr/bin/yacc
+    fi
 }
