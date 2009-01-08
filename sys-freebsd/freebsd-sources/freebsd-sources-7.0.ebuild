@@ -15,7 +15,7 @@ SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 RDEPEND=">=sys-freebsd/freebsd-mk-defs-7.0"
 DEPEND=""
 
-RESTRICT="strip binchecks"
+RESTRICT="strip binchecks test"
 
 S="${WORKDIR}/sys"
 
@@ -47,10 +47,6 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-6.1-ntfs.patch"
 	epatch "${FILESDIR}/${PN}-6.2-debug-O2.patch"
 
-	# http://security.freebsd.org/advisories/FreeBSD-SA-07:03.ipv6.asc
-	# Why did the 6.2 patch apply almoast cleanly on 7.0?
-	epatch "${FILESDIR}/${PN}-7.0-ipv6.patch"
-	
 	# Disable SSP for the kernel
 	grep -Zlr -- -ffreestanding "${S}" | xargs -0 sed -i -e \
 		"s:-ffreestanding:-ffreestanding $(test-flags -fno-stack-protector -fno-stack-protector-all):g"
@@ -70,6 +66,24 @@ src_unpack() {
 
 	# Support my damned network card.
 	epatch "${FILESDIR}/${PN}-7.0-rl8168c.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:07.amd64.asc
+	epatch "${FILESDIR}/${PN}-6.2-amd64.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:08.nmount.asc
+	epatch "${FILESDIR}/${PN}-7.0-nmount.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:09.icmp6.asc
+	epatch "${FILESDIR}/${PN}-6.2-icmp6.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:10.nd6.asc
+	epatch "${FILESDIR}/${PN}-7.0-nd6-7.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:11.arc4random.asc
+	epatch "${FILESDIR}/${PN}-7.0-arc4random.patch"
+
+	# http://security.freebsd.org/advisories/FreeBSD-SA-08:13.protosw.asc
+	epatch "${FILESDIR}/${PN}-7.0-protosw.patch"
 }
 
 src_compile() {
