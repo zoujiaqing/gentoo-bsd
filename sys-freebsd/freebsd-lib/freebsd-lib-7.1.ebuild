@@ -149,13 +149,13 @@ src_unpack() {
 			"${S}/libc/yp/Makefile.inc"
 	fi
 
-	# Preinstall includes so we don't use the system's ones.
-	mkdir "${WORKDIR}/include_proper" || die "Couldn't create ${WORKDIR}/include_proper"
-	install_includes "/include_proper"
-
 	if install --version 2> /dev/null | grep -q GNU; then
 		sed -i.bak -e 's:${INSTALL} -C:${INSTALL}:' "${WORKDIR}/include/Makefile"
 	fi
+
+	# Preinstall includes so we don't use the system's ones.
+	mkdir "${WORKDIR}/include_proper" || die "Couldn't create ${WORKDIR}/include_proper"
+	install_includes "/include_proper"
 
 	# Let arch-specific includes to be found
 	local machine
