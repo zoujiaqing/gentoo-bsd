@@ -134,6 +134,9 @@ src_unpack() {
 	# Apply this patch for Gentoo/FreeBSD/SPARC64 to build correctly
 	# from catalyst, then don't do anything else
 	if use build; then
+		# Preinstall includes so we don't use the system's ones.
+		mkdir "${WORKDIR}/include_proper" || die "Couldn't create ${WORKDIR}/include_proper"
+		install_includes "/include_proper"
 		cd "${WORKDIR}"
 		# We may need this patch again if it uses the linker instructions
 		# remove this when tested
