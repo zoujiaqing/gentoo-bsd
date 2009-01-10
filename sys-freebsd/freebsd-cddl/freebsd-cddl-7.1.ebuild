@@ -33,7 +33,7 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/cddl"
 
-PATCHES="${FILESDIR}/${PN}-7.0-libpaths.patch"
+PATCHES="${FILESDIR}/${PN}-7.1-libpaths.patch"
 
 pkg_setup() {
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
@@ -45,7 +45,7 @@ src_unpack() {
 	ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	# This patch is against sys.
 	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}-7.0-xdr_header.patch"
+	epatch "${FILESDIR}/${PN}-7.1-xdr_header.patch"
 }
 
 src_compile() {
