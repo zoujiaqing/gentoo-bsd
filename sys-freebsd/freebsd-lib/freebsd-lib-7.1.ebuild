@@ -134,13 +134,13 @@ src_unpack() {
 	# Apply this patch for Gentoo/FreeBSD/SPARC64 to build correctly
 	# from catalyst, then don't do anything else
 	if use build; then
+		cd "${WORKDIR}"
+		# This patch has to be applied on ${WORKDIR}/sys, so we do it here since it
+		# shouldn't be a symlink to /usr/src/sys (which should be already patched)
+		epatch "${FILESDIR}"/${PN}-7.1-types.h-fix.patch
 		# Preinstall includes so we don't use the system's ones.
 		mkdir "${WORKDIR}/include_proper" || die "Couldn't create ${WORKDIR}/include_proper"
 		install_includes "/include_proper"
-		cd "${WORKDIR}"
-		# We may need this patch again if it uses the linker instructions
-		# remove this when tested
-		# epatch "${FILESDIR}/freebsd-sources-6.2-sparc64.patch"
 		return 0
 	fi
 
@@ -319,12 +319,16 @@ EOF
 install_includes()
 {
 	local INCLUDEDIR="$1"
-	einfo "Installing includes into ${INCLUDEDIR}..."
 	# The idea is to be called from either install or unpack.
+	# During unpack it's required to install them as portage user. 
 	if [[ "${EBUILD_PHASE}" == "install" ]]; then
 		local DESTDIR="${D}"
+		BINOWN="root"
+		BINGRP="wheel"
 	else
 		local DESTDIR="${WORKDIR}"
+		BINOWN="$USER"
+		BINGRP="$GROUPS"
 	fi
 	# Must exist before we use it.
 	[[ -d "${DESTDIR}${INCLUDEDIR}" ]] || die "dodir or mkdir ${INCLUDEDIR} before using install_includes."
@@ -337,8 +341,10 @@ install_includes()
 		local MACHINE="$(tc-arch-kernel)"
 	fi
 
+	einfo "Installing includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 	$(freebsd_get_bmake) installincludes \
-		MACHINE=${MACHINE} \
-		DESTDIR="${DESTDIR}" INCLUDEDIR="${INCLUDEDIR}" || die "install_includes() failed"
+		MACHINE=${MACHINE} DESTDIR="${DESTDIR}" \
+		INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
+		BINGRP="${BINGRP}" || die "install_includes() failed"
 	einfo "includes installed ok."
 }

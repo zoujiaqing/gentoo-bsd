@@ -46,6 +46,8 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-7.1-sparc64.patch"
 	epatch "${FILESDIR}/${PN}-6.1-ntfs.patch"
 	epatch "${FILESDIR}/${PN}-6.2-debug-O2.patch"
+	epatch "${FILESDIR}/${PN}-7.1-types.h-fix.patch"
+	epatch "${FILESDIR}/${PN}-7.1-subnet-route-pr40133.patch"
 
 	# http://security.freebsd.org/advisories/FreeBSD-SA-07:03.ipv6.asc
 	# Why did the 6.2 patch apply almoast cleanly on 7.0?
