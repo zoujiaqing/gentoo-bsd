@@ -321,7 +321,7 @@ install_includes()
 	local INCLUDEDIR="$1"
 
 	# The idea is to be called from either install or unpack.
-	# During unpack it's required to install them as portage user. 
+	# During unpack it's required to install them as portage's user. 
 	if [[ "${EBUILD_PHASE}" == "install" ]]; then
 		local DESTDIR="${D}"
 		BINOWN="root"
@@ -331,7 +331,7 @@ install_includes()
 		[[ -z "${USER}" ]] && USER="portage"
 		BINOWN="${USER}"
 		[[ -z "${GROUPS}" ]] && GROUPS="portage"
-		BINGRP="$GROUPS"
+		BINGRP="${GROUPS}"
 	fi
 
 	# Must exist before we use it.
