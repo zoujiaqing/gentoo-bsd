@@ -7,7 +7,7 @@ EAPI=2
 inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs
 
 DESCRIPTION="FreeBSD's base system libraries"
-SLOT="7.0"
+SLOT="8.0"
 KEYWORDS="~sparc-fbsd ~x86-fbsd"
 
 # Crypto is needed to have an internal OpenSSL header
@@ -20,6 +20,7 @@ SRC_URI="mirror://gentoo/${LIB}.tar.bz2
 		mirror://gentoo/${ETC}.tar.bz2
 		mirror://gentoo/${INCLUDE}.tar.bz2
 		mirror://gentoo/${USBIN}.tar.bz2
+		mirror://gentoo/${GNU}.tar.bz2
 		build? (
 			mirror://gentoo/${SYS}.tar.bz2 )"
 
@@ -86,8 +87,7 @@ PATCHES=( "${FILESDIR}/${PN}-bsdxml.patch"
 	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-6.2-bluetooth.patch"
-	"${FILESDIR}/${PN}-new_as.patch"
-	"${FILESDIR}/${PN}-7.0-CVE-2008-1391.patch" )
+	"${FILESDIR}/${PN}-new_as.patch" )
 
 # Here we disable and remove source which we don't need or want
 # In order:
@@ -140,6 +140,12 @@ src_prepare() {
 
 	# Apply this patch for Gentoo/FreeBSD/SPARC64 to build correctly
 	# from catalyst, then don't do anything else
+	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
+	cd "${S}"
+	for dir in libradius libtacplus libcam libdevstat libgeom libmemstat libopie \
+		libsmb; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
+		die "Problem fixing \"${dir}/Makefile" 
+	done
 	if use build; then
 		cd "${WORKDIR}"
 		# This patch has to be applied on ${WORKDIR}/sys, so we do it here since it
@@ -184,7 +190,7 @@ src_compile() {
 	use crosscompile_opts_headers-only && return 0
 
 	# Don't use ssp until properly fixed
-	append-flags $(test-flags -fno-stack-protector -fno-stack-protector-all)
+	#append-flags $(test-flags -fno-stack-protector -fno-stack-protector-all)
 
 	# Bug #270098
 	append-flags $(test-flags -fno-strict-aliasing)
@@ -221,8 +227,16 @@ src_compile() {
 		# the system
 		append-flags "-isystem '${WORKDIR}/include_proper'"
 
-		cd "${S}"
+		# First compile libssp_nonshared.a and add it's path to LDFLAGS.
+		einfo "Compiling libssp in \"${WORKDIR}/gnu/lib/libssp/\"."
+		cd "${WORKDIR}/gnu/lib/libssp/" || die "missing libssp."
 		NOFLAGSTRIP=yes freebsd_src_compile
+		# Hack libssp_nonshared.a into libc & others since we don't have
+		# the linker script in place yet.
+		append-ldflags "-L${WORKDIR}/gnu/lib/libssp/libssp_nonshared/"
+		einfo "Compiling libc."
+		cd "${S}"
+		NOFLAGSTRIP=yes LDADD="-lssp_nonshared" freebsd_src_compile
 	fi
 }
 
@@ -241,6 +255,7 @@ src_install() {
 	fi
 
 	use crosscompile_opts_headers-only && return 0
+	local mylibdir=$(get_libdir)
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		local csudir
@@ -255,18 +270,25 @@ src_install() {
 
 		cd "${S}/libc"
 		$(freebsd_get_bmake) ${mymakeopts} DESTDIR="${D}" install NO_MAN= \
-			SHLIBDIR="/usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install failed"
+			SHLIBDIR="/usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install libc failed"
 
 		cd "${S}/msun"
 		$(freebsd_get_bmake) ${mymakeopts} DESTDIR="${D}" install NO_MAN= \
 			INCLUDEDIR="/usr/${CTARGET}/usr/include" \
-			SHLIBDIR="/usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install failed"
+			SHLIBDIR="/usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install msun failed"
+
+		cd "${WORKDIR}/gnu/lib/libssp/"
+		$(freebsd_get_bmake) ${mymakeopts} DESTDIR="${D}" install NO_MAN= \
+			INCLUDEDIR="/usr/${CTARGET}/usr/include" \
+			SHLIBDIR="/Usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install ssp failed"
 
 		dosym "usr/include" "/usr/${CTARGET}/sys-include"
 	else
-		cd "${S}"
 		# Set SHLIBDIR and LIBDIR for multilib
-		SHLIBDIR="/$(get_libdir)" LIBDIR="/usr/$(get_libdir)" mkinstall || die "Install failed"
+		cd "${WORKDIR}/gnu/lib/libssp"
+		SHLIBDIR="/${mylibdir}" LIBDIR="/usr/${mylibdir}" mkinstall || die "Install ssp failed."
+		cd "${S}"
+		SHLIBDIR="/${mylibdir}" LIBDIR="/usr/${mylibdir}" mkinstall || die "Install failed"
 	fi
 
 	# Don't install the rest of the configuration files if crosscompiling
@@ -279,21 +301,21 @@ src_install() {
 
 	# Add symlinks (-> libthr) for legacy threading libraries, since these are
 	# not built by us (they are disabled in FreeBSD-7 anyway).
-	dosym libthr.a /usr/$(get_libdir)/libpthread.a
-	dosym libthr.so /usr/$(get_libdir)/libpthread.so
-	dosym libthr.a /usr/$(get_libdir)/libc_r.a
-	dosym libthr.so /usr/$(get_libdir)/libc_r.so
+	dosym libthr.a /usr/${mylibdir}/libpthread.a
+	dosym libthr.so /usr/${mylibdir}/libpthread.so
+	dosym libthr.a /usr/${mylibdir}/libc_r.a
+	dosym libthr.so /usr/${mylibdir}/libc_r.so
 
 	# Add symlink (-> libthr) so previously built binaries still work.
-	dosym libthr.so.3 /$(get_libdir)/libpthread.so.2
-	dosym libthr.so.3 /$(get_libdir)/libc_r.so.6
+	dosym libthr.so.3 /${mylibdir}/libpthread.so.2
+	dosym libthr.so.3 /${mylibdir}/libc_r.so.6
 
 	# Compatibility symlinks to run FreeBSD 5.x binaries (ABI is mostly
 	# identical, remove when problems will actually happen)
-	dosym /lib/libc.so.7 /usr/$(get_libdir)/libc.so.6
-	dosym /lib/libc.so.6 /usr/$(get_libdir)/libc.so.5
-	dosym /lib/libm.so.4 /usr/$(get_libdir)/libm.so.3
-	dosym /lib/libm.so.5 /usr/$(get_libdir)/libm.so.4
+	dosym /lib/libc.so.7 /usr/${mylibdir}/libc.so.6
+	dosym /lib/libc.so.6 /usr/${mylibdir}/libc.so.5
+	dosym /lib/libm.so.4 /usr/${mylibdir}/libm.so.3
+	dosym /lib/libm.so.5 /usr/${mylibdir}/libm.so.4
 
 	# install libstand files
 	dodir /usr/include/libstand
@@ -315,12 +337,33 @@ src_install() {
 	# Generate ldscripts, otherwise bad thigs are supposed to happen
 	gen_usr_ldscript libalias_cuseeme.so libalias_dummy.so libalias_ftp.so \
 		libalias_irc.so libalias_nbt.so libalias_pptp.so libalias_skinny.so \
-		libalias_smedia.so
+		libalias_smedia.so libssp.so
 	# These show on QA warnings too, however they're pretty much bsd only,
 	# aka, no autotools for them.
 	#	libbsdxml.so libcam.so libcrypt.so libdevstat.so libgeom.so \
 	#	libipsec.so libipx.so libkiconv.so libkvm.so libmd.so libsbuf.so libufs.so \
 	#	libutil.so
+
+	# Generate libc.so ldscript for inclusion of libssp_nonshared.a when linking
+	# this is done to avoid having to touch gcc spec file as it is currently
+	# done on FreeBSD upstream, mostly because their binutils aren't able to
+	# cope with linker scripts yet.
+	# Taken from toolchain-funcs.eclass:
+	local output_format
+	output_format=$($(tc-getCC) ${CFLAGS} ${LDFLAGS} -Wl,--verbose 2>&1 | sed -n 's/^OUTPUT_FORMAT("\([^"]*\)",.*/\1/p')
+	[[ -n ${output_format} ]] && output_format="OUTPUT_FORMAT ( ${output_format} )"
+	# Clear the symlink.
+	rm -f "${D}/usr/${mylibdir}/libc.so" 
+	cat > "${D}/usr/${mylibdir}/libc.so" <<-END_LDSCRIPT
+/* GNU ld script
+   SSP (-fstack-protector) requires __stack_chk_fail_local to be local. 
+   GCC invokes this symbol in a non-PIC way, which results in TEXTRELs if
+   this symbol was provided by a shared libc. So we link in
+   libssp_nonshared.a from here.
+ */
+${output_format}
+GROUP ( /${mylibdir}/libc.so.7 /usr/${mylibdir}/libssp_nonshared.a )
+END_LDSCRIPT
 
 	dodir /etc/sandbox.d
 	cat - > "${D}"/etc/sandbox.d/00freebsd <<EOF
@@ -349,6 +392,11 @@ install_includes()
 		BINGRP="${GROUPS}"
 	fi
 
+	# This is for ssp/ssp.h.
+	einfo "Building ssp.h"
+	cd "${WORKDIR}/gnu/lib/libssp/" || die "missing libssp"
+	$(freebsd_get_bmake) ssp.h || die "problem building ssp.h"
+
 	# Must exist before we use it.
 	[[ -d "${DESTDIR}${INCLUDEDIR}" ]] || die "dodir or mkdir ${INCLUDEDIR} before using install_includes."
 	cd "${WORKDIR}/include"
@@ -358,11 +406,17 @@ install_includes()
 	else
 		local MACHINE="$(tc-arch-kernel)"
 	fi
-
+	
 	einfo "Installing includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 	$(freebsd_get_bmake) installincludes \
 		MACHINE=${MACHINE} DESTDIR="${DESTDIR}" \
 		INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
 		BINGRP="${BINGRP}" || die "install_includes() failed"
 	einfo "includes installed ok."
+	einfo "Installing ssp includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
+	cd "${WORKDIR}/gnu/lib/libssp"
+	$(freebsd_get_bmake) installincludes DESTDIR="${DESTDIR}" \
+		MACHINE=${MACHINE} INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
+		BINGRP="${BINGRP}" || die "problem installing ssp includes."
+	einfo "ssp includes installed ok."
 }
