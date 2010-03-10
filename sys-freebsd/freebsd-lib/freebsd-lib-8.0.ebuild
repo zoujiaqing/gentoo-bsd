@@ -185,7 +185,7 @@ src_prepare() {
 
 src_compile() {
 	cd "${WORKDIR}/include"
-	$(freebsd_get_bmake) CC=$(tc-getCC) || die "make include failed"
+	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
 
