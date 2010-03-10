@@ -142,7 +142,7 @@ src_prepare() {
 	# from catalyst, then don't do anything else
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
-	for dir in libradius libtacplus libcam libdevstat libgeom libmemstat libopie \
+	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
 		libsmb; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
 		die "Problem fixing \"${dir}/Makefile"
 	done
