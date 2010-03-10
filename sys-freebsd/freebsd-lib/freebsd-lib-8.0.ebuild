@@ -198,7 +198,8 @@ src_compile() {
 	strip-flags
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		export YACC='yacc -by'
-		CHOST=${CTARGET} tc-export CC LD CXX
+		CHOST=${CTARGET} tc-export CC LD CXX RANLIB
+		mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NLS="
 
 		local machine
 		machine=$(tc-arch-kernel ${CTARGET})
@@ -218,10 +219,15 @@ src_compile() {
 		append-flags "-B ${csudir}"
 		append-ldflags "-B ${csudir}"
 
+		# First compile libssp_nonshared.a and add it's path to LDFLAGS.
+		cd "${WORKDIR}/gnu/lib/libssp/" || die "missing libssp."
+		$(freebsd_get_bmake) ${mymakeopts} || die "make libssp failed"
+		append-ldflags "-L${WORKDIR}/gnu/lib/libssp/libssp_nonshared/"
+
 		cd "${S}/libc"
 		$(freebsd_get_bmake) ${mymakeopts} || die "make libc failed"
 		cd "${S}/msun"
-		$(freebsd_get_bmake) ${mymakeopts} || die "make libc failed"
+		LDADD="-lssp_nonshared" $(freebsd_get_bmake) ${mymakeopts} || die "make libc failed"
 	else
 		# Forces to use the local copy of headers as they might be outdated in
 		# the system
