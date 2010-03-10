@@ -18,7 +18,8 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
 	dev-libs/libedit
 	sys-libs/ncurses
 	sys-apps/ed
-	!app-misc/realpath"
+	!app-misc/realpath
+	!<sys-freebsd/freebsd-ubin-8"
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	>=sys-devel/flex-2.5.31-r2"
