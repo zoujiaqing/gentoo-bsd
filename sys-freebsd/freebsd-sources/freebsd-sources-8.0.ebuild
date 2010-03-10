@@ -39,20 +39,16 @@ src_unpack() {
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die "Couldn't set __FreeBSD_cc_version"
 
-	epatch "${FILESDIR}/${PN}-7.0-gentoo.patch"
+	epatch "${FILESDIR}/${PN}-8.0-gentoo.patch"
 	epatch "${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
-	epatch "${FILESDIR}/${PN}-7.1-asm.patch"
-	epatch "${FILESDIR}/${PN}-7.0-werror.patch"
-	epatch "${FILESDIR}/${PN}-7.2-sparc64.patch"
+	epatch "${FILESDIR}/${PN}-8.0-werror.patch"
+	epatch "${FILESDIR}/${PN}-8.0-sparc64.patch"
 	epatch "${FILESDIR}/${PN}-6.1-ntfs.patch"
 	epatch "${FILESDIR}/${PN}-7.2-debug-O2.patch"
 	epatch "${FILESDIR}/${PN}-7.1-types.h-fix.patch"
-	epatch "${FILESDIR}/${PN}-7.1-subnet-route-pr40133.patch"
+	epatch "${FILESDIR}/${PN}-8.0-subnet-route-pr40133.patch"
 	epatch "${FILESDIR}/${PN}-7.1-includes.patch"
-	epatch "${FILESDIR}/${PN}-7.2-pipe.patch"
-	epatch "${FILESDIR}/${PN}-7.2-ipv6.patch"
-	epatch "${FILESDIR}/${PN}-7.2-devfs7.patch"
-	epatch "${FILESDIR}/${PN}-7.2-null.patch"
+	epatch "${FILESDIR}/${PN}-8.0-zfs.patch"
 
 	# Disable SSP for the kernel
 	grep -Zlr -- -ffreestanding "${S}" | xargs -0 sed -i -e \
