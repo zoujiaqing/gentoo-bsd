@@ -23,10 +23,10 @@ src_unpack() {
 	unpack ${A}
 
 	cd "${S}"
-	epatch "${FILESDIR}/${PN}-7.1-gentoo.patch"
+	epatch "${FILESDIR}/${PN}-8.0-gentoo.patch"
 
 	[[ ${CHOST} != *-*bsd* || ${CHOST} == *-gnu ]] && \
-		epatch "${FILESDIR}/${PN}-7.1-gnu.patch"
+		epatch "${FILESDIR}/${PN}-8.0-gnu.patch"
 }
 
 src_compile() { :; }

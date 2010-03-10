@@ -1,6 +1,6 @@
 Index: mk/bsd.incs.mk
 ===================================================================
---- mk.orig/bsd.incs.mk
+--- mk/bsd.incs.mk.orig
 +++ mk/bsd.incs.mk
 @@ -45,7 +45,7 @@ _${group}INS_${header:T}: ${header}
  	${INSTALL} -d -o ${${group}OWN_${.ALLSRC:T}} \
@@ -27,9 +27,9 @@ Index: mk/bsd.incs.mk
  .endif
 Index: mk/bsd.lib.mk
 ===================================================================
---- mk.orig/bsd.lib.mk
+--- mk/bsd.lib.mk.orig
 +++ mk/bsd.lib.mk
-@@ -119,11 +119,7 @@ _LIBS=		lib${LIB}.a
+@@ -156,11 +156,7 @@ _LIBS=		lib${LIB}.a
  lib${LIB}.a: ${OBJS} ${STATICOBJS}
  	@${ECHO} building static ${LIB} library
  	@rm -f ${.TARGET}
@@ -42,7 +42,7 @@ Index: mk/bsd.lib.mk
  	${RANLIB} ${.TARGET}
  .endif
  
-@@ -136,11 +132,7 @@ POBJS+=		${OBJS:.o=.po} ${STATICOBJS:.o=
+@@ -173,11 +169,7 @@ POBJS+=		${OBJS:.o=.po} ${STATICOBJS:.o=
  lib${LIB}_p.a: ${POBJS}
  	@${ECHO} building profiled ${LIB} library
  	@rm -f ${.TARGET}
@@ -55,24 +55,24 @@ Index: mk/bsd.lib.mk
  	${RANLIB} ${.TARGET}
  .endif
  
-@@ -195,15 +195,9 @@
+@@ -195,15 +187,9 @@ ${SHLIB_NAME}: ${SOBJS}
  .if defined(SHLIB_LINK)
  	@ln -fs ${.TARGET} ${SHLIB_LINK}
  .endif
 -.if !defined(NM)
- 	@${CC} ${LDFLAGS} -shared -Wl,-x \
- 	    -o ${.TARGET} -Wl,-soname,${SONAME} \
+-	@${CC} ${LDFLAGS} ${SSP_CFLAGS} -shared -Wl,-x \
+-	    -o ${.TARGET} -Wl,-soname,${SONAME} \
 -	    `lorder ${SOBJS} | tsort -q` ${LDADD}
 -.else
--	@${CC} ${LDFLAGS} -shared -Wl,-x \
--	    -o ${.TARGET} -Wl,-soname,${SONAME} \
+ 	@${CC} ${LDFLAGS} ${SSP_CFLAGS} -shared -Wl,-x \
+ 	    -o ${.TARGET} -Wl,-soname,${SONAME} \
 -	    `NM='${NM}' lorder ${SOBJS} | tsort -q` ${LDADD}
 -.endif
 +	    `echo ${SOBJS} | xargs -n 1 echo | sort -u` ${LDADD}
  .if defined(CTFMERGE)
  	${CTFMERGE} ${CTFFLAGS} -o ${.TARGET} ${SOBJS}
  .endif
-@@ -211,13 +197,6 @@ _EXTRADEPEND:
+@@ -251,13 +237,6 @@ _EXTRADEPEND:
  
  .if !target(install)
  
@@ -86,7 +86,7 @@ Index: mk/bsd.lib.mk
  _INSTALLFLAGS:=	${INSTALLFLAGS}
  .for ie in ${INSTALLFLAGS_EDIT}
  _INSTALLFLAGS:=	${_INSTALLFLAGS${ie}}
-@@ -233,12 +212,12 @@ realinstall: _libinstall
+@@ -273,12 +252,12 @@ realinstall: _libinstall
  _libinstall:
  .if defined(LIB) && !empty(LIB) && ${MK_INSTALLLIB} != "no"
  	${INSTALL} -d ${DESTDIR}${LIBDIR}
@@ -103,9 +103,9 @@ Index: mk/bsd.lib.mk
  .if defined(SHLIB_NAME)
 Index: mk/bsd.prog.mk
 ===================================================================
---- mk.orig/bsd.prog.mk
+--- mk/bsd.prog.mk.orig
 +++ mk/bsd.prog.mk
-@@ -120,13 +120,6 @@ _EXTRADEPEND:
+@@ -130,13 +130,6 @@ _EXTRADEPEND:
  
  .if !target(install)
  

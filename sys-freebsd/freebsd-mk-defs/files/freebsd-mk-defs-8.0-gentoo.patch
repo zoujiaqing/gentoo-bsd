@@ -1,6 +1,6 @@
 Index: share/mk/bsd.doc.mk
 ===================================================================
---- share.orig/mk/bsd.doc.mk
+--- share/mk/bsd.doc.mk.orig
 +++ share/mk/bsd.doc.mk
 @@ -137,10 +137,12 @@ CLEANFILES+=	${DOC}.ascii ${DOC}.ascii${
  realinstall:
@@ -17,7 +17,7 @@ Index: share/mk/bsd.doc.mk
  .endfor
 Index: share/mk/bsd.files.mk
 ===================================================================
---- share.orig/mk/bsd.files.mk
+--- share/mk/bsd.files.mk.orig
 +++ share/mk/bsd.files.mk
 @@ -39,6 +39,7 @@ ${group}NAME_${file:T}?=	${file:T}
  .endif
@@ -42,7 +42,7 @@ Index: share/mk/bsd.files.mk
  .endif
 Index: share/mk/bsd.incs.mk
 ===================================================================
---- share.orig/mk/bsd.incs.mk
+--- share/mk/bsd.incs.mk.orig
 +++ share/mk/bsd.incs.mk
 @@ -41,6 +41,10 @@ ${group}NAME_${header:T}?=	${header:T}
  .endif
@@ -69,7 +69,7 @@ Index: share/mk/bsd.incs.mk
  .endif
 Index: share/mk/bsd.info.mk
 ===================================================================
---- share.orig/mk/bsd.info.mk
+--- share/mk/bsd.info.mk.orig
 +++ share/mk/bsd.info.mk
 @@ -83,6 +83,7 @@ INFO2HTML?=	info2html
  TEX?=		tex
@@ -96,10 +96,10 @@ Index: share/mk/bsd.info.mk
  	    --defentry=${INFOENTRY_${x}} \
 Index: share/mk/bsd.lib.mk
 ===================================================================
---- share.orig/mk/bsd.lib.mk
+--- share/mk/bsd.lib.mk.orig
 +++ share/mk/bsd.lib.mk
-@@ -37,10 +37,6 @@ NO_WERROR=
- CFLAGS+= ${DEBUG_FLAGS}
+@@ -41,10 +41,6 @@ CTFFLAGS+= -g
+ .endif
  .endif
  
 -.if !defined(DEBUG_FLAGS)
@@ -109,7 +109,7 @@ Index: share/mk/bsd.lib.mk
  .include <bsd.libnames.mk>
  
  # prefer .s to a .c, add .po, remove stuff not used in the BSD libraries
-@@ -236,14 +232,17 @@ realinstall: _libinstall
+@@ -276,14 +272,17 @@ realinstall: _libinstall
  .ORDER: beforeinstall _libinstall
  _libinstall:
  .if defined(LIB) && !empty(LIB) && ${MK_INSTALLLIB} != "no"
@@ -129,18 +129,18 @@ Index: share/mk/bsd.lib.mk
  	    ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
 Index: share/mk/bsd.libnames.mk
 ===================================================================
---- share.orig/mk/bsd.libnames.mk
+--- share/mk/bsd.libnames.mk.orig
 +++ share/mk/bsd.libnames.mk
-@@ -41,7 +41,7 @@ LIBDISK?=	${DESTDIR}${LIBDIR}/libdisk.a
- LIBDNS?=	${DESTDIR}${LIBDIR}/libdns.a
+@@ -46,7 +46,7 @@ LIBDWARF?=	${DESTDIR}${LIBDIR}/libdwarf.
  LIBEDIT?=	${DESTDIR}${LIBDIR}/libedit.a
+ LIBELF?=	${DESTDIR}${LIBDIR}/libelf.a
  LIBFETCH?=	${DESTDIR}${LIBDIR}/libfetch.a
 -LIBFL?=		"don't use LIBFL, use LIBL"
 +LIBFL?=		${DESTDIR}${LIBDOR}/libfl.a
  LIBFORM?=	${DESTDIR}${LIBDIR}/libform.a
  LIBFTPIO?=	${DESTDIR}${LIBDIR}/libftpio.a
  LIBG2C?=	${DESTDIR}${LIBDIR}/libg2c.a
-@@ -68,7 +68,7 @@ LIBKEYCAP?=	${DESTDIR}${LIBDIR}/libkeyca
+@@ -77,7 +77,7 @@ LIBKEYCAP?=	${DESTDIR}${LIBDIR}/libkeyca
  LIBKICONV?=	${DESTDIR}${LIBDIR}/libkiconv.a
  LIBKRB5?=	${DESTDIR}${LIBDIR}/libkrb5.a
  LIBKVM?=	${DESTDIR}${LIBDIR}/libkvm.a
@@ -151,7 +151,7 @@ Index: share/mk/bsd.libnames.mk
  LIBLWRES?=	${DESTDIR}${LIBDIR}/liblwres.a
 Index: share/mk/bsd.man.mk
 ===================================================================
---- share.orig/mk/bsd.man.mk
+--- share/mk/bsd.man.mk.orig
 +++ share/mk/bsd.man.mk
 @@ -165,9 +165,11 @@ _maninstall: ${MAN}
  .if defined(NO_MANCOMPRESS)
@@ -194,9 +194,9 @@ Index: share/mk/bsd.man.mk
  .endif
 Index: share/mk/bsd.prog.mk
 ===================================================================
---- share.orig/mk/bsd.prog.mk
+--- share/mk/bsd.prog.mk.orig
 +++ share/mk/bsd.prog.mk
-@@ -23,10 +23,6 @@ CFLAGS+=${DEBUG_FLAGS}
+@@ -27,10 +27,6 @@ CTFFLAGS+= -g
  CFLAGS+=${CRUNCH_CFLAGS}
  .endif
  
@@ -207,7 +207,7 @@ Index: share/mk/bsd.prog.mk
  .if defined(NO_SHARED) && (${NO_SHARED} != "no" && ${NO_SHARED} != "NO")
  LDFLAGS+= -static
  .endif
-@@ -142,9 +138,11 @@ realinstall: _proginstall
+@@ -152,9 +148,11 @@ realinstall: _proginstall
  _proginstall:
  .if defined(PROG)
  .if defined(PROGNAME)
@@ -219,7 +219,7 @@ Index: share/mk/bsd.prog.mk
  	${INSTALL} ${STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
  	    ${_INSTALLFLAGS} ${PROG} ${DESTDIR}${BINDIR}
  .endif
-@@ -172,6 +170,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
+@@ -182,6 +180,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
  SCRIPTSMODE_${script:T}?=	${SCRIPTSMODE}
  _scriptsinstall: _SCRIPTSINS_${script:T}
  _SCRIPTSINS_${script:T}: ${script}
@@ -229,9 +229,9 @@ Index: share/mk/bsd.prog.mk
  	    ${.ALLSRC} \
 Index: share/mk/bsd.sys.mk
 ===================================================================
---- share.orig/mk/bsd.sys.mk
+--- share/mk/bsd.sys.mk.orig
 +++ share/mk/bsd.sys.mk
-@@ -30,9 +30,6 @@ CFLAGS		+= -std=${CSTD}
+@@ -28,9 +28,6 @@ CFLAGS		+= -std=${CSTD}
  . if defined(WARNS)
  .  if ${WARNS} >= 1
  CWARNFLAGS	+=	-Wsystem-headers
@@ -241,7 +241,7 @@ Index: share/mk/bsd.sys.mk
  .  endif
  .  if ${WARNS} >= 2
  CWARNFLAGS	+=	-Wall -Wno-format-y2k
-@@ -66,9 +63,6 @@ WFORMAT		=	1
+@@ -64,9 +61,6 @@ WFORMAT		=	1
  .  if ${WFORMAT} > 0
  #CWARNFLAGS	+=	-Wformat-nonliteral -Wformat-security -Wno-format-extra-args
  CWARNFLAGS	+=	-Wformat=2 -Wno-format-extra-args
@@ -251,50 +251,9 @@ Index: share/mk/bsd.sys.mk
  .  endif
  . endif
  .endif
-Index: share/mk/sys.mk
-===================================================================
---- share.orig/mk/sys.mk
-+++ share/mk/sys.mk
-@@ -34,11 +34,11 @@
- CC		?=	c89
- CFLAGS		?=	-O
- .else
--CC		?=	cc
-+CC		?=	gcc
- .if ${MACHINE_ARCH} == "arm"
--CFLAGS		?=	-O -fno-strict-aliasing -pipe
-+CFLAGS		?=	-pipe
- .else
--CFLAGS		?=	-O2 -fno-strict-aliasing -pipe
-+CFLAGS		?=	-pipe
- .endif
- .endif
- 
-@@ -61,7 +61,7 @@
- .endif
- .endif
- 
--CXX		?=	c++
-+CXX		?=	g++
- CXXFLAGS	?=	${CFLAGS:N-std=*:N-Wnested-externs:N-W*-prototypes:N-Wno-pointer-sign}
- 
- CPP		?=	cpp
-@@ -254,12 +254,6 @@ YFLAGS		?=	-d
- 	${CC} ${CFLAGS} ${LDFLAGS} ${.PREFIX}.tmp.c ${LDLIBS} -ll -o ${.TARGET}
- 	rm -f ${.PREFIX}.tmp.c
- 
--# FreeBSD build pollution.  Hide it in the non-POSIX part of the ifdef.
--__MAKE_CONF?=/etc/make.conf
--.if exists(${__MAKE_CONF})
--.include "${__MAKE_CONF}"
--.endif
--
- # Default executable format
- # XXX hint for bsd.port.mk
- OBJFORMAT?=	elf
 Index: share/mk/bsd.links.mk
 ===================================================================
---- share.orig/mk/bsd.links.mk
+--- share/mk/bsd.links.mk.orig
 +++ share/mk/bsd.links.mk
 @@ -15,6 +15,8 @@ _installlinks:
  		t=${DESTDIR}$$1; \
@@ -316,9 +275,9 @@ Index: share/mk/bsd.links.mk
  .endif
 Index: share/mk/bsd.own.mk
 ===================================================================
---- share.orig/mk/bsd.own.mk
+--- share/mk/bsd.own.mk.orig
 +++ share/mk/bsd.own.mk
-@@ -166,11 +166,6 @@ DEFAULT_THREAD_LIB?=	libthr
+@@ -164,11 +164,6 @@ NLSMODE?=	${NOBINMODE}
  
  INCLUDEDIR?=	/usr/include
  
@@ -330,3 +289,44 @@ Index: share/mk/bsd.own.mk
  COMPRESS_CMD?=	gzip -cn
  COMPRESS_EXT?=	.gz
  
+Index: share/mk/sys.mk
+===================================================================
+--- share/mk/sys.mk.orig
++++ share/mk/sys.mk
+@@ -34,11 +34,11 @@ AFLAGS		?=
+ CC		?=	c89
+ CFLAGS		?=	-O
+ .else
+-CC		?=	cc
++CC		?=	gcc
+ .if ${MACHINE_ARCH} == "arm" || ${MACHINE_ARCH} == "mips"
+-CFLAGS		?=	-O -pipe
++CFLAGS		?=	-pipe
+ .else
+-CFLAGS		?=	-O2 -pipe
++CFLAGS		?=	-pipe
+ .endif
+ .if defined(NO_STRICT_ALIASING)
+ CFLAGS		+=	-fno-strict-aliasing
+@@ -64,7 +64,7 @@ CFLAGS		+=	-g
+ .endif
+ .endif
+ 
+-CXX		?=	c++
++CXX		?=	g++
+ CXXFLAGS	?=	${CFLAGS:N-std=*:N-Wnested-externs:N-W*-prototypes:N-Wno-pointer-sign}
+ 
+ CPP		?=	cpp
+@@ -333,12 +333,6 @@ YFLAGS		?=	-d
+ 	${CTFCONVERT} ${CTFFLAGS} ${.TARGET}
+ .endif
+ 
+-# FreeBSD build pollution.  Hide it in the non-POSIX part of the ifdef.
+-__MAKE_CONF?=/etc/make.conf
+-.if exists(${__MAKE_CONF})
+-.include "${__MAKE_CONF}"
+-.endif
+-
+ .if defined(__MAKE_SHELL) && !empty(__MAKE_SHELL)
+ SHELL=	${__MAKE_SHELL}
+ .SHELL: path=${__MAKE_SHELL}
