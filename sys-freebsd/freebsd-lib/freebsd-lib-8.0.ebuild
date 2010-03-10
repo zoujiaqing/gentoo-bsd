@@ -107,7 +107,7 @@ REMOVE_SUBDIRS="ncurses
 	libbegemot libbsnmp \
 	libpam libpcap bind libwrap libmagic \
 	libcom_err libtelnet
-	libedit libelf"
+	libedit libelf libusb"
 
 src_prepare() {
 	sed -i.bak -e 's:-o/dev/stdout:-t:' "${S}/libc/net/Makefile.inc"
