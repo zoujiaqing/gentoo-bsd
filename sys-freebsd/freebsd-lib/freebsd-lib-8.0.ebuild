@@ -144,7 +144,7 @@ src_prepare() {
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libgeom libmemstat libopie \
 		libsmb; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
-		die "Problem fixing \"${dir}/Makefile" 
+		die "Problem fixing \"${dir}/Makefile"
 	done
 	if use build; then
 		cd "${WORKDIR}"
@@ -359,7 +359,7 @@ src_install() {
 	output_format=$($(tc-getCC) ${CFLAGS} ${LDFLAGS} -Wl,--verbose 2>&1 | sed -n 's/^OUTPUT_FORMAT("\([^"]*\)",.*/\1/p')
 	[[ -n ${output_format} ]] && output_format="OUTPUT_FORMAT ( ${output_format} )"
 	# Clear the symlink.
-	rm -f "${D}/usr/${mylibdir}/libc.so" 
+	rm -f "${D}/usr/${mylibdir}/libc.so"
 	cat > "${D}/usr/${mylibdir}/libc.so" <<-END_LDSCRIPT
 /* GNU ld script
    SSP (-fstack-protector) requires __stack_chk_fail_local to be local. 
@@ -412,7 +412,7 @@ install_includes()
 	else
 		local MACHINE="$(tc-arch-kernel)"
 	fi
-	
+
 	einfo "Installing includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 	$(freebsd_get_bmake) installincludes \
 		MACHINE=${MACHINE} DESTDIR="${DESTDIR}" \
