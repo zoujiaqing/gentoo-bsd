@@ -16,6 +16,7 @@ SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${ETC}.tar.bz2
 		mirror://gentoo/${BIN}.tar.bz2
 		mirror://gentoo/${INCLUDE}.tar.bz2
+		mirror://gentoo/${CDDL}.tar.bz2
 		build? ( mirror://gentoo/${SYS}.tar.bz2 )"
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
