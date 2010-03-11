@@ -20,7 +20,8 @@ SRC_URI="mirror://gentoo/${SHARE}.tar.bz2
 	mirror://gentoo/${LIB}.tar.bz2
 	mirror://gentoo/${ETC}.tar.bz2"
 
-DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*"
+DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
+		=sys-freebsd/freebsd-sources-${RV}*"
 RDEPEND=""
 
 RESTRICT="strip"
@@ -67,6 +68,7 @@ src_unpack() {
 			"${S}/${sdir}/Makefile" || \
 			die "Error fixing ${sdir}/Makefile"
 	done
+	ln -s "/usr/src/sys-${RV}" "${WORKDIR}/sys" || die "failed to set sys symlink"
 }
 
 src_compile() {
