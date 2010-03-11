@@ -28,11 +28,6 @@ RDEPEND="${RDEPEND}
 
 S="${WORKDIR}/libexec"
 
-PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
-	"${FILESDIR}/${PN}-nossp.patch"
-	"${FILESDIR}/${PN}-7.0-libfallback.patch"
-	"${FILESDIR}/${P}-rtld7.patch" )
-
 # Remove sendmail, tcp_wrapper and other useless stuff
 REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind lukemftpd ftpd"
 
