@@ -28,6 +28,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 	RDEPEND="ssl? ( dev-libs/openssl )
 		hesiod? ( net-dns/hesiod )
 		kerberos? ( virtual/krb5 )
+		usb? ( !dev-libs/libusb )
 		!sys-freebsd/freebsd-headers
 		dev-libs/libelf"
 	DEPEND="${RDEPEND}
