@@ -34,24 +34,10 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/cddl"
 
-PATCHES=( "${FILESDIR}/${PN}-7.1-libpaths.patch" )
-
-pkg_setup() {
-	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
-}
+PATCHES=( "${FILESDIR}/${PN}-8.0-libpaths.patch" )
 
 src_unpack() {
 	freebsd_src_unpack
 	# Link in include headers.
 	ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
-	# This patch is against sys.
-	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}-7.1-xdr_header.patch"
 }
-
-src_compile() {
-	freebsd_src_compile
-}
-
-#src_install() {
-#}

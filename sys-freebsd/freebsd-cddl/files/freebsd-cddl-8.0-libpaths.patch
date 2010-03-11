@@ -4,7 +4,7 @@ diff -ru cddl.orig/lib/libctf/Makefile cddl/lib/libctf/Makefile
 @@ -4,6 +4,7 @@
  
  LIB=		ctf
- SHLIB_MAJOR=	1
+ SHLIB_MAJOR=	2
 +LDADD+=-lz
  
  SRCS=		ctf_create.c \
@@ -24,12 +24,13 @@ diff -ru cddl.orig/lib/libdtrace/Makefile cddl/lib/libdtrace/Makefile
 diff -ru cddl.orig/lib/libzfs/Makefile cddl/lib/libzfs/Makefile
 --- cddl.orig/lib/libzfs/Makefile	2008-06-22 10:26:18 -0300
 +++ cddl/lib/libzfs/Makefile	2008-06-22 10:26:26 -0300
-@@ -7,7 +7,7 @@
+@@ -7,7 +7,8 @@
 
  LIB=	zfs
  DPADD=	${LIBUTIL}
 -LDADD=	-lutil
-+LDADD=	-lutil -lgeom -lm
++LDADD=	-lutil -lgeom -lm -luutil -lumem
++LDFLAGS+=      -L${.CURDIR}/../libuutil -L${.CURDIR}/../libumem
 
  SRCS=	deviceid.c \
  	mnttab.c \
@@ -41,8 +42,8 @@ diff -ru cddl.orig/lib/libzpool/Makefile cddl/lib/libzpool/Makefile
  
  DPADD=		${LIBPTHREAD} ${LIBZ}
 -LDADD=		-lpthread -lz
-+LDADD=		-lpthread -lz -lavl
-+LDFLAGS+=	-L${.CURDIR}/../libavl
++LDADD=		-lpthread -lz -lavl -lumem
++LDFLAGS+=	-L${.CURDIR}/../libavl -L${.CURDIR}/../libumem
  
  # atomic.S doesn't like profiling.
  NO_PROFILE=
@@ -79,17 +80,6 @@ diff -ru cddl.orig/usr.bin/ztest/Makefile cddl/usr.bin/ztest/Makefile
 +	-L${.CURDIR}/../../lib/libzpool -L${.CURDIR}/../../lib/libavl -L/lib -L/usr/lib
  
  .include <bsd.prog.mk>
-diff -ru cddl.orig/usr.sbin/zdb/Makefile cddl/usr.sbin/zdb/Makefile
---- cddl.orig/usr.sbin/zdb/Makefile	2008-06-22 10:02:30 -0300
-+++ cddl/usr.sbin/zdb/Makefile	2008-06-22 10:13:31 -0300
-@@ -19,5 +19,7 @@
- DPADD=	${LIBM} ${LIBNVPAIR} ${LIBUMEM} ${LIBZPOOL} \
- 	${LIBPTHREAD} ${LIBZ} ${LIBAVL}
- LDADD=	-lm -lnvpair -lumem -lzpool -lpthread -lz -lavl
-+LDFLAGS+=-L${.CURDIR}/../../lib/libnvpair -L${.CURDIR}/../../lib/libumem \
-+	-L${.CURDIR}/../../lib/libzpool -L${.CURDIR}/../../lib/libavl  -L/lib -L/usr/lib
- 
- .include <bsd.prog.mk>
 diff -ru cddl.orig/usr.bin/Makefile.inc cddl/usr.bin/Makefile.inc
 --- cddl.orig/usr.bin/Makefile.inc   2009-01-10 07:21:10 +0000
 +++ cddl/usr.bin/Makefile.inc        2009-01-10 07:18:55 +0000
@@ -100,3 +90,25 @@ diff -ru cddl.orig/usr.bin/Makefile.inc cddl/usr.bin/Makefile.inc
 +LDFLAGS+=	-L${.CURDIR}/../../lib/libctf
  
  .include "../Makefile.inc"
+--- cddl.orig/usr.sbin/zdb/Makefile	2010-03-11 13:19:48 +0100
++++ cddl/usr.sbin/zdb/Makefile	2010-03-11 13:20:08 +0100
+@@ -22,6 +22,8 @@
+ DPADD=	${LIBAVL} ${LIBGEOM} ${LIBM} ${LIBNVPAIR} ${LIBPTHREAD} ${LIBUMEM} \
+ 	${LIBUUTIL} ${LIBZ} ${LIBZFS} ${LIBZPOOL}
+ LDADD=	-lavl -lgeom -lm -lnvpair -lpthread -lumem -luutil -lz -lzfs -lzpool
++LDFLAGS+=-L${.CURDIR}/../../lib/libnvpair -L${.CURDIR}/../../lib/libumem \
++	-L${.CURDIR}/../../lib/libzpool -L${.CURDIR}/../../lib/libavl -L${.CURDIR}/../../lib/libuutil -L${.CURDIR}/../../lib/libzfs
+ 
+ CSTD=	c99
+ 
+--- cddl.orig/usr.bin/zinject/Makefile	2010-03-11 13:30:32 +0100
++++ cddl/usr.bin/zinject/Makefile	2010-03-11 13:33:27 +0100
+@@ -21,5 +21,8 @@
+ DPADD=	${LIBAVL} ${LIBGEOM} ${LIBM} ${LIBNVPAIR} ${LIBUMEM} ${LIBUUTIL} \
+ 	${LIBZFS} ${LIBZPOOL} ${LIBUUTIL}
+ LDADD=	-lavl -lgeom -lm -lnvpair -lumem -luutil -lzfs -lzpool
++LDFLAGS+= -L${.CURDIR}/../../lib/libavl -L${.CURDIR}/../../lib/libnvpair \
++	-L${.CURDIR}/../../lib/libumem -L${.CURDIR}/../../lib/libuutil \
++	-L${.CURDIR}/../../lib/libzfs -L${.CURDIR}/../../lib/libzpool
+ 
+ .include <bsd.prog.mk>
