@@ -34,8 +34,8 @@ src_unpack() {
 		"${S}/conf/newvers.sh"
 
 	# __FreeBSD_cc_version comes from FreeBSD's gcc.
-	# on 7.0-RELEASE it's 700003.
-	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=700004:g" \
+	# on 8.0-RELEASE it's 800001.
+	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=800001:g" \
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die "Couldn't set __FreeBSD_cc_version"
 
