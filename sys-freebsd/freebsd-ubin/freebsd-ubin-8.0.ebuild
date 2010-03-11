@@ -73,7 +73,7 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar
 	dig hesinfo nslookup nsupdate host
 	rsh rlogin rusers rwho ruptime
 	compile_et lex vi smbutil file vacation nc ftp telnet
-	c99 c89
+	c99 c89 ar
 	whois tftp"
 
 pkg_preinst() {
