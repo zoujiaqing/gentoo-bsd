@@ -74,7 +74,8 @@ REMOVE_SUBDIRS="
 	tcpdump ndp inetd
 	wpa/wpa_supplicant wpa/hostapd wpa/hostapd_cli wpa/wpa_cli wpa/wpa_passphrase
 	zic amd
-	pkg_install freebsd-update"
+	pkg_install freebsd-update
+	mtree"
 
 src_prepare() {
 	if ! use build; then
