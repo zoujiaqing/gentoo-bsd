@@ -85,13 +85,6 @@ src_prepare() {
 	fi
 }
 
-src_compile() {
-	strip-flags
-	append-flags -I "${WORKDIR}/sys"
-
-	NOFLAGSTRIP="yes" freebsd_src_compile
-}
-
 src_install() {
 	# By creating these directories we avoid having to do a
 	# more complex hack
