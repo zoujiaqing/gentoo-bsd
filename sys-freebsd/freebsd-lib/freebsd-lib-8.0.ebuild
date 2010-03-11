@@ -139,8 +139,6 @@ src_prepare() {
 	sed -i.bak -e 's:hesiod.c::' -e 's:hesiod.3::' \
 	"${WORKDIR}"/lib/libc/net/Makefile.inc || die
 
-	# Apply this patch for Gentoo/FreeBSD/SPARC64 to build correctly
-	# from catalyst, then don't do anything else
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
@@ -189,9 +187,6 @@ src_compile() {
 	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
-
-	# Don't use ssp until properly fixed
-	#append-flags $(test-flags -fno-stack-protector -fno-stack-protector-all)
 
 	# Bug #270098
 	append-flags $(test-flags -fno-strict-aliasing)
