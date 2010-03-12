@@ -92,14 +92,14 @@ src_prepare() {
 	use build || ln -s "/usr/src/sys-${RV}" "${WORKDIR}/sys"
 
 	# Rename manpage for renamed cmp
-	mv "${S}"/cmp/cmp.1 "${S}"/cmp/bsdcmp.1
+	mv "${S}"/cmp/cmp.1 "${S}"/cmp/bsdcmp.1 || die
 	# Rename manpage for renamed ar
-	mv "${S}"/ar/ar.1 "${S}"/ar/freebsd-ar.1
+	mv "${S}"/ar/ar.1 "${S}"/ar/freebsd-ar.1 || die
 	# Fix whereis(1) manpath search.
 	sed -i -e 's:"manpath -q":"manpath":' "${S}/whereis/pathnames.h"
 
 	# Build a dynamic make
-	sed -i -e '/^NO_SHARED/ s/^/#/' "${S}"/make/Makefile
+	sed -i -e '/^NO_SHARED/ s/^/#/' "${S}"/make/Makefile || die
 
 	# Disable it here otherwise our patch wont apply
 	use ar || dummy_mk ar
@@ -116,15 +116,15 @@ src_install() {
 	done
 
 	for pamdfile in login passwd su; do
-		newpamd "${FILESDIR}/${pamdfile}.1.pamd" ${pamdfile}
+		newpamd "${FILESDIR}/${pamdfile}.1.pamd" ${pamdfile} || die
 	done
 
 	cd "${WORKDIR}/etc"
 	insinto /etc
-	doins remote phones opieaccess fbtab
+	doins remote phones opieaccess fbtab || die
 
 	exeinto /etc/cron.daily
-	newexe "${FILESDIR}/locate-updatedb-cron" locate.updatedb
+	newexe "${FILESDIR}/locate-updatedb-cron" locate.updatedb || die
 }
 
 pkg_postinst() {
