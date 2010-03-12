@@ -47,12 +47,6 @@ src_prepare() {
 	ln -s /usr/include "${WORKDIR}/include"
 }
 
-src_compile() {
-	NOSSP_FLAGS="$(test-flags -fno-stack-protector -fno-stack-protector-all)"
-	export NOSSP_FLAGS
-	freebsd_src_compile
-}
-
 src_install() {
 	freebsd_src_install
 
