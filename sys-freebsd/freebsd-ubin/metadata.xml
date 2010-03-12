@@ -10,5 +10,9 @@
       Build libraries and tools to work with NetWare protocols (IPX
       and NCP).
     </flag>
+	<flag name='ar'>
+	  Build FreeBSD's ar and ranlib replacements based on libarchive. The
+	  toolchain will still use binutils' version but you can play with it.
+	</flag>
   </use>
 </pkgmetadata>

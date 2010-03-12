@@ -22,6 +22,7 @@ SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
 	ssl? ( dev-libs/openssl )
 	kerberos? ( virtual/krb5 )
+	ar? ( app-arch/libarchive )
 	virtual/pam
 	sys-libs/zlib
 	!dev-util/csup"
@@ -37,26 +38,15 @@ RDEPEND="${RDEPEND}
 
 S="${WORKDIR}/usr.bin"
 
-IUSE="atm audit bluetooth ipv6 kerberos netware nis ssl usb build"
-
-pkg_setup() {
-	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
-	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
-	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "
-	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
-	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
-	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
-	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
-	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
-}
+IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build"
 
 # List of patches to apply
 PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-6.0-fixmakefiles.patch"
 	"${FILESDIR}/${PN}-setXid.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
-	"${FILESDIR}/${PN}-6.0-kdump-ioctl.patch" )
+	"${FILESDIR}/${PN}-6.0-kdump-ioctl.patch"
+	"${FILESDIR}/${PN}-8.0-bsdar.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -74,8 +64,20 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	dig hesinfo nslookup nsupdate host
 	rsh rlogin rusers rwho ruptime
 	compile_et lex vi smbutil file vacation nc ftp telnet
-	c99 c89 ar
+	c99 c89
 	whois tftp"
+
+pkg_setup() {
+	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
+	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
+	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "
+	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
+	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
+	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
+	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
+	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
+}
 
 pkg_preinst() {
 	# bison installs a /usr/bin/yacc symlink ...
@@ -91,11 +93,16 @@ src_prepare() {
 
 	# Rename manpage for renamed cmp
 	mv "${S}"/cmp/cmp.1 "${S}"/cmp/bsdcmp.1
+	# Rename manpage for renamed ar
+	mv "${S}"/ar/ar.1 "${S}"/ar/freebsd-ar.1
 	# Fix whereis(1) manpath search.
 	sed -i -e 's:"manpath -q":"manpath":' "${S}/whereis/pathnames.h"
 
 	# Build a dynamic make
 	sed -i -e '/^NO_SHARED/ s/^/#/' "${S}"/make/Makefile
+
+	# Disable it here otherwise our patch wont apply
+	use ar || dummy_mk ar
 }
 
 src_install() {
