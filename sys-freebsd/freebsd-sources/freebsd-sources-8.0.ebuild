@@ -50,10 +50,6 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-7.1-includes.patch"
 	epatch "${FILESDIR}/${PN}-8.0-zfs.patch"
 
-	# Disable SSP for the kernel
-	grep -Zlr -- -ffreestanding "${S}" | xargs -0 sed -i -e \
-		"s:-ffreestanding:-ffreestanding $(test-flags -fno-stack-protector -fno-stack-protector-all):g"
-
 	# By adding -DGENTOO_LIVECD to CFLAGS activate this stub
 	# vop_whiteout to tmpfs, so it can be used as an overlay
 	# unionfs filesystem over the cd9660 readonly filesystem.
