@@ -62,11 +62,10 @@ src_install() {
 	# Needed by ldconfig:
 	keepdir /var/run
 
-	# Do we need pccard.conf if we have devd?
 	# Maybe ship our own sysctl.conf so things like radvd work out of the box.
 	cd "${WORKDIR}/etc/"
 	insinto /etc
-	doins defaults/pccard.conf minfree sysctl.conf
+	doins minfree sysctl.conf
 
 	# initd script for idmapd
 	newinitd "${FILESDIR}/idmapd.initd" idmapd
