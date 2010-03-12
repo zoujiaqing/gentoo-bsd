@@ -9,8 +9,9 @@ inherit bsdmk freebsd
 DESCRIPTION="FreeBSD's rescue binaries"
 SLOT="0"
 KEYWORDS="~x86-fbsd"
+LICENSE="BSD zfs? ( CDDL )"
 
-IUSE="atm nis"
+IUSE="atm nis zfs"
 
 SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${CONTRIB}.tar.bz2
@@ -22,7 +23,7 @@ SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${SYS}.tar.bz2
 		mirror://gentoo/${LIBEXEC}.tar.bz2
 		mirror://gentoo/${RESCUE}.tar.bz2
-		mirror://gentoo/${CDDL}.tar.bz2"
+		zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
 
 RDEPEND=""
 DEPEND="sys-devel/flex
@@ -37,6 +38,7 @@ S="${WORKDIR}/rescue"
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} NO_ATM= "
 	use nis || mymakeopts="${mymakeopts} NO_NIS= "
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 }
 
 src_prepare() {
