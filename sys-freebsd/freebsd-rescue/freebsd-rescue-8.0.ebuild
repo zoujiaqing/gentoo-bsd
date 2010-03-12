@@ -21,10 +21,13 @@ SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${GNU}.tar.bz2
 		mirror://gentoo/${SYS}.tar.bz2
 		mirror://gentoo/${LIBEXEC}.tar.bz2
-		mirror://gentoo/${RESCUE}.tar.bz2"
+		mirror://gentoo/${RESCUE}.tar.bz2
+		mirror://gentoo/${CDDL}.tar.bz2"
 
 RDEPEND=""
 DEPEND="sys-devel/flex
+	>=app-arch/libarchive-2.7.1[static-libs]
+	dev-util/pkgconfig
 	=sys-freebsd/freebsd-lib-${RV}*[atm?]
 	=sys-freebsd/freebsd-sources-${RV}*
 	=sys-freebsd/freebsd-mk-defs-${RV}*"
@@ -39,6 +42,6 @@ pkg_setup() {
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
 	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}"-5.4-gentoo.patch
+	epatch "${FILESDIR}/${PN}"-8.0-pkgconfig_static_libarchive.patch
 	epatch "${FILESDIR}/${PN}"-7.1-zlib.patch
 }
