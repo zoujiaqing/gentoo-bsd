@@ -80,11 +80,11 @@ src_install() {
 
 	doperiodic security \
 		security/*.ipfwlimit \
-		security/*.ip6fwlimit \
-		security/*.ip6fwdenied \
-		security/*.ipfwdenied
+		security/*.ipfwdenied || die
 
-	use ipfilter && doperiodic security \
-		security/*.ipf6denied \
-		security/*.ipfdenied
+	use ipfilter && { doperiodic security \
+		security/*.ipfdenied || die ; }
+
+	use pf && { doperiodic security \
+		security/*.pfdenied || die ; }
 }
