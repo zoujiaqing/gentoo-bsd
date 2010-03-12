@@ -4,7 +4,7 @@
 
 EAPI=2
 
-inherit flag-o-matic bsdmk freebsd
+inherit bsdmk freebsd
 
 DESCRIPTION="FreeBSD sbin utils"
 KEYWORDS="~sparc-fbsd ~x86-fbsd"
@@ -43,9 +43,6 @@ pkg_setup() {
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
 	use pf || mymakeopts="${mymakeopts} WITHOUT_PF= "
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL="
-
-	# O3 breaks this, apparently
-	replace-flags -O3 -O2
 }
 
 REMOVE_SUBDIRS="dhclient pfctl pflogd rcorder"
