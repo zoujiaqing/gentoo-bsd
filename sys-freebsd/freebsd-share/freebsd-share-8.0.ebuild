@@ -22,7 +22,7 @@ SRC_URI="mirror://gentoo/${SHARE}.tar.bz2
 
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 		=sys-freebsd/freebsd-sources-${RV}*"
-RDEPEND=""
+RDEPEND="sys-apps/miscfiles"
 
 RESTRICT="strip"
 
@@ -38,7 +38,8 @@ pkg_setup() {
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
 
 PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
-	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch" )
+	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
+	"${FILESDIR}/${PN}-8.0-gnu-miscfiles.patch" )
 
 src_unpack() {
 	freebsd_src_unpack
