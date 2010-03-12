@@ -7,7 +7,7 @@ EAPI=2
 inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs
 
 DESCRIPTION="FreeBSD's base system libraries"
-SLOT="7.0"
+SLOT="0"
 KEYWORDS="~sparc-fbsd ~x86-fbsd"
 
 # Crypto is needed to have an internal OpenSSL header
