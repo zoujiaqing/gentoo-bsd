@@ -36,8 +36,8 @@ DEPEND="sys-devel/flex
 S="${WORKDIR}/rescue"
 
 pkg_setup() {
-	use atm || mymakeopts="${mymakeopts} NO_ATM= "
-	use nis || mymakeopts="${mymakeopts} NO_NIS= "
+	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
+	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 }
 
