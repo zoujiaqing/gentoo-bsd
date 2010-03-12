@@ -8,7 +8,7 @@
 +FILES=	bsd-family-tree committers-doc.dot committers-ports.dot \
  	committers-src.dot eqnchar flowers init.ee \
 -	iso3166 iso639 latin1 man.template mdoc.template operator pci_vendors \
-+	iso3166 iso639 man.template mdoc.template operator pci_vendors \
++	iso3166 iso639 man.template mdoc.template pci_vendors \
  	scsi_modes usb_hid_usages usbdevs
  
  NO_OBJ=
