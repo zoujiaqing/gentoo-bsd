@@ -308,17 +308,6 @@ src_install() {
 	dosym libthr.a /usr/${mylibdir}/libc_r.a
 	dosym libthr.so /usr/${mylibdir}/libc_r.so
 
-	# Add symlink (-> libthr) so previously built binaries still work.
-	dosym libthr.so.3 /${mylibdir}/libpthread.so.2
-	dosym libthr.so.3 /${mylibdir}/libc_r.so.6
-
-	# Compatibility symlinks to run FreeBSD 5.x binaries (ABI is mostly
-	# identical, remove when problems will actually happen)
-	dosym /lib/libc.so.7 /usr/${mylibdir}/libc.so.6
-	dosym /lib/libc.so.6 /usr/${mylibdir}/libc.so.5
-	dosym /lib/libm.so.4 /usr/${mylibdir}/libm.so.3
-	dosym /lib/libm.so.5 /usr/${mylibdir}/libm.so.4
-
 	# install libstand files
 	dodir /usr/include/libstand
 	insinto /usr/include/libstand
