@@ -62,13 +62,6 @@ src_install() {
 	# Needed by ldconfig:
 	keepdir /var/run
 
-	# Allow users to use ping and other commands
-	dodir /bin
-	mv "${D}/sbin/ping" "${D}/bin/" || die "mv failed"
-
-	# ext2fs can mount ext3, you just don't get the journalling
-	dosym mount_ext2fs sbin/mount_ext3
-
 	# Do we need pccard.conf if we have devd?
 	# Maybe ship our own sysctl.conf so things like radvd work out of the box.
 	cd "${WORKDIR}/etc/"
