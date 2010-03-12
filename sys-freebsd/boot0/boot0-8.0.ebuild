@@ -2,7 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/sys-freebsd/boot0/boot0-7.2.ebuild,v 1.1 2009/05/22 11:08:14 aballier Exp $
 
-inherit bsdmk freebsd
+EAPI=2
+
+inherit bsdmk freebsd flag-o-matic
 
 DESCRIPTION="FreeBSD's bootloader"
 SLOT="0"
@@ -18,16 +20,19 @@ DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 
 S="${WORKDIR}/sys/boot"
 
-PATCHES=( "${FILESDIR}/boot0-7.0-gentoo.patch" )
-
-src_unpack() {
-	freebsd_src_unpack
-
-	grep -lr --null -- -ffreestanding "${S}" | xargs -0 sed -i -e \
-		"s:-ffreestanding:-ffreestanding $(test-flags -fno-stack-protector -fno-stack-protector-all):g" || die
+src_prepare() {
 	sed -e '/-fomit-frame-pointer/d' -e '/-mno-align-long-strings/d' \
 		-i "${S}"/i386/boot2/Makefile \
-		-i "${S}"/i386/gptboot/Makefile || die
+		-i "${S}"/i386/gptboot/Makefile \
+		-i "${S}"/i386/gptzfsboot/Makefile \
+		-i "${S}"/i386/zfsboot/Makefile || die
+}
+
+src_compile() {
+	strip-flags
+	append-flags "-I/usr/include/libstand/"
+	append-flags "-fno-strict-aliasing"
+	NOFLAGSTRIP="yes" freebsd_src_compile
 }
 
 src_install() {
