@@ -9,6 +9,8 @@ inherit bsdmk freebsd flag-o-matic pam
 DESCRIPTION="FreeBSD's base system source for /usr/bin"
 SLOT="0"
 KEYWORDS="~sparc-fbsd ~x86-fbsd"
+IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build zfs"
+LICENSE="BSD zfs? ( CDDL )"
 
 SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${CONTRIB}.tar.bz2
@@ -16,7 +18,7 @@ SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
 		mirror://gentoo/${ETC}.tar.bz2
 		mirror://gentoo/${BIN}.tar.bz2
 		mirror://gentoo/${INCLUDE}.tar.bz2
-		mirror://gentoo/${CDDL}.tar.bz2
+		zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )
 		build? ( mirror://gentoo/${SYS}.tar.bz2 )"
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
@@ -38,9 +40,6 @@ RDEPEND="${RDEPEND}
 
 S="${WORKDIR}/usr.bin"
 
-IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build"
-
-# List of patches to apply
 PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-6.0-fixmakefiles.patch"
 	"${FILESDIR}/${PN}-setXid.patch"
@@ -77,6 +76,7 @@ pkg_setup() {
 	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 }
 
 pkg_preinst() {
