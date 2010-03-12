@@ -65,7 +65,7 @@ src_install() {
 	# Maybe ship our own sysctl.conf so things like radvd work out of the box.
 	cd "${WORKDIR}/etc/"
 	insinto /etc
-	doins minfree sysctl.conf
+	doins minfree sysctl.conf || die
 
 	# initd script for idmapd
 	newinitd "${FILESDIR}/idmapd.initd" idmapd
