@@ -282,7 +282,7 @@ src_install() {
 		cd "${WORKDIR}/gnu/lib/libssp/"
 		$(freebsd_get_bmake) ${mymakeopts} DESTDIR="${D}" install NO_MAN= \
 			INCLUDEDIR="/usr/${CTARGET}/usr/include" \
-			SHLIBDIR="/Usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install ssp failed"
+			SHLIBDIR="/usr/${CTARGET}/lib" LIBDIR="/usr/${CTARGET}/usr/lib" || die "Install ssp failed"
 
 		dosym "usr/include" "/usr/${CTARGET}/sys-include"
 	else
