@@ -40,7 +40,7 @@ PROVIDE="virtual/logger"
 
 S="${WORKDIR}/usr.sbin"
 
-IUSE="acpi atm audit bluetooth ipv6 isdn minimal netware nis pam ssl tcpd usb build"
+IUSE="acpi atm audit bluetooth floppy ipv6 isdn minimal netware nis pam ssl tcpd usb build"
 
 pkg_setup() {
 	# Release crunch is something like minimal. It seems to remove everything
@@ -58,6 +58,7 @@ pkg_setup() {
 	use pam || mymakeopts="${mymakeopts} WITHOUT_PAM_SUPPORT= "
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
+	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
 
 	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= "
 }
