@@ -68,6 +68,15 @@ bsd-post_src_unpack() {
 	done
 }
 
-profile-post_src_unpack() { bsd-post_src_unpack ; }
-	post_src_unpack() { bsd-post_src_unpack ; }
-
+if [[ -n $EAPI ]] ; then
+	case "$EAPI" in
+		0|1)
+			profile-post_src_unpack() { bsd-post_src_unpack ; }
+			post_src_unpack() { bsd-post_src_unpack ; }
+			;;
+		*)
+			profile_post_src_prepare() { bsd-post_src_unpack ; }
+			post_src_prepare() { bsd-post_src_unpack ; }
+			;;
+	esac
+fi
