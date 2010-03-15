@@ -29,8 +29,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		hesiod? ( net-dns/hesiod )
 		kerberos? ( virtual/krb5 )
 		usb? ( !dev-libs/libusb )
-		!sys-freebsd/freebsd-headers
-		dev-libs/libelf"
+		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
 		=sys-freebsd/freebsd-sources-${RV}*
