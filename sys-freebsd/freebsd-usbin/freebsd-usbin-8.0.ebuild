@@ -27,6 +27,7 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 	build? ( sys-apps/baselayout )
 	ssl? ( dev-libs/openssl )
 	tcpd? ( sys-apps/tcp-wrappers )
+	dev-libs/libelf
 	dev-libs/libedit
 	net-libs/libpcap"
 DEPEND="${RDEPEND}
