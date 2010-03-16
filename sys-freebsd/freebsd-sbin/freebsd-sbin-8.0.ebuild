@@ -63,9 +63,10 @@ src_install() {
 	keepdir /var/run
 
 	# Maybe ship our own sysctl.conf so things like radvd work out of the box.
+	# New wireless config method requires regdomain.xml in /etc
 	cd "${WORKDIR}/etc/"
 	insinto /etc
-	doins minfree sysctl.conf || die
+	doins minfree sysctl.conf regdomain.xml || die
 
 	# initd script for idmapd
 	newinitd "${FILESDIR}/idmapd.initd" idmapd
