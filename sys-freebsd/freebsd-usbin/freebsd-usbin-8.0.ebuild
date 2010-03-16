@@ -122,7 +122,6 @@ EOS
 
 	cd "${WORKDIR}/etc"
 	doins apmd.conf syslog.conf newsyslog.conf nscd.conf || die
-	use usb && doins usbd.conf
 
 	insinto /etc/ppp
 	doins ppp/ppp.conf || die
