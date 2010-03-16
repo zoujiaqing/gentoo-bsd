@@ -49,8 +49,8 @@ src_install() {
 	mkinstall || die "libdialog install failed"
 
 	cd "${S}/usr.bin/sort"
-	mkinstall DESTDIR="${D}/bin/" || die "libdialog install failed"
+	mkinstall BINDIR="/bin/" || die "libdialog install failed"
 
 	cd "${S}/usr.bin/patch"
-	mkinstall DESTDIR="${D}/usr/bin/" || die "libdialog install failed"
+	mkinstall BINDIR="/usr/bin/" || die "libdialog install failed"
 }
