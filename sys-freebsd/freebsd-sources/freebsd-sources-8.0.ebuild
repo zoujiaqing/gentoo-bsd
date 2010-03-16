@@ -12,7 +12,7 @@ IUSE="symlink"
 
 SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 
-RDEPEND=">=sys-freebsd/freebsd-mk-defs-7.0"
+RDEPEND=">=sys-freebsd/freebsd-mk-defs-8.0"
 DEPEND=""
 
 RESTRICT="strip binchecks"
