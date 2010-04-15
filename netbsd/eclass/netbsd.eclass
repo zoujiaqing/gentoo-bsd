@@ -1,11 +1,11 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # Gentoo/NetBSD eclass
-# Patrice Clement <clement.patrice@gmail.com>
+# Patrice Clement <charlieroot@free.fr>
 inherit bsdmk
 
 # @ECLASS: netbsd.eclass
-# @MAINTAINER: clement.patrice@gmail.com
+# @MAINTAINER: charlieroot@free.fr
 # @BLURB: functions and environment variables used to set up dirs, paths, names in ebuilds
 # @DESCRIPTION:
 # The netbsd eclass contains a suite of functions and environment variables used to setup many

@@ -1,7 +1,7 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # Gentoo/NetBSD base system include headers
-# Patrice Clement <clement.patrice@gmail.com>
+# Patrice Clement <charlieroot@free.fr>
 inherit netbsd bsdmk
 
 DESCRIPTION="Base system include files (/usr/include) for NetBSD 5.0"

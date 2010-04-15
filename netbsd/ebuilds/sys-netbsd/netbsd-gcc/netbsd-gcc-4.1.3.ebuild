@@ -1,7 +1,7 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # Gentoo/NetBSD GNU Compiler Collection 4.1.3 ebuild
-# Patrice Clement <clement.patrice@gmail.com>
+# Patrice Clement <charlieroot@free.fr>
 inherit netbsd
 
 DESCRIPTION="The GNU Compiler Collection for NetBSD 5.0. Default supported languages frontend: C, C++, Objective-C."

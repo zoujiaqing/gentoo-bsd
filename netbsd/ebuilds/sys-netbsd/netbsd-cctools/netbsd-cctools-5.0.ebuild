@@ -1,7 +1,7 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # Gentoo/NetBSD cross-compiling tools needed to build, compile and install NetBSD system parts
-# Patrice Clement <clement.patrice@gmail.com>
+# Patrice Clement <charlieroot@free.fr>
 inherit netbsd
 
 DESCRIPTION="Build, compile and install tools to compile NetBSD 5.0 system."

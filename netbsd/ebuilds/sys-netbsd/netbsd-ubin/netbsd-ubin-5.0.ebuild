@@ -1,7 +1,7 @@
 # Copyright 1999-2009 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # Gentoo/NetBSD usr/bin base system
-# Patrice Clement <clement.patrice@gmail.com>
+# Patrice Clement <charlieroot@free.fr>
 inherit eutils netbsd
 
 DESCRIPTION="NetBSD 5.0 usr/bin base system"
