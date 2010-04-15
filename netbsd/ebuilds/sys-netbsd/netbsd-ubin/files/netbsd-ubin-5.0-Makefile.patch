@@ -1,0 +1,39 @@
+--- Makefile.orig	2008-10-29 17:49:33.000000000 +0100
++++ Makefile	2009-08-15 01:27:14.000000000 +0200
+@@ -5,26 +5,26 @@
+ 
+ SUBDIR= apply apropos asa at audio awk \
+ 	banner basename biff bthset btkey btpin \
+-	bzip2 bzip2recover cal calendar cap_mkdb cdplay \
+-	checknr chflags chpass cksum cmp col colcrt colrm \
+-	column comm compress config crontab crunch csplit ctags cut \
++	cal calendar cap_mkdb cdplay \
++	checknr chflags chpass cksum col colcrt colrm \
++	column comm compress config crunch csplit ctags cut \
+ 	deroff db dirname du \
+ 	eject elf2aout elf2ecoff env error expand extattr \
+-	false fdformat fgen file find finger fmt fold fpr from \
++	false fdformat fgen find finger fmt fold fpr from \
+ 	fsplit fstat ftp gcore genassym gencat getconf getent getopt gprof \
+-	gzip head hexdump iconv id indent innetgr ipcrm ipcs join jot \
+-	kdump ktrace ktruss lam last lastcomm ldd leave less \
+-	lex locale locate lock logger login logname look lorder m4 \
++	head hexdump iconv id indent innetgr ipcrm ipcs join jot \
++	kdump ktrace ktruss lam last lastcomm ldd leave \
++	locale locate lock logger login logname look lorder m4 \
+ 	machine mail make man menuc mesg midiplay mixerctl mkcsmapper \
+ 	mkdep mkesdb mkfifo mklocale mkstr mktemp moduli msgc msgs \
+ 	netgroup netstat newgrp newsyslog nfsstat nice nl nohup nvi \
+ 	pagesize passwd paste patch pathchk pkill pmap pmc pr \
+ 	printenv printf progress pwhash qsubst quota radioctl rdist \
+ 	renice rev revoke rfcomm_sppd rlogin rpcgen rpcinfo rs rsh rup \
+-	ruptime rusers rwall rwho script sdiff sdpquery sed seq shar shlock \
++	ruptime rusers rwall rwho script sdpquery sed seq shar shlock \
+ 	showmount shuffle sockstat soelim sort spell split stat su systat \
+-	tail talk tcopy tee telnet tftp time tip tn3270 touch tput \
+-	tr true tset tsort tty ul uname unexpand unifdef \
++	tail talk tcopy tee telnet tftp time tip tn3270 touch \
++	tr true tsort tty ul uname unexpand unifdef \
+ 	uniq units unvis usbhidaction usbhidctl users utoppya \
+ 	uudecode uuencode uuidgen vacation vgrind vis vmstat vndcompress w \
+ 	wall wc what whatis whereis who whois window \

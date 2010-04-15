@@ -1,0 +1,13 @@
+--- Makefile.orig	2009-08-06 17:03:37.000000000 +0200
++++ Makefile	2009-08-06 17:10:21.000000000 +0200
+@@ -7,8 +7,8 @@
+ 
+ .if ${MKSHARE} != "no" || \
+ 	make(clean) || make(cleandir) || make(distclean) || make(obj)
+-SUBDIR=	atf dict doc examples legal man me misc mk \
+-	tabset termcap tmac wscons xml xsl zoneinfo
++SUBDIR=	atf dict doc examples legal me misc mk \
++	tmac wscons xml xsl zoneinfo
+ .if ${MKNLS} != "no"
+ SUBDIR+=i18n locale nls
+ .endif

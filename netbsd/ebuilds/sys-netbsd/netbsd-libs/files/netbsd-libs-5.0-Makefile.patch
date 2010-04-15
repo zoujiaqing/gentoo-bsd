@@ -1,0 +1,48 @@
+--- Makefile.orig	2009-07-09 16:34:44.000000000 +0200
++++ Makefile	2009-07-10 13:54:06.000000000 +0200
+@@ -4,19 +4,19 @@
+ .include <bsd.own.mk>
+ 
+ SUBDIR=	csu libc .WAIT libarch \
+-	libbsdmalloc libbluetooth libbz2 \
++	libbsdmalloc libbluetooth \
+ 	libcompat libcrypt \
+-	libcurses libevent libintl libkvm libl libm \
+-	libossaudio libpcap libpci libpmc libposix libprop libpthread \
++	libevent libintl libkvm libm \
++	libossaudio libpci libpmc libposix libprop libpthread \
+ 	libpthread_dbg libpuffs libresolv librmt librpcsvc librt libsdp \
+-	libterm libusbhid libutil libwrap liby libz
++	libusbhid libutil liby
+ 
+ .if (${MKATF} != "no")
+ SUBDIR+= libatf-c libatf-c++
+ .endif
+ 
+ # libform and libmenu need libcurses
+-SUBDIR+=	.WAIT libform libmenu 
++#SUBDIR+=	.WAIT libform libmenu 
+ 
+ .if (${MKSKEY} != "no")
+ SUBDIR+= libskey
+@@ -65,9 +65,9 @@
+ #==================== 1st library dependency barrier ====================
+ SUBDIR+=	.WAIT
+ 
+-SUBDIR+=	libedit		# depends on libterm
++#SUBDIR+=	libedit		# depends on libterm
+ 
+-SUBDIR+=	libmagic	# depends on libz
++#SUBDIR+=	libmagic	# depends on libz
+ 
+ SUBDIR+=	libradius	# depends on libcrypto - only if ${MKCRYPTO}
+ 
+@@ -92,7 +92,7 @@
+ # XXX dependency ordering requires considerable investigation.
+ # XXX Please preserve the order below so we know the order ISC links
+ # XXX them in in their Makefiles.
+-SUBDIR+= libbind9 libdns liblwres libisccfg libisccc libisc # dep. libpthread
++#SUBDIR+= libbind9 libdns liblwres libisccfg libisccc libisc # dep. libpthread
+ 
+ #==================== 2nd library dependency barrier ====================
+ SUBDIR+=	.WAIT
