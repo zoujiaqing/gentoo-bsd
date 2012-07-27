@@ -1,0 +1,133 @@
+diff -Nur catalyst-2.0.8.1.orig/modules/generic_stage_target.py catalyst-2.0.8.1/modules/generic_stage_target.py
+--- catalyst-2.0.8.1.orig/modules/generic_stage_target.py	2012-05-12 05:19:57.000000000 +0900
++++ catalyst-2.0.8.1/modules/generic_stage_target.py	2012-06-04 00:36:35.000000000 +0900
+@@ -1078,9 +1078,14 @@
+ 		if os.path.exists(self.settings["chroot_path"]+"/usr/local/portage"):
+ 			cmd("rm -rf "+self.settings["chroot_path"]+"/usr/local/portage",\
+ 				"Could not remove /usr/local/portage",env=self.env)
+-			cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
+-				"/etc/portage/make.conf",\
+-				"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++			if os.path.exists("/usr/bin/gsed"):
++				cmd("gsed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++					"/etc/portage/make.conf",\
++					"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++			else:
++				cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++					"/etc/portage/make.conf",\
++					"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
+ 
+ 		""" Clean up old and obsoleted files in /etc """
+ 		if os.path.exists(self.settings["stage_path"]+"/etc"):
+diff -Nur catalyst-2.0.8.1.orig/targets/stage1/stage1-chroot.sh catalyst-2.0.8.1/targets/stage1/stage1-chroot.sh
+--- catalyst-2.0.8.1.orig/targets/stage1/stage1-chroot.sh	2012-05-12 05:19:57.000000000 +0900
++++ catalyst-2.0.8.1/targets/stage1/stage1-chroot.sh	2012-06-04 00:36:35.000000000 +0900
+@@ -4,6 +4,7 @@
+ export clst_buildpkgs="$(/tmp/build.py)"
+ 
+ source /tmp/chroot-functions.sh
++sed_selector
+ 
+ # Setup our environment
+ BOOTSTRAP_USE="$(portageq envvar BOOTSTRAP_USE)"
+@@ -23,7 +24,7 @@
+ [ -e /etc/portage/make.conf ] && \
+ 	echo 'USE="${USE} -build"' >> /etc/portage/make.conf
+ run_merge "--oneshot --nodeps sys-apps/baselayout"
+-sed -i '/USE="${USE} -build"/d' /etc/portage/make.conf
++${SED} -i '/USE="${USE} -build"/d' /etc/portage/make.conf
+ 
+ # Next, we install the package manager
+ clst_root_path=/ setup_pkgmgr
+@@ -34,5 +35,5 @@
+ 	echo "USE=\"-* bindist build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"" \
+ 	>> /etc/portage/make.conf
+ run_merge "--oneshot ${clst_buildpkgs}"
+-sed -i "/USE=\"-* bindist build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
++${SED} -i "/USE=\"-* bindist build ${STAGE1_USE} ${clst_HOSTUSE}\"/d" \
+ 	/etc/portage/make.conf
+diff -Nur catalyst-2.0.8.1.orig/targets/stage1/stage1-preclean-chroot.sh catalyst-2.0.8.1/targets/stage1/stage1-preclean-chroot.sh
+--- catalyst-2.0.8.1.orig/targets/stage1/stage1-preclean-chroot.sh	2012-05-12 05:19:57.000000000 +0900
++++ catalyst-2.0.8.1/targets/stage1/stage1-preclean-chroot.sh	2012-06-04 00:36:35.000000000 +0900
+@@ -4,6 +4,8 @@
+ 
+ source /tmp/chroot-functions.sh
+ 
++sed_selector
++${SED} -i '/^PORTDIR_OVERLAY/d' /etc/portage/make.conf
+ update_env_settings
+ show_debug
+ 
+diff -Nur catalyst-2.0.8.1.orig/targets/support/chroot-functions.sh catalyst-2.0.8.1/targets/support/chroot-functions.sh
+--- catalyst-2.0.8.1.orig/targets/support/chroot-functions.sh	2012-05-12 05:19:57.000000000 +0900
++++ catalyst-2.0.8.1/targets/support/chroot-functions.sh	2012-06-04 00:38:07.000000000 +0900
+@@ -60,6 +60,7 @@
+ }
+ 
+ setup_myfeatures(){
++	sed_selector
+ 	setup_myemergeopts
+ 	export FEATURES="-news"
+ 	if [ -n "${clst_CCACHE}" ]
+@@ -84,7 +85,7 @@
+ 		else
+ 			clst_root_path=/ run_merge --oneshot --nodeps --noreplace sys-devel/distcc || exit 1
+ 		fi
+-		sed -i '/USE="${USE} -avahi -gtk -gnome"/d' /etc/portage/make.conf
++		${SED} -i '/USE="${USE} -avahi -gtk -gnome"/d' /etc/portage/make.conf
+ 		mkdir -p /etc/distcc
+ 		echo "${clst_distcc_hosts}" > /etc/distcc/hosts
+ 
+@@ -168,7 +169,8 @@
+ 	# Use --update or portage won't reinstall the same version.
+ 	[ -e /etc/portage/make.conf ] && echo 'USE="${USE} build"' >> /etc/portage/make.conf
+ 	run_merge --oneshot --nodeps --update sys-apps/portage
+-	sed -i '/USE="${USE} build"/d' /etc/portage/make.conf
++	sed_selector
++	${SED} -i '/USE="${USE} build"/d' /etc/portage/make.conf
+ }
+ 
+ cleanup_distcc() {
+@@ -234,7 +236,8 @@
+ 
+ make_destpath() {
+ 	# ROOT is / by default, so remove any ROOT= settings from make.conf
+-	sed -i '/ROOT=/d' /etc/portage/make.conf
++	sed_selector
++	${SED} -i '/ROOT=/d' /etc/portage/make.conf
+ 	export ROOT=/
+ 	if [ "${1}" != "/" -a -n "${1}" ] 
+ 	then
+@@ -410,6 +413,14 @@
+ Icon=text-editor" > /usr/share/applications/gentoo-handbook.desktop
+ }
+ 
++sed_selector() {
++	if [ -e "/usr/bin/gsed" ]; then
++		SED="gsed"
++	else
++		SED="sed"
++	fi
++}
++
+ # We do this everywhere, so why not put it in this script
+ run_default_funcs
+ 
+diff -Nur catalyst.orig-2.0.8.1/modules/stage1_target.py catalyst-2.0.8.1/modules/stage1_target.py
+--- catalyst-2.0.8.1.orig/modules/stage1_target.py	2012-06-04 00:43:34.000000000 +0900
++++ catalyst-2.0.8.1/modules/stage1_target.py	2012-06-04 00:50:19.000000000 +0900
+@@ -87,10 +87,14 @@
+ 		# stage_path/proc probably doesn't exist yet, so create it
+ 		if not os.path.exists(self.settings["stage_path"]+"/proc"):
+ 			os.makedirs(self.settings["stage_path"]+"/proc")
++		if not os.path.exists(self.settings["stage_path"]+"/dev"):
++			os.makedirs(self.settings["stage_path"]+"/dev")
+ 
+ 		# alter the mount mappings to bind mount proc onto it
+ 		self.mounts.append("/tmp/stage1root/proc")
+ 		self.mountmap["/tmp/stage1root/proc"]="/proc"
++		self.mounts.append("/tmp/stage1root/dev")
++		self.mountmap["/tmp/stage1root/dev"]="/dev"
+ 
+ 
+ def register(foo):
