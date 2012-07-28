@@ -1,0 +1,13 @@
+diff --git a/libschily/shlschily.mk b/libschily/shlschily.mk
+index 3280b39..ea92050 100644
+--- a/libschily/shlschily.mk
++++ b/libschily/shlschily.mk
+@@ -14,7 +14,7 @@ CPPOPTS +=	-Istdio
+ CPPOPTS +=	-DUSE_SCANSTACK	# Try to scan stack frames
+ CPPOPTS +=	-DPORT_ONLY	# Add missing funcs line snprintf for porting
+ include		Targets
+-LIBS=		-lc
++LIBS=		-lc $(LIB_INTL)
+ 
+ ###########################################################################
+ include		$(SRCROOT)/$(RULESDIR)/rules.shl
