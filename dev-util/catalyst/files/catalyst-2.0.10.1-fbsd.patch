@@ -1,27 +1,64 @@
-diff -Nur catalyst-2.0.8.1.orig/modules/generic_stage_target.py catalyst-2.0.8.1/modules/generic_stage_target.py
---- catalyst-2.0.8.1.orig/modules/generic_stage_target.py	2012-05-12 05:19:57.000000000 +0900
-+++ catalyst-2.0.8.1/modules/generic_stage_target.py	2012-06-04 00:36:35.000000000 +0900
-@@ -1078,9 +1078,14 @@
+diff -Nur catalyst-2.0.10.1.orig/modules/generic_stage_target.py catalyst-2.0.10.1/modules/generic_stage_target.py
+--- catalyst-2.0.10.1.orig/modules/generic_stage_target.py	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/modules/generic_stage_target.py	2012-07-28 22:14:36.000000000 +0900
+@@ -1075,9 +1075,15 @@
  		if os.path.exists(self.settings["chroot_path"]+"/usr/local/portage"):
  			cmd("rm -rf "+self.settings["chroot_path"]+"/usr/local/portage",\
  				"Could not remove /usr/local/portage",env=self.env)
 -			cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
 -				"/etc/portage/make.conf",\
 -				"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
-+			if os.path.exists("/usr/bin/gsed"):
-+				cmd("gsed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
-+					"/etc/portage/make.conf",\
-+					"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
-+			else:
-+				cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
-+					"/etc/portage/make.conf",\
-+					"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++			if os.path.exists(self.settings["chroot_path"]+"/etc/portage/make.conf"):
++				if os.path.exists("/usr/bin/gsed"):
++					cmd("gsed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++				else:
++					cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
  
  		""" Clean up old and obsoleted files in /etc """
  		if os.path.exists(self.settings["stage_path"]+"/etc"):
-diff -Nur catalyst-2.0.8.1.orig/targets/stage1/stage1-chroot.sh catalyst-2.0.8.1/targets/stage1/stage1-chroot.sh
---- catalyst-2.0.8.1.orig/targets/stage1/stage1-chroot.sh	2012-05-12 05:19:57.000000000 +0900
-+++ catalyst-2.0.8.1/targets/stage1/stage1-chroot.sh	2012-06-04 00:36:35.000000000 +0900
+diff -Nur catalyst-2.0.10.1.orig/modules/stage1_target.py catalyst-2.0.10.1/modules/stage1_target.py
+--- catalyst-2.0.10.1.orig/modules/stage1_target.py	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/modules/stage1_target.py	2012-07-28 22:14:36.000000000 +0900
+@@ -90,10 +90,14 @@
+ 		# stage_path/proc probably doesn't exist yet, so create it
+ 		if not os.path.exists(self.settings["stage_path"]+"/proc"):
+ 			os.makedirs(self.settings["stage_path"]+"/proc")
++		if not os.path.exists(self.settings["stage_path"]+"/dev"):
++			os.makedirs(self.settings["stage_path"]+"/dev")
+ 
+ 		# alter the mount mappings to bind mount proc onto it
+ 		self.mounts.append("/tmp/stage1root/proc")
+ 		self.mountmap["/tmp/stage1root/proc"]="/proc"
++		self.mounts.append("/tmp/stage1root/dev")
++		self.mountmap["/tmp/stage1root/dev"]="/dev"
+ 
+ 
+ def register(foo):
+diff -Nur catalyst-2.0.10.1.orig/modules/stage3_target.py catalyst-2.0.10.1/modules/stage3_target.py
+--- catalyst-2.0.10.1.orig/modules/stage3_target.py	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/modules/stage3_target.py	2012-07-28 22:17:10.000000000 +0900
+@@ -12,9 +12,13 @@
+ 	"""
+ 	def __init__(self,spec,addlargs):
+ 		self.required_values=[]
+-		self.valid_values=[]
++		self.valid_values=["chost"]
+ 		generic_stage_target.__init__(self,spec,addlargs)
+ 
++	def override_chost(self):
++		if self.settings.has_key("chost"):
++			self.settings["CHOST"]=list_to_string(self.settings["chost"])
++
+ 	def set_portage_overlay(self):
+ 		generic_stage_target.set_portage_overlay(self)
+ 		if self.settings.has_key("portage_overlay"):
+diff -Nur catalyst-2.0.10.1.orig/targets/stage1/stage1-chroot.sh catalyst-2.0.10.1/targets/stage1/stage1-chroot.sh
+--- catalyst-2.0.10.1.orig/targets/stage1/stage1-chroot.sh	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/targets/stage1/stage1-chroot.sh	2012-07-28 22:14:36.000000000 +0900
 @@ -4,6 +4,7 @@
  export clst_buildpkgs="$(/tmp/build.py)"
  
@@ -46,21 +83,21 @@ diff -Nur catalyst-2.0.8.1.orig/targets/stage1/stage1-chroot.sh catalyst-2.0.8.1
 -sed -i "/USE=\"-* bindist build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
 +${SED} -i "/USE=\"-* bindist build ${STAGE1_USE} ${clst_HOSTUSE}\"/d" \
  	/etc/portage/make.conf
-diff -Nur catalyst-2.0.8.1.orig/targets/stage1/stage1-preclean-chroot.sh catalyst-2.0.8.1/targets/stage1/stage1-preclean-chroot.sh
---- catalyst-2.0.8.1.orig/targets/stage1/stage1-preclean-chroot.sh	2012-05-12 05:19:57.000000000 +0900
-+++ catalyst-2.0.8.1/targets/stage1/stage1-preclean-chroot.sh	2012-06-04 00:36:35.000000000 +0900
+diff -Nur catalyst-2.0.10.1.orig/targets/stage1/stage1-preclean-chroot.sh catalyst-2.0.10.1/targets/stage1/stage1-preclean-chroot.sh
+--- catalyst-2.0.10.1.orig/targets/stage1/stage1-preclean-chroot.sh	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/targets/stage1/stage1-preclean-chroot.sh	2012-07-28 22:14:36.000000000 +0900
 @@ -4,6 +4,8 @@
  
  source /tmp/chroot-functions.sh
  
 +sed_selector
-+${SED} -i '/^PORTDIR_OVERLAY/d' /etc/portage/make.conf
++${SED} -i '/^PORTDIR_OVERLAY/d' /etc/make.conf
  update_env_settings
  show_debug
  
-diff -Nur catalyst-2.0.8.1.orig/targets/support/chroot-functions.sh catalyst-2.0.8.1/targets/support/chroot-functions.sh
---- catalyst-2.0.8.1.orig/targets/support/chroot-functions.sh	2012-05-12 05:19:57.000000000 +0900
-+++ catalyst-2.0.8.1/targets/support/chroot-functions.sh	2012-06-04 00:38:07.000000000 +0900
+diff -Nur catalyst-2.0.10.1.orig/targets/support/chroot-functions.sh catalyst-2.0.10.1/targets/support/chroot-functions.sh
+--- catalyst-2.0.10.1.orig/targets/support/chroot-functions.sh	2012-07-27 13:43:50.000000000 +0900
++++ catalyst-2.0.10.1/targets/support/chroot-functions.sh	2012-07-28 22:14:36.000000000 +0900
 @@ -60,6 +60,7 @@
  }
  
@@ -113,21 +150,3 @@ diff -Nur catalyst-2.0.8.1.orig/targets/support/chroot-functions.sh catalyst-2.0
  # We do this everywhere, so why not put it in this script
  run_default_funcs
  
-diff -Nur catalyst.orig-2.0.8.1/modules/stage1_target.py catalyst-2.0.8.1/modules/stage1_target.py
---- catalyst-2.0.8.1.orig/modules/stage1_target.py	2012-06-04 00:43:34.000000000 +0900
-+++ catalyst-2.0.8.1/modules/stage1_target.py	2012-06-04 00:50:19.000000000 +0900
-@@ -87,10 +87,14 @@
- 		# stage_path/proc probably doesn't exist yet, so create it
- 		if not os.path.exists(self.settings["stage_path"]+"/proc"):
- 			os.makedirs(self.settings["stage_path"]+"/proc")
-+		if not os.path.exists(self.settings["stage_path"]+"/dev"):
-+			os.makedirs(self.settings["stage_path"]+"/dev")
- 
- 		# alter the mount mappings to bind mount proc onto it
- 		self.mounts.append("/tmp/stage1root/proc")
- 		self.mountmap["/tmp/stage1root/proc"]="/proc"
-+		self.mounts.append("/tmp/stage1root/dev")
-+		self.mountmap["/tmp/stage1root/dev"]="/dev"
- 
- 
- def register(foo):
