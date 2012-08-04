@@ -31,6 +31,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		hesiod? ( net-dns/hesiod )
 		kerberos? ( virtual/krb5 )
 		usb? ( !dev-libs/libusb !dev-libs/libusbx )
+		userland_GNU? ( sys-apps/mtree )
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
 		!sys-libs/libutempter
