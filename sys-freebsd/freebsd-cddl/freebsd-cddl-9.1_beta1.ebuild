@@ -11,7 +11,7 @@ SLOT="0"
 KEYWORDS="~amd64-fbsd ~x86-fbsd"
 
 IUSE="build"
-LICENSE="CDDL"
+LICENSE="CDDL GPL-2"
 
 SRC_URI="mirror://gentoo/${P}.tar.bz2
 		mirror://gentoo/${CONTRIB}.tar.bz2
