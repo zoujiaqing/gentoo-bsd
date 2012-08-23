@@ -89,7 +89,6 @@ prepare(){
 		do
 			cd ${dir}
 			gsed -i "/${TARGETVER}/d" Manifest
-			rm *8.1*.ebuild
 			ls -1 *.ebuild > /dev/null 2>&1
 
 			if [ $? -eq 0 ] ; then
@@ -175,13 +174,17 @@ mk_stages(){
 	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
 }
 
-prepare
+prepare $1
+
 if [ ! -e "/var/tmp/catalyst/snapshots/portage-${WORKDATE}.tar.bz2" ] ; then
 	catalyst -C target=snapshot version_stamp=${WORKDATE} || exit 1
 fi
-if [ ! -e /var/tmp/catalyst/builds/default/stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}.tar.bz2 ] && [ "${OLDVER}" != "${TARGETVER}" ] ; then
+
+if [ ! -e "/var/tmp/catalyst/builds/default/stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}.tar.bz2" ] && [ "${OLDVER}" != "${TARGETVER}" ] ; then
 	upgrade_src_stage3
+	echo "upgrade done"
 fi
+
 mk_stages_tmp
 mk_stages
 
