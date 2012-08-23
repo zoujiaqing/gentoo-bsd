@@ -56,7 +56,7 @@ prepare(){
 	mv gentoo-bsd-* ${WORKDIR}/portage.bsd-overlay
 
 	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq =app-cdr/cdrtools-3.00 '<app-text/build-docbook-catalog-1.19' =dev-util/catalyst-2.0.10.1 =app-arch/libarchive-3.0.3 || exit 1
+	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' =dev-util/catalyst-2.0.10.1 =app-arch/libarchive-3.0.3 || exit 1
 	grep "^export MAKEOPTS" /etc/catalyst/catalystrc > /dev/null 2>&1
 	if [ $? -ne 0 ] ; then
 		echo "export MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/catalyst/catalystrc
