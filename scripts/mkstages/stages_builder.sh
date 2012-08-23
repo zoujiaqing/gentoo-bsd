@@ -1,9 +1,9 @@
 #!/bin/bash
 export TARGETVER="${TARGETVER:-9.1}"
-export MKSRC="${MKSRC:-beta1}"
+export MKSRC="${MKSRC:-rc1}"
 export WORKDATE="`date +%Y%m%d`"
 export ARCH="`uname -m`"
-OLDVER="9.0"
+OLDVER="${OLDVER:-9.0}"
 OVERLAY_SNAPSHOT="http://git.overlays.gentoo.org/gitweb/?p=proj/gentoo-bsd.git;a=snapshot;h=HEAD;sf=tgz"
 
 prepare(){
