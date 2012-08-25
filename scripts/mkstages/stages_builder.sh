@@ -138,6 +138,20 @@ upgrade_src_stage3(){
 	rm -rf ${WORKDIR}/stage3tmp
 }
 
+check_ecompressdir() {
+	# dirty solution
+	# /dev is still mounted; performing auto-bind-umount... 
+	local PID=`ps auxw | grep portage/bin/ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
+	if [ -n "${PID}" ] ; then
+		echo "kill ecompressdir"
+		kill -9 ${PID}
+		rm -rf "/var/tmp/catalyst/tmp/default/$1" || exit 1
+		return 1
+	else
+		return 0
+	fi
+}
+
 mk_stages_tmp() {
 	if [ "${OLDVER}" != "${TARGETVER}" ] ; then
 		local SOURCE_STAGE3="stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}"
@@ -146,32 +160,58 @@ mk_stages_tmp() {
 	fi
 
 	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${SOURCE_STAGE3} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-
-	local PID=`ps auxw | grep portage/bin/ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
-	kill -9 ${PID}
-	rm -rf /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage || exit 1
-
-	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${SOURCE_STAGE3} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${SOURCE_STAGE3} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
 
 	### Added when the library was upgraded
 	ln -s libmpfr.so.5 /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/tmp/stage1root/usr/lib/libmpfr.so.4 || exit 1
 
 
-	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
+
+	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
 }
 
 mk_stages(){
 	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
 
-	local PID=`ps auxw | grep portage/bin/ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
-	kill -9 ${PID}
-	rm -rf /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage || exit 1
+	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
 
-	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-
-	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
 }
 
 prepare $1
