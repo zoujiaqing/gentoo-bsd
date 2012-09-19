@@ -21,7 +21,8 @@ SRC_URI="mirror://gentoo/${LIB}.tar.bz2
 		mirror://gentoo/${INCLUDE}.tar.bz2
 		mirror://gentoo/${USBIN}.tar.bz2
 		mirror://gentoo/${GNU}.tar.bz2
-		mirror://gentoo/${SYS}.tar.bz2
+		build? (
+			mirror://gentoo/${SYS}.tar.bz2 )
 		zfs? (
 			mirror://gentoo/${CDDL}.tar.bz2 )"
 
@@ -162,7 +163,7 @@ src_prepare() {
 	sed -e 's/LDFLAGS/RAW_LDFLAGS/g' \
 		-i "${S}/csu/i386-elf/Makefile" \
 		-i "${S}/csu/ia64/Makefile" || die
-	if use build || has_version "<${CATEGORY}/${PF}" ; then
+	if use build; then
 		cd "${WORKDIR}"
 		# This patch has to be applied on ${WORKDIR}/sys, so we do it here since it
 		# shouldn't be a symlink to /usr/src/sys (which should be already patched)
@@ -240,7 +241,7 @@ is_native_abi() {
 
 # Do we need to bootstrap the csu and libssp_nonshared?
 need_bootstrap() {
-	is_crosscompile || use build || ! is_native_abi || has_version "<${CATEGORY}/${PF}"
+	is_crosscompile || use build || ! is_native_abi || has_version "<${CATEGORY}/${P}"
 }
 
 # Get the subdirs we are building.
