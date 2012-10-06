@@ -55,8 +55,10 @@ prepare(){
 	tar xzf bsd-overlay.tar.gz
 	mv gentoo-bsd-* ${WORKDIR}/portage.bsd-overlay
 
+	# <app-text/build-docbook-catalog-1.19, Bug 412201
+	# =app-arch/libarchive-3.0.3, Bug 421191
 	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' =dev-util/catalyst-2.0.10.1 =app-arch/libarchive-3.0.3 || exit 1
+	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' =dev-util/catalyst-2.0.11 =app-arch/libarchive-3.0.3 || exit 1
 	grep "^export MAKEOPTS" /etc/catalyst/catalystrc > /dev/null 2>&1
 	if [ $? -ne 0 ] ; then
 		echo "export MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/catalyst/catalystrc
@@ -69,7 +71,7 @@ prepare(){
 		cp -a ${WORKDIR}/portage.bsd-overlay/profiles/releases/freebsd-${TARGETVER} /usr/portage/profiles/releases/
 	fi
 
-	if [ -n "${MKSRC}" ] ; then
+	if [ "${MKSRC}" != "NONE" ] ; then
 		if [ "${MKSRC}" = "release" ] ; then
 			MY_MKSRC=""
 		else
