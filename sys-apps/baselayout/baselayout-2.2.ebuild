@@ -93,9 +93,16 @@ multilib_layout() {
 				# "lib" is a symlink, so need to convert to a dir
 				ewarn "Converting ${prefix}lib from a symlink to a dir"
 				rm -f "${prefix}lib" || die
-				if [ -d "${prefix}lib32" ] ; then
-					ewarn "Migrating ${prefix}lib32 to ${prefix}lib"
-					mv "${prefix}lib32" "${prefix}lib" || die
+				if use amd64-fbsd ; then
+					local bit=64
+				else
+					local bit=32
+				fi
+
+				if [ -d "${prefix}lib${bit}" ] && [ ! -L "${prefix}lib${bit}" ] ; then
+					ewarn "Migrating ${prefix}lib${bit} to ${prefix}lib"
+					LD_LIBRARY_PATH="${prefix}lib${bit}" mv "${prefix}lib${bit}" "${prefix}lib" || die
+					use amd64-fbsd && ln -s lib ${prefix}lib${bit}
 				else
 					mkdir -p "${prefix}lib" || die
 				fi
@@ -104,6 +111,22 @@ multilib_layout() {
 				# only symlinked the lib dir on systems where we moved it
 				# to "lib32" ...
 				case ${CHOST} in
+				x86_64*-freebsd*)
+					if [ -d "${prefix}lib64" ] && [ ! -L "${prefix}lib64" ] ; then
+						rm -f "${prefix}lib64"/.keep
+						if ! rmdir "${prefix}lib64" 2>/dev/null ; then
+							ewarn "You need to merge ${prefix}lib64 into ${prefix}lib"
+							die "non-empty dir found where there should be none: ${prefix}lib64"
+						fi
+					fi
+					if [ -L "${prefix}lib64" ] ; then
+						ewarn "Gentoo/FreeBSD AMD64 has been changed to use lib/lib32 dir."
+						ewarn "Your environment has been migrated to use lib/lib32 dir from lib64/lib32"
+						ewarn "Symbolic links ${prefix}lib64 exist in your environment for upgrade safety."
+						ewarn 
+						ewarn "Please run 'emerge -e world' and remove symlink ${prefix}lib64"
+					fi
+					;;
 				i?86*|x86_64*|powerpc*|sparc*|s390*)
 					if [ -d "${prefix}lib32" ] ; then
 						rm -f "${prefix}lib32"/.keep
