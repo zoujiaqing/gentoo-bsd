@@ -1,0 +1,29 @@
+Taken from
+http://git.overlays.gentoo.org/gitweb/?p=proj/eselect.git;a=patch;h=1be0f713e5b1412f021198b283b30aa7592dfc22;hp=08806f2a29db0d9c182ab5b54a6943b3ebb65f0d
+
+diff --git a/libs/package-manager.bash.in b/libs/package-manager.bash.in
+index 55a48a6..d1ce36e 100644
+--- a/libs/package-manager.bash.in
++++ b/libs/package-manager.bash.in
+@@ -55,7 +55,7 @@ arch() {
+ 
+ 		ret=$(uname -m)
+ 		case ${ret} in
+-			alpha|ia64|m68k|ppc|ppc64) ;;
++			alpha|amd64|ia64|m68k|ppc|ppc64) ;;
+ 			arm*) ret=arm ;;
+ 			i?86) ret=x86 ;;
+ 			mips*) ret=mips ;;
+diff --git a/modules/profile.eselect b/modules/profile.eselect
+index 5adccd1..6db3dd5 100644
+--- a/modules/profile.eselect
++++ b/modules/profile.eselect
+@@ -95,7 +95,7 @@ set_symlink() {
+ 		repopath=$(get_repo_path "${repo}") || die -q "get_repo_path failed"
+ 		# do a reverse lookup and find the arch associated with ${target}
+ 		parch=$(sed -n -e \
+-			"s|^\([[:alnum:]]\+\)[[:space:]].*${target}[[:space:]].*$|\1|p" \
++			"s|^\([[:alnum:]_-]\+\)[[:space:]].*${target}[[:space:]].*$|\1|p" \
+ 			"${repopath}/profiles/profiles.desc")
+ 		[[ ${arch} != "${parch}" && -z ${force} ]] \
+ 			&& die -q "${target} is not a valid profile for ${arch}"
