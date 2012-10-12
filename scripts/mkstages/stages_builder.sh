@@ -1,13 +1,13 @@
 #!/bin/bash
 export TARGETVER="${TARGETVER:-9.1}"
-export MKSRC="${MKSRC:-rc1}"
+export MKSRC="${MKSRC:-rc2}"
 export WORKDATE="`date +%Y%m%d`"
-export ARCH="`uname -m`"
+export WORKARCH="`uname -m`"
 OLDVER="${OLDVER:-9.0}"
 OVERLAY_SNAPSHOT="http://git.overlays.gentoo.org/gitweb/?p=proj/gentoo-bsd.git;a=snapshot;h=HEAD;sf=tgz"
 
 prepare(){
-	if [ "$1" = "x86" ] || [ "${ARCH}" = "i386" ] ; then
+	if [ "$1" = "x86" ] || [ "${WORKARCH}" = "i386" ] ; then
 		export CATALYST_CHOST="i686-gentoo-freebsd${TARGETVER}"
 		export TARGETARCH="x86"
 		export TARGETSUBARCH="i686"
@@ -42,18 +42,23 @@ prepare(){
 	fi
 
 	cd ${WORKDIR}
-	echo "Downloading gentoo-bsd overlay snapshot..."
-	wget -q -O bsd-overlay.tar.gz "${OVERLAY_SNAPSHOT}"
-	if [ $? -ne 0 ] ; then
-		exit 1
-	fi
+	if [ -d "${HOME}/portage.bsd-overlay" ] ; then
+		echo "Copy from ${HOME}/portage.bsd-overlay to ${WORKDIR}/"
+		cp -a "${HOME}/portage.bsd-overlay" ${WORKDIR}/
+	else
+		echo "Downloading gentoo-bsd overlay snapshot..."
+		wget -q -O bsd-overlay.tar.gz "${OVERLAY_SNAPSHOT}"
+		if [ $? -ne 0 ] ; then
+			exit 1
+		fi
 
-	if [ -e "${WORKDIR}/portage.bsd-overlay" ] ; then
-		rm -rf ${WORKDIR}/portage.bsd-overlay
-	fi
+		if [ -e "${WORKDIR}/portage.bsd-overlay" ] ; then
+			rm -rf ${WORKDIR}/portage.bsd-overlay
+		fi
 
-	tar xzf bsd-overlay.tar.gz
-	mv gentoo-bsd-* ${WORKDIR}/portage.bsd-overlay
+		tar xzf bsd-overlay.tar.gz
+		mv gentoo-bsd-* ${WORKDIR}/portage.bsd-overlay
+	fi
 
 	# <app-text/build-docbook-catalog-1.19, Bug 412201
 	# =app-arch/libarchive-3.0.3, Bug 421191
@@ -85,20 +90,41 @@ prepare(){
 			mv *${TARGETVER}${MY_MKSRC}*bz2 /usr/portage/distfiles/
 		fi
 
-		cd ${WORKDIR}/portage.bsd-overlay/sys-freebsd
+		ls -1 /usr/portage/sys-freebsd/freebsd-lib/freebsd-lib-${TARGETVER}*.ebuild > /dev/null 2>&1
+		if [ $? -eq 0 ] ; then
+			create_manifest /usr/portage/sys-freebsd
+		fi
+		create_manifest ${WORKDIR}/portage.bsd-overlay/sys-freebsd
+	fi
+}
+
+create_manifest(){
+	local rootdir=$1
+
+	if [ -d ${rootdir} ] ; then
+		cd ${rootdir}
 		echo "re-create Manifest"
 		for dir in `ls -1 | grep freebsd-` boot0;
 		do
 			cd ${dir}
-			gsed -i "/${TARGETVER}/d" Manifest
-			ls -1 *.ebuild > /dev/null 2>&1
-
+			ls -1 *${TARGETVER}*.ebuild > /dev/null 2>&1
 			if [ $? -eq 0 ] ; then
-				EBUILDFILE=`ls -1 *.ebuild | head -n 1`
-				echo ${EBUILDFILE}
-				ebuild ${EBUILDFILE} digest
-			fi
+				gsed -i "/${TARGETVER}/d" Manifest
+				ls -1 *${TARGETVER}${MY_MKSRC}*.ebuild > /dev/null 2>&1
+				if [ $? -ne 0 ] ; then
+					EBUILDFILE=`ls -1 *${TARGETVER}*.ebuild | tail -n 1`
+					echo "copy ${EBUILDFILE} to ${TARGETVER}${MY_MKSRC}.ebuild"
+					cp ${EBUILDFILE} ${dir}-${TARGETVER}${MY_MKSRC}.ebuild
+				fi
 
+				ls -1 *.ebuild > /dev/null 2>&1
+
+				if [ $? -eq 0 ] ; then
+					EBUILDFILE=`ls -1 *.ebuild | tail -n 1`
+					echo ${EBUILDFILE}
+					ebuild ${EBUILDFILE} digest
+				fi
+			fi
 			cd ..
 		done
 	fi
@@ -154,66 +180,48 @@ check_ecompressdir() {
 	fi
 }
 
-mk_stages_tmp() {
+run_catalyst() {
+	local C_TARGET="$1"
+	local C_SOURCE="$2"
+	local C_APPEND_VERSION="$3"
+
+	catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
+	if [ $? -ne 0 ] ; then
+		check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
+		if [ $? -ne 0 ] ; then
+			catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
+		fi
+	fi
+
+	if [ ! -e /var/tmp/catalyst/builds/default/${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 ] ; then
+		exit 1
+	fi
+}
+
+mk_stages() {
+	local C_TMP_APPEND_VERSION="t"
+
 	if [ "${OLDVER}" != "${TARGETVER}" ] ; then
 		local SOURCE_STAGE3="stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}"
 	else
 		local SOURCE_STAGE3="stage3-${TARGETSUBARCH}-freebsd-${OLDVER}"
 	fi
 
-	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${SOURCE_STAGE3} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${SOURCE_STAGE3} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
+	run_catalyst stage1 ${SOURCE_STAGE3} ${C_TMP_APPEND_VERSION}
 
 	### Added when the library was upgraded
-	ln -s libmpfr.so.5 /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/tmp/stage1root/usr/lib/libmpfr.so.4 || exit 1
+	ln -s libmpfr.so.5 /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}/tmp/stage1root/usr/lib/libmpfr.so.4
+	ln -s libmpc.so /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}/tmp/stage1root/usr/lib/libmpc.so.2
+	ln -s libmpc.so /var/tmp/catalyst/tmp/default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}/tmp/stage1root/usr/lib/libmpc.so.2.0.0
+
+	run_catalyst stage2 stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION} ${C_TMP_APPEND_VERSION}
+	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION} ${C_TMP_APPEND_VERSION}
 
 
-	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
+	run_catalyst stage1 stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}
+	run_catalyst stage2 stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}
+	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}
 
-	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE}t profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
-}
-
-mk_stages(){
-	catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage1 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}t subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
-
-	catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage2 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
-
-	catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST}
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=stage3 version_stamp=fbsd-${TARGETVER}-${WORKDATE} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay chost=${CATALYST_CHOST} || exit 1
-		fi
-	fi
 }
 
 prepare $1
@@ -227,6 +235,5 @@ if [ ! -e "/var/tmp/catalyst/builds/default/stage3tmp-${TARGETSUBARCH}-freebsd-$
 	echo "upgrade done"
 fi
 
-mk_stages_tmp
 mk_stages
 

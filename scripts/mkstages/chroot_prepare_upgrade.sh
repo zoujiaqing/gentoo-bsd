@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ -e /etc/make.conf ] ; then
+	echo "MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/make.conf
+fi
+if [ -e /etc/portage/make.conf ] ; then
+	echo "MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/portage/make.conf
+fi
+
 # fixes bug #412319
 emerge -q sys-devel/gcc-config || exit
 gcc-config 1
@@ -24,6 +31,24 @@ USE=symlink emerge -1q freebsd-bin freebsd-cddl freebsd-contrib freebsd-lib free
 # sys-libs/zlib will request ${CHOST}-gcc.
 # different ${CHOST}-gcc fails to install
 CHOST=${CATALYST_CHOST} emerge -q sys-devel/gcc || exit
+
+# fixes bug 436560
+fixes436560(){
+	local rootdir=$1
+
+	if [ -d "${rootdir}lib64" ] && [ -L "${rootdir}lib" ] ; then
+		rm "${rootdir}lib"
+		LD_LIBRARY_PATH="${rootdir}lib64" mv "${rootdir}lib64" "${rootdir}lib"
+		ln -s lib ${rootdir}lib64
+	fi
+}
+
+fixes436560 /
+fixes436560 /usr/
+fixes436560 /usr/local/
+
+emerge -q sys-apps/baselayout
+emerge -q sys-apps/portage || exit
 
 # libtool has the old CHOST. Need to be updated
 CHOST=${CATALYST_CHOST} emerge -q sys-devel/libtool || exit
