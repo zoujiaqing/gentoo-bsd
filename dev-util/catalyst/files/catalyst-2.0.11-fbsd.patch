@@ -1,6 +1,6 @@
 diff -Nur catalyst-2.0.11.orig/arch/x86.py catalyst-2.0.11/arch/x86.py
 --- catalyst-2.0.11.orig/arch/x86.py	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/arch/x86.py	2012-10-12 23:34:15.000000000 +0900
++++ catalyst-2.0.11/arch/x86.py	2012-10-13 17:25:26.000000000 +0900
 @@ -7,9 +7,12 @@
  	def __init__(self,myspec):
  		builder.generic.__init__(self,myspec)
@@ -19,7 +19,16 @@ diff -Nur catalyst-2.0.11.orig/arch/x86.py catalyst-2.0.11/arch/x86.py
  			self.settings["CHROOT"]="chroot"
 diff -Nur catalyst-2.0.11.orig/modules/generic_stage_target.py catalyst-2.0.11/modules/generic_stage_target.py
 --- catalyst-2.0.11.orig/modules/generic_stage_target.py	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/modules/generic_stage_target.py	2012-10-12 23:34:15.000000000 +0900
++++ catalyst-2.0.11/modules/generic_stage_target.py	2012-10-13 17:32:58.000000000 +0900
+@@ -400,7 +400,7 @@
+ 
+ 	def set_cleanables(self):
+ 		self.settings["cleanables"]=["/etc/resolv.conf","/var/tmp/*","/tmp/*",\
+-			"/root/*","/usr/portage"]
++			"/root/*","/usr/portage","/etc/portage/make.conf.catalyst"]
+ 
+ 	def set_snapshot_path(self):
+ 		self.settings["snapshot_path"]=normpath(self.settings["storedir"]+\
 @@ -1083,9 +1083,15 @@
  		if os.path.exists(self.settings["chroot_path"]+"/usr/local/portage"):
  			cmd("rm -rf "+self.settings["chroot_path"]+"/usr/local/portage",\
@@ -41,7 +50,7 @@ diff -Nur catalyst-2.0.11.orig/modules/generic_stage_target.py catalyst-2.0.11/m
  		if os.path.exists(self.settings["stage_path"]+"/etc"):
 diff -Nur catalyst-2.0.11.orig/modules/stage1_target.py catalyst-2.0.11/modules/stage1_target.py
 --- catalyst-2.0.11.orig/modules/stage1_target.py	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/modules/stage1_target.py	2012-10-12 23:34:15.000000000 +0900
++++ catalyst-2.0.11/modules/stage1_target.py	2012-10-13 17:25:26.000000000 +0900
 @@ -92,10 +92,14 @@
  		# stage_path/proc probably doesn't exist yet, so create it
  		if not os.path.exists(self.settings["stage_path"]+"/proc"):
@@ -57,130 +66,43 @@ diff -Nur catalyst-2.0.11.orig/modules/stage1_target.py catalyst-2.0.11/modules/
  
  	def set_update_seed(self):
  		if self.settings.has_key("update_seed"):
-diff -Nur catalyst-2.0.11.orig/modules/stage3_target.py catalyst-2.0.11/modules/stage3_target.py
---- catalyst-2.0.11.orig/modules/stage3_target.py	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/modules/stage3_target.py	2012-10-12 23:34:15.000000000 +0900
-@@ -12,9 +12,13 @@
- 	"""
- 	def __init__(self,spec,addlargs):
- 		self.required_values=[]
--		self.valid_values=[]
-+		self.valid_values=["chost"]
- 		generic_stage_target.__init__(self,spec,addlargs)
- 
-+	def override_chost(self):
-+		if self.settings.has_key("chost"):
-+			self.settings["CHOST"]=list_to_string(self.settings["chost"])
-+
- 	def set_portage_overlay(self):
- 		generic_stage_target.set_portage_overlay(self)
- 		if self.settings.has_key("portage_overlay"):
-diff -Nur catalyst-2.0.11.orig/targets/stage1/stage1-chroot.sh catalyst-2.0.11/targets/stage1/stage1-chroot.sh
---- catalyst-2.0.11.orig/targets/stage1/stage1-chroot.sh	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/targets/stage1/stage1-chroot.sh	2012-10-12 23:36:40.000000000 +0900
-@@ -1,6 +1,7 @@
- #!/bin/bash
- 
- source /tmp/chroot-functions.sh
-+sed_selector
- 
- # We do this first, so we know our package list for --debug
- export clst_buildpkgs="$(/tmp/build.py)"
-@@ -32,7 +33,13 @@
- 	echo 'USE="${USE} -build"' >> /etc/portage/make.conf
- run_merge "--oneshot --nodeps sys-apps/baselayout"
- 
--sed -i '/USE="${USE} -build"/d' /etc/portage/make.conf
-+## dirty fix
-+#The following USE changes are necessary to proceed:
-+#required by dev-perl/XML-Parser-2.410.0-r1, required by dev-util/intltool-0.50.2, required by x11-misc/shared-mime-info-1.0, required by dev-libs/glib-2.32.4-r1, required by dev-util/pkgconfig-0.27.1[-internal-glib], required by virtual/pkgconfig-0, required by net-misc/wget-1.14, required by wget (argument)
-+#>=dev-lang/perl-5.16.1 -build
-+ROOT=/ emerge -q "dev-util/gtk-doc-am"
-+
-+${SED} -i '/USE="${USE} -build"/d' /etc/portage/make.conf
- 
- # Next, we install the package manager
- clst_root_path=/ setup_pkgmgr
-@@ -43,5 +50,5 @@
- 	echo "USE=\"-* bindist build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"" \
- 	>> /etc/portage/make.conf
- run_merge "--oneshot ${clst_buildpkgs}"
--sed -i "/USE=\"-* bindist build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
-+${SED} -i "/USE=\"-* bindist build ${STAGE1_USE} ${clst_HOSTUSE}\"/d" \
- 	/etc/portage/make.conf
-diff -Nur catalyst-2.0.11.orig/targets/stage1/stage1-preclean-chroot.sh catalyst-2.0.11/targets/stage1/stage1-preclean-chroot.sh
---- catalyst-2.0.11.orig/targets/stage1/stage1-preclean-chroot.sh	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/targets/stage1/stage1-preclean-chroot.sh	2012-10-12 23:34:15.000000000 +0900
-@@ -4,6 +4,8 @@
- 
- source /tmp/chroot-functions.sh
- 
-+sed_selector
-+${SED} -i '/^PORTDIR_OVERLAY/d' /etc/portage/make.conf
- update_env_settings
- show_debug
- 
 diff -Nur catalyst-2.0.11.orig/targets/stage3/stage3-chroot.sh catalyst-2.0.11/targets/stage3/stage3-chroot.sh
 --- catalyst-2.0.11.orig/targets/stage3/stage3-chroot.sh	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/targets/stage3/stage3-chroot.sh	2012-10-12 23:40:02.000000000 +0900
-@@ -6,3 +6,8 @@
++++ catalyst-2.0.11/targets/stage3/stage3-chroot.sh	2012-10-13 17:25:26.000000000 +0900
+@@ -5,4 +5,11 @@
+ ## START BUILD
  setup_pkgmgr
  
- run_merge "-e system"
-+
-+## dirty fix
-+# bug 438112
-+emerge -q "app-admin/eselect"
+-run_merge "-e system"
++if [[ $(uname) == "FreeBSD" ]] ; then
++	# workaround fix bug 438112
++	run_merge "-e @system --exclude=sys-apps/portage"
++	run_merge "sys-apps/portage"
++else
++	run_merge "-e system"
++fi
 +
 diff -Nur catalyst-2.0.11.orig/targets/support/chroot-functions.sh catalyst-2.0.11/targets/support/chroot-functions.sh
 --- catalyst-2.0.11.orig/targets/support/chroot-functions.sh	2012-09-09 06:38:02.000000000 +0900
-+++ catalyst-2.0.11/targets/support/chroot-functions.sh	2012-10-12 23:34:15.000000000 +0900
-@@ -63,6 +63,7 @@
- }
- 
- setup_myfeatures(){
-+	sed_selector
- 	setup_myemergeopts
- 	export FEATURES="-news"
- 	if [ -n "${clst_CCACHE}" ]
-@@ -87,7 +88,7 @@
- 		else
- 			clst_root_path=/ run_merge --oneshot --nodeps --noreplace sys-devel/distcc || exit 1
- 		fi
--		sed -i '/USE="${USE} -avahi -gtk -gnome"/d' /etc/portage/make.conf
-+		${SED} -i '/USE="${USE} -avahi -gtk -gnome"/d' /etc/portage/make.conf
- 		mkdir -p /etc/distcc
- 		echo "${clst_distcc_hosts}" > /etc/distcc/hosts
- 
-@@ -171,7 +172,8 @@
- 	# Use --update or portage won't reinstall the same version.
- 	[ -e /etc/portage/make.conf ] && echo 'USE="${USE} build"' >> /etc/portage/make.conf
- 	run_merge --oneshot --nodeps --update sys-apps/portage
--	sed -i '/USE="${USE} build"/d' /etc/portage/make.conf
-+	sed_selector
-+	${SED} -i '/USE="${USE} build"/d' /etc/portage/make.conf
- }
- 
- cleanup_distcc() {
-@@ -237,7 +239,8 @@
- 
- make_destpath() {
- 	# ROOT is / by default, so remove any ROOT= settings from make.conf
--	sed -i '/ROOT=/d' /etc/portage/make.conf
-+	sed_selector
-+	${SED} -i '/ROOT=/d' /etc/portage/make.conf
- 	export ROOT=/
- 	if [ "${1}" != "/" -a -n "${1}" ] 
- 	then
-@@ -413,5 +416,13 @@
++++ catalyst-2.0.11/targets/support/chroot-functions.sh	2012-10-13 17:25:26.000000000 +0900
+@@ -413,5 +413,22 @@
  Icon=text-editor" > /usr/share/applications/gentoo-handbook.desktop
  }
  
-+sed_selector() {
-+	if [ -e "/usr/bin/gsed" ]; then
-+		SED="gsed"
++# GNU sed wrapper
++sed(){
++	if [ -e /usr/bin/gsed ]
++	then
++		/usr/bin/gsed "$@"
++	elif [ -e /bin/sed ]
++	then
++		/bin/sed "$@"
++	elif [ -e /usr/bin/sed ]
++	then
++		/usr/bin/sed "$@"
 +	else
-+		SED="sed"
++		echo "ERROR: failed the selection of sed."
++		exit 1
 +	fi
 +}
 +
