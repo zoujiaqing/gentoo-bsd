@@ -1,0 +1,109 @@
+* Added support freebsd-boot partition on GPT.
+* FreeBSD's sed doesn't support '\t', change to tab.
+* grub2-probe is used instead of grub-probe on Gentoo.
+
+Taken from FreeBSD ports
+patch-include-grub-gpt_partition.h
+patch-util-i386-pc-grub-setup.c
+patch-util-grub.d-10_kfreebsd.in
+
+diff -Nur grub-2.00.orig/grub-core/partmap/gpt.c grub-2.00/grub-core/partmap/gpt.c
+--- grub-2.00.orig/grub-core/partmap/gpt.c	2012-05-22 06:12:44.000000000 +0900
++++ grub-2.00/grub-core/partmap/gpt.c	2012-11-06 23:23:27.000000000 +0900
+@@ -37,6 +37,8 @@
+ 
+ #ifdef GRUB_UTIL
+ static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
++static const grub_gpt_part_type_t grub_gpt_partition_type_freebsd_boot = GRUB_GPT_PARTITION_TYPE_FREEBSD_BOOT;
++static const grub_gpt_part_type_t grub_gpt_partition_type_solaris_boot = GRUB_GPT_PARTITION_TYPE_SOLARIS_BOOT;
+ #endif
+ 
+ /* 512 << 7 = 65536 byte sectors.  */
+@@ -158,7 +160,9 @@
+     disk->partition = p2;
+ 
+     /* If there's an embed region, it is in a dedicated partition.  */
+-    if (! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
++    if (! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16) ||
++          ! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_freebsd_boot, 16) ||
++            ! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_solaris_boot, 16))
+       {
+ 	start = p->start;
+ 	len = p->len;
+diff -Nur grub-2.00.orig/include/grub/gpt_partition.h grub-2.00/include/grub/gpt_partition.h
+--- grub-2.00.orig/include/grub/gpt_partition.h	2012-01-28 22:51:46.000000000 +0900
++++ grub-2.00/include/grub/gpt_partition.h	2012-11-06 23:18:11.000000000 +0900
+@@ -50,6 +50,21 @@
+ 	{ 0x85, 0xD2, 0xE1, 0xE9, 0x04, 0x34, 0xCF, 0xB3 }	\
+   }
+ 
++#define GRUB_GPT_PARTITION_TYPE_FREEBSD_BOOT \
++  { grub_cpu_to_le32_compile_time (0x83BD6B9D), \
++      grub_cpu_to_le16_compile_time (0x7F41), \
++      grub_cpu_to_le16_compile_time (0x11DC), \
++        { 0xBE, 0x0B, 0x00, 0x15, 0x60, 0xB8, 0x4F, 0x0F } \
++  }
++  
++#define GRUB_GPT_PARTITION_TYPE_SOLARIS_BOOT \
++  { grub_cpu_to_le32_compile_time (0x6A82CB45), \
++      grub_cpu_to_le16_compile_time (0x1DD2), \
++      grub_cpu_to_le16_compile_time (0x11B2), \
++        { 0x99, 0xA6, 0x08, 0x00, 0x20, 0x73, 0x66, 0x31 } \
++  }
++
++
+ struct grub_gpt_header
+ {
+   grub_uint8_t magic[8];
+diff -Nur grub-2.00.orig/util/grub.d/10_kfreebsd.in grub-2.00/util/grub.d/10_kfreebsd.in
+--- grub-2.00.orig/util/grub.d/10_kfreebsd.in	2012-03-05 06:02:30.000000000 +0900
++++ grub-2.00/util/grub.d/10_kfreebsd.in	2012-11-06 23:19:31.000000000 +0900
+@@ -54,7 +54,7 @@
+   fi
+ 
+   if [ -z "${prepare_module_dir_cache}" ]; then
+-    prepare_module_dir_cache="$(prepare_grub_to_access_device $(grub-probe -t device "${module_dir}") | sed -e "s/^/\t/")"
++    prepare_module_dir_cache="$(prepare_grub_to_access_device $(grub2-probe -t device "${module_dir}") | sed -e "s/^/	/")"
+   fi
+ 
+   printf '%s\n' "${prepare_module_dir_cache}"
+@@ -91,10 +91,10 @@
+       echo "menuentry '$(echo "$OS" | grub_quote)' ${CLASS} \$menuentry_id_option 'kfreebsd-simple-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
+   fi
+   if [ x$type != xrecovery ] ; then
+-      save_default_entry | sed -e "s/^/\t/" | sed "s/^/$submenu_indentation/"
++      save_default_entry | sed -e "s/^/	/" | sed "s/^/$submenu_indentation/"
+   fi
+   if [ -z "${prepare_boot_cache}" ]; then
+-    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
++    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/	/")"
+   fi
+ 
+   printf '%s\n' "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
+@@ -112,7 +112,7 @@
+ 
+   load_kfreebsd_module acpi true
+ 
+-  for abstraction in dummy $(grub-probe -t abstraction --device ${GRUB_DEVICE}) ; do
++  for abstraction in dummy $(grub2-probe -t abstraction --device ${GRUB_DEVICE}) ; do
+     case $abstraction in
+       lvm) load_kfreebsd_module geom_linux_lvm false ;;
+     esac
+@@ -179,7 +179,7 @@
+   case ${GRUB_FS} in
+     zfs)
+ 			# zpool name
+-			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
++			kfreebsd_device=$(grub2-probe -t fs_label --device ${GRUB_DEVICE})
+ 			# filesystem name (empty string for the main filesystem)
+ 			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
+     ;;
+@@ -213,7 +213,7 @@
+ 
+   if [ "x$is_first_entry" = xtrue ]; then
+       kfreebsd_entry "${OS}" "${version}" simple
+-      submenu_indentation="\t"
++      submenu_indentation="	"
+     
+       if [ -z "$boot_device_id" ]; then
+ 	  boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
