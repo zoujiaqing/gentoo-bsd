@@ -139,6 +139,8 @@ grub_src_configure() {
 	# Used below for efi cross-building
 	tc-export CC NM OBJCOPY STRIP
 
+	use elibc_FreeBSD && append-cppflags "-isystem /usr/include"
+
 	estack_push CTARGET "${CTARGET}"
 	estack_push TARGET_CC "${TARGET_CC}"
 	estack_push TARGET_CFLAGS "${TARGET_CFLAGS}"
@@ -234,6 +236,10 @@ src_prepare() {
 		epatch "${FILESDIR}/${P}-config-quoting.patch" #426364
 		epatch "${FILESDIR}/${P}-tftp-endian.patch" # 438612
 		epatch "${FILESDIR}/${P}-hardcoded-awk.patch" #424137
+		if use elibc_FreeBSD ; then
+			epatch "${FILESDIR}/${P}-fbsd.patch"
+			epatch "${FILESDIR}/${P}-fbsd91-boot.patch"
+		fi
 	fi
 
 	# fix texinfo file name, bug 416035
