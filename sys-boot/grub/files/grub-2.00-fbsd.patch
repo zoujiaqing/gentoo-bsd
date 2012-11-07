@@ -57,7 +57,7 @@ diff -Nur grub-2.00.orig/include/grub/gpt_partition.h grub-2.00/include/grub/gpt
    grub_uint8_t magic[8];
 diff -Nur grub-2.00.orig/util/grub.d/10_kfreebsd.in grub-2.00/util/grub.d/10_kfreebsd.in
 --- grub-2.00.orig/util/grub.d/10_kfreebsd.in	2012-03-05 06:02:30.000000000 +0900
-+++ grub-2.00/util/grub.d/10_kfreebsd.in	2012-11-06 23:19:31.000000000 +0900
++++ grub-2.00/util/grub.d/10_kfreebsd.in	2012-11-07 20:01:10.000000000 +0900
 @@ -54,7 +54,7 @@
    fi
  
@@ -89,7 +89,27 @@ diff -Nur grub-2.00.orig/util/grub.d/10_kfreebsd.in grub-2.00/util/grub.d/10_kfr
      case $abstraction in
        lvm) load_kfreebsd_module geom_linux_lvm false ;;
      esac
-@@ -179,7 +179,7 @@
+@@ -122,10 +122,17 @@
+     zfs)
+       load_kfreebsd_module opensolaris false
+ 
+-      ls "${dirname}/zfs/zpool.cache" > /dev/null
++      if [ -f /boot/zfs/zpool.cache ] ; then
++	zpoolcache=/boot/zfs/zpool.cache
++	zpoolcache_dirname=`dirname $zpoolcache`
++	zpoolcache_rel_dirname=`make_system_path_relative_to_its_root $zpoolcache_dirname`
++      else
++	ls "${dirname}/zfs/zpool.cache" > /dev/null
++	zpoolcache_rel_dirname=${rel_dirname}/zfs
++      fi
+       printf '%s\n' "${prepare_boot_cache}"
+       sed "s/^/$submenu_indentation/" << EOF
+-	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache
++	kfreebsd_module		${zpoolcache_rel_dirname}/zpool.cache type=/boot/zfs/zpool.cache
+ EOF
+     ;;
+   esac
+@@ -179,7 +186,7 @@
    case ${GRUB_FS} in
      zfs)
  			# zpool name
@@ -98,7 +118,7 @@ diff -Nur grub-2.00.orig/util/grub.d/10_kfreebsd.in grub-2.00/util/grub.d/10_kfr
  			# filesystem name (empty string for the main filesystem)
  			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
      ;;
-@@ -213,7 +213,7 @@
+@@ -213,7 +220,7 @@
  
    if [ "x$is_first_entry" = xtrue ]; then
        kfreebsd_entry "${OS}" "${version}" simple
