@@ -1,6 +1,6 @@
 #!/bin/bash
 export TARGETVER="${TARGETVER:-9.1}"
-export MKSRC="${MKSRC:-rc2}"
+export MKSRC="${MKSRC:-rc3}"
 export WORKDATE="`date +%Y%m%d`"
 export WORKARCH="`uname -m`"
 OLDVER="${OLDVER:-9.0}"
@@ -63,7 +63,7 @@ prepare(){
 	# <app-text/build-docbook-catalog-1.19, Bug 412201
 	# =app-arch/libarchive-3.0.3, Bug 421191
 	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' =dev-util/catalyst-2.0.11 =app-arch/libarchive-3.0.3 || exit 1
+	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' dev-util/catalyst::gentoo-bsd =app-arch/libarchive-3.0.3 || exit 1
 	grep "^export MAKEOPTS" /etc/catalyst/catalystrc > /dev/null 2>&1
 	if [ $? -ne 0 ] ; then
 		echo "export MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/catalyst/catalystrc
@@ -95,6 +95,13 @@ prepare(){
 			create_manifest /usr/portage/sys-freebsd
 		fi
 		create_manifest ${WORKDIR}/portage.bsd-overlay/sys-freebsd
+	fi
+
+	if [ -n "${STABLE}" ] ; then
+		echo "create stages, mixed stable ${TARGETARCH} and minimal ${TARGETARCH}-fbsd flag on"
+		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile
+		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/minimal-fbsd-list ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords
+		echo "ACCEPT_KEYWORDS=\"-${TARGETARCH}-fbsd -~${TARGETARCH}-fbsd ${TARGETARCH}\"" > ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
 	fi
 }
 
@@ -145,6 +152,12 @@ upgrade_src_stage3(){
 
 	cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/chroot_prepare_upgrade.sh ${WORKDIR}/stage3tmp/tmp
 	cp -a ${WORKDIR}/portage.bsd-overlay ${WORKDIR}/stage3tmp/usr/local/
+	if [ -e ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage ] ; then
+		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/* ${WORKDIR}/stage3tmp/etc/portage/
+	fi
+	if [ -e /etc/catalyst/catalystrc ] ; then
+		cp -a /etc/catalyst/catalystrc ${WORKDIR}/stage3tmp/tmp
+	fi
 	echo 'PORTDIR_OVERLAY="/usr/local/portage.bsd-overlay"' >> ${WORKDIR}/stage3tmp/etc/make.conf
 
 	if [ -e /etc/resolv.conf ]; then
@@ -184,17 +197,21 @@ run_catalyst() {
 	local C_TARGET="$1"
 	local C_SOURCE="$2"
 	local C_APPEND_VERSION="$3"
+	local C_APPEND_OPT=""
 
 	if [ "${C_TARGET}" != "stage3" ] ; then
-		local C_APPEND_CHOST="chost=${CATALYST_CHOST}"
+		C_APPEND_OPT="${C_APPEND_OPT} chost=${CATALYST_CHOST}"
+	fi
+	if [ -n "${STABLE}" ] ; then
+		C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage"
 	fi
 
-	catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_CHOST}
+	catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT}
 
 	if [ $? -ne 0 ] ; then
 		check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
 		if [ $? -ne 0 ] ; then
-			catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_CHOST} || exit 1
+			catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT} || exit 1
 		fi
 	fi
 

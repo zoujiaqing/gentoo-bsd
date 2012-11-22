@@ -6,7 +6,9 @@ fi
 if [ -e /etc/portage/make.conf ] ; then
 	echo "MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/portage/make.conf
 fi
-
+if [ -e /tmp/catalystrc ] ; then
+	source /tmp/catalystrc
+fi
 # fixes bug #412319
 emerge -q sys-devel/gcc-config || exit
 gcc-config 1
@@ -55,6 +57,11 @@ CHOST=${CATALYST_CHOST} emerge -q sys-devel/libtool || exit
 
 # fixes bug 425530
 emerge -q app-admin/eselect || exit
+
+if [ -e /etc/portage/profile ] ; then
+	rm -rf /etc/portage/profile
+	rm /etc/portage/package.keywords
+fi
 
 rm -rf /usr/local/portage.bsd-overlay
 gsed -i '/PORTDIR_OVERLAY=.*/d' /etc/make.conf
