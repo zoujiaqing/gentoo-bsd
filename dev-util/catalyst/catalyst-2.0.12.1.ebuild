@@ -37,12 +37,11 @@ RESTRICT=""
 IUSE="ccache kernel_linux"
 
 DEPEND="app-text/asciidoc"
-RDEPEND="app-arch/lbzip2
-	app-crypt/shash
+RDEPEND="app-crypt/shash
 	virtual/cdrtools
 	ccache? ( dev-util/ccache )
 	ia64? ( sys-fs/dosfstools )
-	kernel_linux? ( app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )"
+	kernel_linux? ( app-arch/lbzip2 app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )"
 
 pkg_setup() {
 	if use ccache ; then
@@ -71,7 +70,12 @@ pkg_setup() {
 src_prepare() {
 	python_convert_shebangs 2 catalyst modules/catalyst_lock.py
 
-	use elibc_FreeBSD && epatch "${FILESDIR}"/${PN}-2.0.11-fbsd.patch
+	if use elibc_FreeBSD ; then
+		epatch "${FILESDIR}"/${PN}-2.0.11-fbsd.patch
+		epatch "${FILESDIR}"/${PN}-2.0.12.1-fbsd.patch
+		# BSD's tar doesn't support lbzip2
+		find . -type f -exec gsed -i 's:tar -I lbzip2:tar:g' {} \;
+	fi
 }
 
 src_install() {

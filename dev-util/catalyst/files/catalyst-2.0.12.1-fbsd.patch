@@ -1,0 +1,32 @@
+diff -Nur catalyst-2.0.12.1.orig/modules/generic_stage_target.py catalyst-2.0.12.1/modules/generic_stage_target.py
+--- catalyst-2.0.12.1.orig/modules/generic_stage_target.py	2012-11-22 20:03:11.000000000 +0900
++++ catalyst-2.0.12.1/modules/generic_stage_target.py	2012-11-22 20:07:05.000000000 +0900
+@@ -901,18 +901,18 @@
+ 			src=self.mountmap[x]
+ 			if self.settings.has_key("SNAPCACHE") and x == "/usr/portage":
+ 				self.snapshot_lock_object.read_lock()
+-			if os.uname()[0] == "FreeBSD":
+-				if src == "/dev":
+-					retval=os.system("mount -t devfs none "+\
+-						self.settings["chroot_path"]+x)
+-				else:
+-					retval=os.system("mount_nullfs "+src+" "+\
++			if src == "tmpfs":
++				if self.settings.has_key("var_tmpfs_portage"):
++					retval=os.system("mount -t tmpfs -o size="+\
++						self.settings["var_tmpfs_portage"]+"G "+src+" "+\
+ 						self.settings["chroot_path"]+x)
+ 			else:
+-				if src == "tmpfs":
+-					if self.settings.has_key("var_tmpfs_portage"):
+-						retval=os.system("mount -t tmpfs -o size="+\
+-							self.settings["var_tmpfs_portage"]+"G "+src+" "+\
++				if os.uname()[0] == "FreeBSD":
++					if src == "/dev":
++						retval=os.system("mount -t devfs none "+\
++							self.settings["chroot_path"]+x)
++					else:
++						retval=os.system("mount_nullfs "+src+" "+\
+ 							self.settings["chroot_path"]+x)
+ 				else:
+ 					retval=os.system("mount --bind "+src+" "+\
