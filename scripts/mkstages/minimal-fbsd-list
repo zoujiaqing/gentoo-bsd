@@ -3,6 +3,7 @@ app-arch/libarchive			~x86-fbsd
 dev-libs/libedit			~x86-fbsd
 dev-libs/libelf				~x86-fbsd
 dev-libs/libiconv			~x86-fbsd
+net-misc/openssh			~x86-fbsd
 sys-apps/baselayout			~x86-fbsd
 sys-apps/more				~x86-fbsd
 sys-auth/openpam			~x86-fbsd

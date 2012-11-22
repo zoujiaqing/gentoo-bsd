@@ -102,6 +102,8 @@ prepare(){
 		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile
 		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/minimal-fbsd-list ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords
 		echo "ACCEPT_KEYWORDS=\"-${TARGETARCH}-fbsd -~${TARGETARCH}-fbsd ${TARGETARCH}\"" > ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo "FEATURES=\"preserve-libs\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo "sys-apps/portage python3" > ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.use
 	fi
 }
 

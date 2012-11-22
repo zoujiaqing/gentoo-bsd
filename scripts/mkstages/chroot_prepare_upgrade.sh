@@ -61,6 +61,7 @@ emerge -q app-admin/eselect || exit
 if [ -e /etc/portage/profile ] ; then
 	rm -rf /etc/portage/profile
 	rm /etc/portage/package.keywords
+	rm /etc/portage/package.use
 fi
 
 rm -rf /usr/local/portage.bsd-overlay
