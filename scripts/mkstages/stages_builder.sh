@@ -1,18 +1,27 @@
 #!/bin/bash
 export TARGETVER="${TARGETVER:-9.1}"
 export MKSRC="${MKSRC:-rc3}"
-export WORKDATE="`date +%Y%m%d`"
+export WORKDATE="${WORKDATE:-local}"
 export WORKARCH="`uname -m`"
 OLDVER="${OLDVER:-9.0}"
 OVERLAY_SNAPSHOT="http://git.overlays.gentoo.org/gitweb/?p=proj/gentoo-bsd.git;a=snapshot;h=HEAD;sf=tgz"
 
 prepare(){
+	if [ -n "${STABLE}" ] ; then
+		local MAJORVER=`echo ${TARGETVER} | awk -F \. '{ print $1 }'`
+	fi
+	if [ -n "${MAJORVER}" ] ; then
+		local CHOSTVER="${MAJORVER}.0"
+	else
+		local CHOSTVER="${TARGETVER}"
+	fi
+
 	if [ "$1" = "x86" ] || [ "${WORKARCH}" = "i386" ] ; then
-		export CATALYST_CHOST="i686-gentoo-freebsd${TARGETVER}"
+		export CATALYST_CHOST="i686-gentoo-freebsd${CHOSTVER}"
 		export TARGETARCH="x86"
 		export TARGETSUBARCH="i686"
 	else
-		export CATALYST_CHOST="x86_64-gentoo-freebsd${TARGETVER}"
+		export CATALYST_CHOST="x86_64-gentoo-freebsd${CHOSTVER}"
 		export TARGETARCH="amd64"
 		export TARGETSUBARCH="amd64"
 	fi
@@ -93,17 +102,46 @@ prepare(){
 		ls -1 /usr/portage/sys-freebsd/freebsd-lib/freebsd-lib-${TARGETVER}*.ebuild > /dev/null 2>&1
 		if [ $? -eq 0 ] ; then
 			create_manifest /usr/portage/sys-freebsd
+			export WORKDATE="local"
 		fi
 		create_manifest ${WORKDIR}/portage.bsd-overlay/sys-freebsd
+	fi
+
+	if [ "${WORKDATE}" = "remote" ] ; then
+		wget -q -O ${WORKDIR}/snapshot_list.html http://distfiles.gentoo.org/snapshots/
+		export WORKDATE=`grep -e 'portage-[0-9]\+.*bz2' ${WORKDIR}/snapshot_list.html | tail -n 1 | gsed 's:.*portage-\([0-9]\+\).*:\1:g'`
+		mkdir -p /var/tmp/catalyst/snapshots
+		if [ ! -e "/var/tmp/catalyst/snapshots/portage-${WORKDATE}.tar.bz2" ] ; then
+			wget -q -P /var/tmp/catalyst/snapshots "http://distfiles.gentoo.org/snapshots/portage-${WORKDATE}.tar.bz2"
+			if [ $? -ne 0 ] ; then
+				export WORKDATE="`date +%Y%m%d`"
+			fi
+		fi
+	elif [ "${WORKDATE}" = "resume" ] ; then
+		ls -1 /var/tmp/catalyst/snapshots/*bz2 > /dev/null 2>&1
+		if [ $? -eq 0 ] ; then
+			export WORKDATE="`ls -1 /var/tmp/catalyst/snapshots/*bz2 | tail -n 1 | gsed 's:.*portage-\([0-9]\+\).*:\1:g'`"
+		else
+			export WORKDATE="`date +%Y%m%d`"
+		fi
+	else
+		export WORKDATE="`date +%Y%m%d`"
 	fi
 
 	if [ -n "${STABLE}" ] ; then
 		echo "create stages, mixed stable ${TARGETARCH} and minimal ${TARGETARCH}-fbsd flag on"
 		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile
 		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/minimal-fbsd-list ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords
-		echo "ACCEPT_KEYWORDS=\"-${TARGETARCH}-fbsd -~${TARGETARCH}-fbsd ${TARGETARCH}\"" > ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo "ACCEPT_KEYWORDS=\"-${TARGETARCH}-fbsd -~${TARGETARCH}-fbsd ${TARGETARCH}\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo "CHOST=\"${CATALYST_CHOST}\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
 		echo "FEATURES=\"preserve-libs\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
-		echo "sys-apps/portage python3" > ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.use
+		echo "sys-apps/portage python2" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.use
+
+		#fixes bug 443810
+		grep "app-editors/nano" /usr/portage/profiles/default/bsd/fbsd/packages > /dev/null 2>&1
+		if [ $? -ne 0 ] ; then
+			echo "*app-editors/nano" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/packages
+		fi
 	fi
 }
 
@@ -201,24 +239,29 @@ run_catalyst() {
 	local C_APPEND_VERSION="$3"
 	local C_APPEND_OPT=""
 
-	if [ "${C_TARGET}" != "stage3" ] ; then
-		C_APPEND_OPT="${C_APPEND_OPT} chost=${CATALYST_CHOST}"
-	fi
-	if [ -n "${STABLE}" ] ; then
-		C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage"
-	fi
-
-	catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT}
-
-	if [ $? -ne 0 ] ; then
-		check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
-		if [ $? -ne 0 ] ; then
-			catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT} || exit 1
-		fi
-	fi
-
 	if [ ! -e /var/tmp/catalyst/builds/default/${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 ] ; then
-		exit 1
+		if [ "${C_TARGET}" != "stage3" ] ; then
+			C_APPEND_OPT="${C_APPEND_OPT} chost=${CATALYST_CHOST}"
+		fi
+		if [ -n "${STABLE}" ] ; then
+			C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage"
+		fi
+
+		catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT}
+
+		if [ $? -ne 0 ] ; then
+			check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
+			if [ $? -ne 0 ] ; then
+				catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT} || exit 1
+			fi
+		fi
+
+		if [ ! -e /var/tmp/catalyst/builds/default/${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 ] ; then
+			exit 1
+		fi
+	else
+		echo "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 is exist."
+		echo "skip the creation of ${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}"
 	fi
 }
 
@@ -247,6 +290,10 @@ mk_stages() {
 	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}
 
 }
+
+if [ -e /etc/catalyst/catalystrc ] ; then
+	source /etc/catalyst/catalystrc
+fi
 
 prepare $1
 

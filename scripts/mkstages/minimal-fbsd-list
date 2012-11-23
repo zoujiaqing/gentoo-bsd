@@ -2,7 +2,9 @@ app-admin/eselect			~x86-fbsd
 app-arch/libarchive			~x86-fbsd
 dev-libs/libedit			~x86-fbsd
 dev-libs/libelf				~x86-fbsd
+dev-libs/libexecinfo			~x86-fbsd
 dev-libs/libiconv			~x86-fbsd
+dev-libs/libvolume_id			~x86-fbsd
 net-misc/openssh			~x86-fbsd
 sys-apps/baselayout			~x86-fbsd
 sys-apps/more				~x86-fbsd
@@ -15,11 +17,15 @@ sys-freebsd/freebsd-lib			~x86-fbsd
 sys-freebsd/freebsd-libexec		~x86-fbsd
 sys-freebsd/freebsd-mk-defs		~x86-fbsd
 sys-freebsd/freebsd-pam-modules		~x86-fbsd
+sys-freebsd/freebsd-pf			~x86-fbsd
+sys-freebsd/freebsd-rescue		~x86-fbsd
 sys-freebsd/freebsd-sbin		~x86-fbsd
-sys-freebsd/freebsd-shar		~x86-fbsd
 sys-freebsd/freebsd-share		~x86-fbsd
 sys-freebsd/freebsd-sources		~x86-fbsd
 sys-freebsd/freebsd-ubin		~x86-fbsd
 sys-freebsd/freebsd-usbin		~x86-fbsd
+sys-freebsd/ubin-wrappers		~x86-fbsd
+sys-freebsd/virtio-kmod			~x86-fbsd
+sys-fs/fuse4bsd				~x86-fbsd
 sys-process/fuser-bsd			~x86-fbsd
 sys-process/pidof-bsd			~x86-fbsd
