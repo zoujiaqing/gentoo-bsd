@@ -1,7 +1,78 @@
+diff -Nur catalyst-2.0.12.1.orig/arch/x86.py catalyst-2.0.12.1/arch/x86.py
+--- catalyst-2.0.12.1.orig/arch/x86.py	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/arch/x86.py	2012-11-23 21:27:15.000000000 +0900
+@@ -7,9 +7,12 @@
+ 	def __init__(self,myspec):
+ 		builder.generic.__init__(self,myspec)
+ 		if self.settings["buildarch"]=="amd64":
+-			if not os.path.exists("/bin/linux32") and not os.path.exists("/usr/bin/linux32"):
+-					raise CatalystError,"required executable linux32 not found (\"emerge setarch\" to fix.)"
+-			self.settings["CHROOT"]="linux32 chroot"
++			if os.uname()[0] == "Linux":
++				if not os.path.exists("/bin/linux32") and not os.path.exists("/usr/bin/linux32"):
++						raise CatalystError,"required executable linux32 not found (\"emerge setarch\" to fix.)"
++				self.settings["CHROOT"]="linux32 chroot"
++			else:
++				self.settings["CHROOT"]="chroot"
+ 			self.settings["crosscompile"] = False;
+ 		else:
+ 			self.settings["CHROOT"]="chroot"
+diff -Nur catalyst-2.0.12.1.orig/modules/catalyst_support.py catalyst-2.0.12.1/modules/catalyst_support.py
+--- catalyst-2.0.12.1.orig/modules/catalyst_support.py	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/modules/catalyst_support.py	2012-11-23 21:37:39.000000000 +0900
+@@ -108,7 +108,7 @@
+ 	#"find"		:[calc_contents,"find %(path)s"],
+ 	"tar-tv":[calc_contents,"tar tvf %(file)s"],
+ 	"tar-tvz":[calc_contents,"tar tvzf %(file)s"],
+-	"tar-tvj":[calc_contents,"tar -I lbzip2 -tvf %(file)s"],
++	"tar-tvj":[calc_contents,"tar tvjf %(file)s"],
+ 	"isoinfo-l":[calc_contents,"isoinfo -l -i %(file)s"],
+ 	# isoinfo-f should be a last resort only
+ 	"isoinfo-f":[calc_contents,"isoinfo -f -i %(file)s"],
 diff -Nur catalyst-2.0.12.1.orig/modules/generic_stage_target.py catalyst-2.0.12.1/modules/generic_stage_target.py
---- catalyst-2.0.12.1.orig/modules/generic_stage_target.py	2012-11-22 20:03:11.000000000 +0900
-+++ catalyst-2.0.12.1/modules/generic_stage_target.py	2012-11-22 20:07:05.000000000 +0900
-@@ -901,18 +901,18 @@
+--- catalyst-2.0.12.1.orig/modules/generic_stage_target.py	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/modules/generic_stage_target.py	2012-11-23 21:34:08.000000000 +0900
+@@ -649,7 +649,8 @@
+ 					self.settings["source_path"]+"\nto "+\
+ 					self.settings["chroot_path"]+\
+ 						" (This may take some time) ...\n"
+-				if "bz2" == self.settings["chroot_path"][-3:]:
++				if "bz2" == self.settings["chroot_path"][-3:] \
++					and os.uname()[0] == "Linux":
+ 					unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
+ 						self.settings["chroot_path"]
+ 				else:
+@@ -664,7 +665,8 @@
+ 				self.settings["source_path"]+"\nto "+\
+ 				self.settings["chroot_path"]+\
+ 				" (This may take some time) ...\n"
+-			if "bz2" == self.settings["chroot_path"][-3:]:
++			if "bz2" == self.settings["chroot_path"][-3:] \
++				and os.uname()[0] == "Linux":
+ 				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
+ 					self.settings["chroot_path"]
+ 			else:
+@@ -766,7 +768,8 @@
+ 				read_from_clst(self.settings["snapshot_cache_path"]+\
+ 				"catalyst-hash")
+ 			destdir=self.settings["snapshot_cache_path"]
+-			if "bz2" == self.settings["chroot_path"][-3:]:
++			if "bz2" == self.settings["chroot_path"][-3:] \
++				and os.uname()[0] == "Linux":
+ 				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["snapshot_path"]+" -C "+destdir
+ 			else:
+ 				unpack_cmd="tar xpf "+self.settings["snapshot_path"]+" -C "+destdir
+@@ -785,7 +788,8 @@
+ 			cleanup_errmsg="Error removing existing snapshot directory."
+ 			cleanup_msg=\
+ 				"Cleaning up existing portage tree (This can take a long time)..."
+-			if "bz2" == self.settings["chroot_path"][-3:]:
++			if "bz2" == self.settings["chroot_path"][-3:] \
++				and os.uname()[0] == "Linux":
+ 				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["snapshot_path"]+" -C "+\
+ 					self.settings["chroot_path"]+"/usr"
+ 			else:
+@@ -901,18 +905,18 @@
  			src=self.mountmap[x]
  			if self.settings.has_key("SNAPCACHE") and x == "/usr/portage":
  				self.snapshot_lock_object.read_lock()
@@ -30,3 +101,119 @@ diff -Nur catalyst-2.0.12.1.orig/modules/generic_stage_target.py catalyst-2.0.12
  							self.settings["chroot_path"]+x)
  				else:
  					retval=os.system("mount --bind "+src+" "+\
+@@ -1111,9 +1115,15 @@
+ 		if os.path.exists(self.settings["chroot_path"]+"/usr/local/portage"):
+ 			cmd("rm -rf "+self.settings["chroot_path"]+"/usr/local/portage",\
+ 				"Could not remove /usr/local/portage",env=self.env)
+-			cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
+-				"/etc/portage/make.conf",\
+-				"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++			if os.path.exists(self.settings["chroot_path"]+"/etc/portage/make.conf"):
++				if os.path.exists("/usr/bin/gsed"):
++					cmd("gsed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++				else:
++					cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
+ 
+ 		""" Clean up old and obsoleted files in /etc """
+ 		if os.path.exists(self.settings["stage_path"]+"/etc"):
+@@ -1207,9 +1217,14 @@
+ 
+ 			print "Creating stage tarball..."
+ 
+-			cmd("tar -I lbzip2 -cpf "+self.settings["target_path"]+" -C "+\
+-				self.settings["stage_path"]+" .",\
+-				"Couldn't create stage tarball",env=self.env)
++			if os.uname()[0] == "Linux":
++				cmd("tar -I lbzip2 -cpf "+self.settings["target_path"]+" -C "+\
++					self.settings["stage_path"]+" .",\
++					"Couldn't create stage tarball",env=self.env)
++			else:
++				cmd("tar cjpf "+self.settings["target_path"]+" -C "+\
++					self.settings["stage_path"]+" .",\
++					"Couldn't create stage tarball",env=self.env)
+ 
+ 			self.gen_contents_file(self.settings["target_path"])
+ 			self.gen_digest_file(self.settings["target_path"])
+diff -Nur catalyst-2.0.12.1.orig/modules/snapshot_target.py catalyst-2.0.12.1/modules/snapshot_target.py
+--- catalyst-2.0.12.1.orig/modules/snapshot_target.py	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/modules/snapshot_target.py	2012-11-23 21:35:42.000000000 +0900
+@@ -50,8 +50,12 @@
+ 			self.settings["portdir"]+"/ "+mytmp+"/portage/","Snapshot failure",env=self.env)
+ 
+ 		print "Compressing Portage snapshot tarball..."
+-		cmd("tar -I lbzip2 -cf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
+-			"Snapshot creation failure",env=self.env)
++		if os.uname()[0] == "Linux":
++			cmd("tar -I lbzip2 -cf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
++				"Snapshot creation failure",env=self.env)
++		else:
++			cmd("tar cjf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
++				"Snapshot creation failure",env=self.env)
+ 
+ 		self.gen_contents_file(self.settings["snapshot_path"])
+ 		self.gen_digest_file(self.settings["snapshot_path"])
+diff -Nur catalyst-2.0.12.1.orig/modules/stage1_target.py catalyst-2.0.12.1/modules/stage1_target.py
+--- catalyst-2.0.12.1.orig/modules/stage1_target.py	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/modules/stage1_target.py	2012-11-23 21:29:03.000000000 +0900
+@@ -92,10 +92,15 @@
+ 		# stage_path/proc probably doesn't exist yet, so create it
+ 		if not os.path.exists(self.settings["stage_path"]+"/proc"):
+ 			os.makedirs(self.settings["stage_path"]+"/proc")
++		if not os.path.exists(self.settings["stage_path"]+"/dev"):
++			os.makedirs(self.settings["stage_path"]+"/dev")
+ 
+ 		# alter the mount mappings to bind mount proc onto it
+ 		self.mounts.append("/tmp/stage1root/proc")
+ 		self.mountmap["/tmp/stage1root/proc"]="/proc"
++		if os.uname()[0] == "FreeBSD":
++			self.mounts.append("/tmp/stage1root/dev")
++			self.mountmap["/tmp/stage1root/dev"]="/dev"
+ 
+ 	def set_update_seed(self):
+ 		if self.settings.has_key("update_seed"):
+diff -Nur catalyst-2.0.12.1.orig/targets/stage3/stage3-chroot.sh catalyst-2.0.12.1/targets/stage3/stage3-chroot.sh
+--- catalyst-2.0.12.1.orig/targets/stage3/stage3-chroot.sh	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/targets/stage3/stage3-chroot.sh	2012-11-23 21:27:15.000000000 +0900
+@@ -5,4 +5,11 @@
+ ## START BUILD
+ setup_pkgmgr
+ 
+-run_merge "-e system"
++if [[ $(uname) == "FreeBSD" ]] ; then
++	# workaround fix bug 425530, 438112
++	run_merge "-e @system --exclude=sys-apps/portage"
++	run_merge "sys-apps/portage"
++else
++	run_merge "-e system"
++fi
++
+diff -Nur catalyst-2.0.12.1.orig/targets/support/chroot-functions.sh catalyst-2.0.12.1/targets/support/chroot-functions.sh
+--- catalyst-2.0.12.1.orig/targets/support/chroot-functions.sh	2012-11-02 09:27:51.000000000 +0900
++++ catalyst-2.0.12.1/targets/support/chroot-functions.sh	2012-11-23 21:27:15.000000000 +0900
+@@ -413,5 +413,22 @@
+ Icon=text-editor" > /usr/share/applications/gentoo-handbook.desktop
+ }
+ 
++# GNU sed wrapper
++sed(){
++	if [ -e /usr/bin/gsed ]
++	then
++		/usr/bin/gsed "$@"
++	elif [ -e /bin/sed ]
++	then
++		/bin/sed "$@"
++	elif [ -e /usr/bin/sed ]
++	then
++		/usr/bin/sed "$@"
++	else
++		echo "ERROR: failed the selection of sed."
++		exit 1
++	fi
++}
++
+ # We do this everywhere, so why not put it in this script
+ run_default_funcs

@@ -70,12 +70,7 @@ pkg_setup() {
 src_prepare() {
 	python_convert_shebangs 2 catalyst modules/catalyst_lock.py
 
-	if use elibc_FreeBSD ; then
-		epatch "${FILESDIR}"/${PN}-2.0.11-fbsd.patch
-		epatch "${FILESDIR}"/${PN}-2.0.12.1-fbsd.patch
-		# BSD's tar doesn't support lbzip2
-		find . -type f -exec gsed -i 's:tar -I lbzip2:tar:g' {} \;
-	fi
+	use elibc_FreeBSD && epatch "${FILESDIR}"/${PN}-2.0.12.1-fbsd.patch
 }
 
 src_install() {
