@@ -358,7 +358,7 @@ src_compile() {
 			if ! is_native_abi ; then
 				mymakeopts="${mymakeopts} COMPAT_32BIT="
 			fi
-			need_bootstrap || CFLAGS="${CFLAGS} -isystem /usr/include";
+			need_bootstrap || CFLAGS="${CFLAGS} -isystem /usr/include"
 
 			einfo "Building for ABI ${ABI} and TARGET=$(tc-arch-kernel ${CHOST})"
 
