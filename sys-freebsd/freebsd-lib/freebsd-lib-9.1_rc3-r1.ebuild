@@ -156,7 +156,7 @@ src_prepare() {
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
-		libsmb; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
+		libsmb libprocstat libulog; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
 		die "Problem fixing \"${dir}/Makefile"
 	done
 	# Call LD with LDFLAGS, rename them to RAW_LDFLAGS
