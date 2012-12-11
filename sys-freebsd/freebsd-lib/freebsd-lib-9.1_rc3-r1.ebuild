@@ -464,7 +464,7 @@ src_install() {
 
 	cd "${WORKDIR}/etc/"
 	insinto /etc
-	doins auth.conf nls.alias mac.conf netconfig
+	doins nls.alias mac.conf netconfig
 
 	# Install ttys file
 	local MACHINE="$(tc-arch-kernel)"
