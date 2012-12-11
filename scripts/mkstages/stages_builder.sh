@@ -1,6 +1,6 @@
 #!/bin/bash
 export TARGETVER="${TARGETVER:-9.1}"
-export MKSRC="${MKSRC:-rc3}"
+export MKSRC="${MKSRC:-NONE}"
 export WORKDATE="${WORKDATE:-local}"
 export WORKARCH="`uname -m`"
 OLDVER="${OLDVER:-9.0}"
@@ -155,7 +155,7 @@ create_manifest(){
 		do
 			cd ${dir}
 			ls -1 *${TARGETVER}*.ebuild > /dev/null 2>&1
-			if [ $? -eq 0 ] ; then
+			if [ "${MKSRC}" = "release" ] || [ $? -eq 0 ] ; then
 				gsed -i "/${TARGETVER}/d" Manifest
 				ls -1 *${TARGETVER}${MY_MKSRC}*.ebuild > /dev/null 2>&1
 				if [ $? -ne 0 ] ; then
