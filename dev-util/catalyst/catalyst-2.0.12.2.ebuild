@@ -23,7 +23,7 @@ if [[ ${PV} == *9999* ]]; then
 	esac
 else
 	SRC_URI="mirror://gentoo/${P}.tar.bz2
-		http://dev.gentoo.org/~jmbsvicetto/distfiles/${P}.tar.bz2"
+		http://dev.gentoo.org/~zerochaos/distfiles/${P}.tar.bz2"
 	KEYWORDS="alpha amd64 arm hppa ia64 ~mips ppc ppc64 s390 sh sparc x86 ~x86-fbsd"
 fi
 inherit eutils multilib python
@@ -41,7 +41,7 @@ RDEPEND="app-crypt/shash
 	virtual/cdrtools
 	ccache? ( dev-util/ccache )
 	ia64? ( sys-fs/dosfstools )
-	kernel_linux? ( app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )"
+	kernel_linux? ( app-arch/lbzip2 app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )"
 
 pkg_setup() {
 	if use ccache ; then
@@ -69,8 +69,7 @@ pkg_setup() {
 
 src_prepare() {
 	python_convert_shebangs 2 catalyst modules/catalyst_lock.py
-
-	use elibc_FreeBSD && epatch "${FILESDIR}"/${PN}-2.0.11-fbsd.patch
+	epatch "${FILESDIR}"/${PN}-2.0.12.1-fbsd.patch
 }
 
 src_install() {
@@ -106,4 +105,8 @@ pkg_postinst() {
 	einfo "catalyst project page at:"
 	einfo "http://www.gentoo.org/proj/en/releng/catalyst/index.xml"
 	echo
+	elog "update_seed syntax has changed to make it more flexible."
+	elog "This is an optional setting supported by stage1 that runs an emerge"
+	elog "command on the seed stage before starting the stage1 build. (example:"
+	elog "`--update dev-libs/mpfr dev-libs/mpc dev-libs/gmp`)"
 }
