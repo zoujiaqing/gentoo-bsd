@@ -155,7 +155,7 @@ create_manifest(){
 		do
 			cd ${dir}
 			ls -1 *${TARGETVER}*.ebuild > /dev/null 2>&1
-			if [ "${MKSRC}" = "release" ] || [ $? -eq 0 ] ; then
+			if [[ "${MKSRC}" = "release" || $? -ne 0 ]] ; then
 				gsed -i "/${TARGETVER}/d" Manifest
 				ls -1 *${TARGETVER}${MY_MKSRC}*.ebuild > /dev/null 2>&1
 				if [ $? -ne 0 ] ; then
