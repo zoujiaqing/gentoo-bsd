@@ -184,8 +184,8 @@ diff -Nur catalyst-2.0.12.1.orig/targets/stage3/stage3-chroot.sh catalyst-2.0.12
  
 -run_merge "-e system"
 +if [[ $(uname) == "FreeBSD" ]] ; then
-+	# workaround fix bug 425530, 438112
-+	run_merge "-e @system --exclude=sys-apps/portage"
++	# workaround fix bug 425530, 438112, 448256
++	run_merge "-e @world --exclude=sys-apps/portage"
 +	run_merge "sys-apps/portage"
 +else
 +	run_merge "-e system"
