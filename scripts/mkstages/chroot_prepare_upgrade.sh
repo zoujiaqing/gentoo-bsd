@@ -9,6 +9,9 @@ fi
 if [ -e /tmp/catalystrc ] ; then
 	source /tmp/catalystrc
 fi
+# fixes bug #447810
+MAKEOPTS=-j1 emerge -q app-shells/bash || exit
+
 # fixes bug #412319
 emerge -q sys-devel/gcc-config || exit
 gcc-config 1
@@ -62,6 +65,7 @@ if [ -e /etc/portage/profile ] ; then
 	rm -rf /etc/portage/profile
 	rm /etc/portage/package.keywords
 	rm /etc/portage/package.use
+	rm -rf /etc/portage/patches
 fi
 
 rm -rf /usr/local/portage.bsd-overlay

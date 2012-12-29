@@ -96,6 +96,7 @@ prepare(){
 			mkdir ${WORKDIR}/${TARGETVER}${MY_MKSRC}_src
 			cd ${WORKDIR}/${TARGETVER}${MY_MKSRC}_src
 			${WORKDIR}/portage.bsd-overlay/scripts/extract-9.0.sh ${TARGETVER}${MY_MKSRC}
+			mkdir -p /usr/portage/distfiles
 			mv *${TARGETVER}${MY_MKSRC}*bz2 /usr/portage/distfiles/
 		fi
 
@@ -128,6 +129,12 @@ prepare(){
 		export WORKDATE="`date +%Y%m%d`"
 	fi
 
+	#fixes bug 447808
+	grep "python_targets_python2_7" /usr/portage/profiles/default/bsd/fbsd/make.defaults > /dev/null 2>&1
+	if [ $? -ne 0 ] ; then
+		gsed -i 's:BOOTSTRAP_USE="\(.*\)":BOOTSTRAP_USE="\1 python_targets_python2_7":g' /usr/portage/profiles/default/bsd/fbsd/make.defaults
+	fi
+
 	if [ -n "${STABLE}" ] ; then
 		echo "create stages, mixed stable ${TARGETARCH} and minimal ${TARGETARCH}-fbsd flag on"
 		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile
@@ -142,6 +149,9 @@ prepare(){
 		if [ $? -ne 0 ] ; then
 			echo "*app-editors/nano" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/packages
 		fi
+		#fixes bug 447810
+		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/patches/app-shells/bash
+		wget -q -O ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/patches/app-shells/bash/bash-4.2-redir-fbsd.patch "https://447810.bugs.gentoo.org/attachment.cgi?id=333210"
 	fi
 }
 
@@ -155,12 +165,13 @@ create_manifest(){
 		do
 			cd ${dir}
 			ls -1 *${TARGETVER}*.ebuild > /dev/null 2>&1
-			if [[ "${MKSRC}" = "release" || $? -ne 0 ]] ; then
+			if [ $? -eq 0 ] ; then
 				gsed -i "/${TARGETVER}/d" Manifest
 				ls -1 *${TARGETVER}${MY_MKSRC}*.ebuild > /dev/null 2>&1
-				if [ $? -ne 0 ] ; then
+				if [[ "${MKSRC}" = "release" || $? -ne 0 ]] ; then
 					EBUILDFILE=`ls -1 *${TARGETVER}*.ebuild | tail -n 1`
 					echo "copy ${EBUILDFILE} to ${TARGETVER}${MY_MKSRC}.ebuild"
+					gsed -i '/cve-2012-4576.patch/d' ${EBUILDFILE}
 					cp ${EBUILDFILE} ${dir}-${TARGETVER}${MY_MKSRC}.ebuild
 				fi
 
@@ -206,7 +217,7 @@ upgrade_src_stage3(){
 		echo "nameserver 8.8.8.8" > ${WORKDIR}/stage3tmp/etc/resolv.conf
 	fi
 	chroot ${WORKDIR}/stage3tmp /tmp/chroot_prepare_upgrade.sh
-	umount ${WORKDIR}/stage3tmp/usr/portage/distfiles || exit 1
+	umount ${WORKDIR}/stage3tmp/usr/portage/distfiles
 	umount ${WORKDIR}/stage3tmp/usr/portage || exit 1
 	umount ${WORKDIR}/stage3tmp/dev || exit 1
 	if [ ! -e ${WORKDIR}/stage3tmp/tmp/prepare_done ] ; then
