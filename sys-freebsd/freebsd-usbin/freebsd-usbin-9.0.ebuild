@@ -42,7 +42,7 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/usr.sbin"
 
-IUSE="acpi atm audit bluetooth floppy ipv6 isdn minimal netware nis pam ssl usb build"
+IUSE="acpi atm audit bluetooth floppy ipv6 minimal netware nis pam ssl usb build"
 
 pkg_setup() {
 	# Release crunch is something like minimal. It seems to remove everything
@@ -54,7 +54,6 @@ pkg_setup() {
 	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
 	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
-	use isdn || mymakeopts="${mymakeopts} WITHOUT_I4B= "
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
 	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 	use pam || mymakeopts="${mymakeopts} WITHOUT_PAM_SUPPORT= "
@@ -133,12 +132,6 @@ EOS
 
 	insinto /etc/ppp
 	doins ppp/ppp.conf || die
-
-	if use isdn; then
-		insinto /etc/isdn
-		doins isdn/* || die
-		rm -f "${D}"/etc/isdn/Makefile
-	fi
 
 	if use bluetooth; then
 		insinto /etc/bluetooth

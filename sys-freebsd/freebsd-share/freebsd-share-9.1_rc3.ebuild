@@ -8,7 +8,7 @@ DESCRIPTION="FreeBSD shared tools/files"
 SLOT="0"
 KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 
-IUSE="doc isdn"
+IUSE="doc"
 
 SRC_URI="mirror://gentoo/${SHARE}.tar.bz2
 	mirror://gentoo/${CONTRIB}.tar.bz2
@@ -29,7 +29,6 @@ RESTRICT="strip"
 S="${WORKDIR}/share"
 
 pkg_setup() {
-	use isdn || mymakeopts="${mymakeopts} NO_I4B= "
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 
 	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= "
