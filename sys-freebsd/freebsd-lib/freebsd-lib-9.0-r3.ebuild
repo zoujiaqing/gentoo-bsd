@@ -91,6 +91,8 @@ PATCHES=(
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-8.0-rpcsec_gss.patch"
 	"${FILESDIR}/${PN}-9.0-liblink.patch"
+	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
+	"${FILESDIR}/${PN}-9.0-netware.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-trylock-adaptive.patch" )
 
