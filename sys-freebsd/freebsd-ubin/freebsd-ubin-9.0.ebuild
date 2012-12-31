@@ -49,6 +49,7 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
 	"${FILESDIR}/${PN}-6.0-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
+	"${FILESDIR}/${PN}-9.0-ar-libarchive3.patch"
 	"${FILESDIR}/${PN}-8.0-bsdar.patch" )
 
 # Here we remove some sources we don't need because they are already
