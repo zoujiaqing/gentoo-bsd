@@ -29,6 +29,20 @@ CDDL="freebsd-cddl-${PV}"
 # Release version (5.3, 5.4, 6.0, etc)
 RV="$(get_version_component_range 1-2)"
 
+if [ "${PV%.9999}" != "${PV}" ]; then
+	inherit subversion
+	if [[ "${PV%.9999}" == *\.* ]]; then
+		ESVN_REPO_URI="svn://svn.freebsd.org/base/releng/${PV%.9999}"
+		ESVN_PROJECT="freebsd-releng"
+	else
+		ESVN_REPO_URI="svn://svn.freebsd.org/base/stable/${PV%.9999}"
+		ESVN_PROJECT="freebsd-stable"
+	fi
+else
+	ESVN_REPO_URI="svn://svn.freebsd.org/base/head"
+	ESVN_PROJECT="freebsd-head"
+fi
+
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
 	IUSE="profile"
 fi
@@ -90,8 +104,13 @@ freebsd_rename_libraries() {
 }
 
 freebsd_src_unpack() {
-	unpack ${A}
-	cd "${S}"
+	if [[ ${PV} == *9999* ]]; then
+		S="${WORKDIR}" subversion_src_unpack
+		cd "${S}"
+	else
+		unpack ${A}
+		cd "${S}"
+	fi
 
 	dummy_mk ${REMOVE_SUBDIRS}
 
