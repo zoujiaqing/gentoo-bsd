@@ -86,15 +86,13 @@ pkg_setup() {
 }
 
 PATCHES=(
-	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.0-gccfloat.patch"
 	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-8.0-rpcsec_gss.patch"
 	"${FILESDIR}/${PN}-9.0-liblink.patch"
-	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
-	"${FILESDIR}/${PN}-9.0-netware.patch"
-	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
+	"${FILESDIR}/${PN}-bsdxml2expat.patch"
+	"${FILESDIR}/${PN}-9.0-trylock-adaptive.patch" )
 
 # Here we disable and remove source which we don't need or want
 # In order:
@@ -158,7 +156,7 @@ src_prepare() {
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
-		libsmb libprocstat libulog; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
+		libsmb; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
 		die "Problem fixing \"${dir}/Makefile"
 	done
 	# Call LD with LDFLAGS, rename them to RAW_LDFLAGS
@@ -359,8 +357,9 @@ src_compile() {
 			CFLAGADD=""
 			if ! is_native_abi ; then
 				mymakeopts="${mymakeopts} COMPAT_32BIT="
+			else
+				use build || CFLAGS="${CFLAGS} -isystem /usr/include";
 			fi
-			need_bootstrap || CFLAGS="${CFLAGS} -isystem /usr/include"
 
 			einfo "Building for ABI ${ABI} and TARGET=$(tc-arch-kernel ${CHOST})"
 
@@ -466,7 +465,7 @@ src_install() {
 
 	cd "${WORKDIR}/etc/"
 	insinto /etc
-	doins nls.alias mac.conf netconfig
+	doins auth.conf nls.alias mac.conf netconfig
 
 	# Install ttys file
 	local MACHINE="$(tc-arch-kernel)"
@@ -482,7 +481,6 @@ src_install() {
 	if use usb ; then
 		dodir /usr/$(get_libdir)/pkgconfig
 		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb.pc" || die
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb1.0.pc" || die
 	fi
 }
 
