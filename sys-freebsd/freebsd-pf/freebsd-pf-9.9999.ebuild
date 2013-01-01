@@ -64,7 +64,6 @@ src_install() {
 	cd "${WORKDIR}"/etc
 	insinto /etc
 	doins pf.os
-	newdoc pf.conf pf.conf.example
 	# pf.initd provided by openrc, but no pf.confd
 	newconfd "${FILESDIR}/pf.confd" pf
 }
