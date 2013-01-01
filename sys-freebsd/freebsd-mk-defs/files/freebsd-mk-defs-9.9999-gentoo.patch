@@ -326,3 +326,15 @@ diff -Nur share.orig/mk/sys.mk share/mk/sys.mk
  .if defined(__MAKE_SHELL) && !empty(__MAKE_SHELL)
  SHELL=	${__MAKE_SHELL}
  .SHELL: path=${__MAKE_SHELL}
+diff -Nur share.orig/mk/bsd.compiler.mk share/mk/bsd.compiler.mk
+--- share.orig/mk/bsd.compiler.mk	2013-01-01 00:35:05.000000000 +0900
++++ share/mk/bsd.compiler.mk	2013-01-01 00:36:22.000000000 +0900
+@@ -1,7 +1,7 @@
+ # $FreeBSD$
+ 
+ .if !defined(COMPILER_TYPE)
+-. if ${CC:T:Mgcc*}
++. if ${CC:T:M*gcc*}
+ COMPILER_TYPE:=	gcc  
+ . elif ${CC:T:Mclang}
+ COMPILER_TYPE:=	clang
