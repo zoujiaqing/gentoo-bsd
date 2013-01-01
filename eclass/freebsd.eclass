@@ -29,7 +29,7 @@ CDDL="freebsd-cddl-${PV}"
 # Release version (5.3, 5.4, 6.0, etc)
 RV="$(get_version_component_range 1-2)"
 
-if [[ ${PV} == *9999* ]]; then
+if [[ "${PV}" == *9999* ]]; then
 	inherit subversion
 	if [ "${PV%.9999}" != "${PV}" ]; then
 		if [[ "${PV%.9999}" == *\.* ]]; then
