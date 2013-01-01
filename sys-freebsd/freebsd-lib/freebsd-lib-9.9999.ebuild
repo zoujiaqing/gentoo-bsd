@@ -302,8 +302,11 @@ do_bootstrap() {
 do_compile() {
 	export MAKEOBJDIRPREFIX="${WORKDIR}/${CHOST}"
 	mkdir "${MAKEOBJDIRPREFIX}" || die "Could not create ${MAKEOBJDIRPREFIX}."
-	need_bootstrap && do_bootstrap
-
+	if need_bootstrap ; then
+		[[ "$(tc-getCC)" == *gcc* ]] && export COMPILER_TYPE="gcc"
+		[[ "$(tc-getCC)" == *clang* ]] && export COMPILER_TYPE="clang"
+		do_bootstrap
+	fi
 	export RAW_LDFLAGS=$(raw-ldflags)
 
 	# Everything is now setup, build it!
