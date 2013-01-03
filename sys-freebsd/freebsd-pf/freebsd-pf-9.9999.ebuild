@@ -21,7 +21,7 @@ fi
 RDEPEND="net-libs/libpcap"
 DEPEND="${RDEPEND}
 	dev-libs/libevent
-	sys-freebsd/freebsd-mk-defs
+	=sys-freebsd/freebsd-mk-defs-${RV}*
 	=sys-freebsd/freebsd-sources-${RV}*"
 
 S="${WORKDIR}"

@@ -14,7 +14,7 @@ if [[ ${PV} != *9999* ]]; then
 	SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 fi
 
-RDEPEND=">=sys-freebsd/freebsd-mk-defs-8.0"
+RDEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*"
 DEPEND=""
 
 RESTRICT="strip binchecks"
