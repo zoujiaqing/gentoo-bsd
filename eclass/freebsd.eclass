@@ -31,18 +31,24 @@ RV="$(get_version_component_range 1-2)"
 
 if [[ "${PV}" == *9999* ]]; then
 	inherit subversion
-	if [ "${PV%.9999}" != "${PV}" ]; then
-		if [[ "${PV%.9999}" == *\.* ]]; then
+	case ${PV%.9999} in
+		*.*.*)
+			ESVN_REPO_URI="svn://svn.freebsd.org/base/release/${PV%.9999}"
+			ESVN_PROJECT="freebsd-release"
+			;;
+		*.*)
 			ESVN_REPO_URI="svn://svn.freebsd.org/base/releng/${PV%.9999}"
 			ESVN_PROJECT="freebsd-releng"
-		else
+			;;
+		9999)
+			ESVN_REPO_URI="svn://svn.freebsd.org/base/head"
+			ESVN_PROJECT="freebsd-head"
+			;;
+		*)
 			ESVN_REPO_URI="svn://svn.freebsd.org/base/stable/${PV%.9999}"
 			ESVN_PROJECT="freebsd-stable"
-		fi
-	else
-		ESVN_REPO_URI="svn://svn.freebsd.org/base/head"
-		ESVN_PROJECT="freebsd-head"
-	fi
+			;;
+	esac
 fi
 
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
@@ -108,11 +114,10 @@ freebsd_rename_libraries() {
 freebsd_src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
 		S="${WORKDIR}" subversion_src_unpack
-		cd "${S}"
 	else
 		unpack ${A}
-		cd "${S}"
 	fi
+	cd "${S}"
 
 	dummy_mk ${REMOVE_SUBDIRS}
 
