@@ -237,7 +237,6 @@ src_prepare() {
 		epatch "${FILESDIR}/${P}-tftp-endian.patch" # 438612
 		epatch "${FILESDIR}/${P}-hardcoded-awk.patch" #424137
 		epatch "${FILESDIR}/${P}-fbsd.patch"
-		epatch "${FILESDIR}/${P}-fbsd91-boot.patch"
 	fi
 
 	# fix texinfo file name, bug 416035
