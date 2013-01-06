@@ -32,23 +32,15 @@ RV="$(get_version_component_range 1-2)"
 if [[ "${PV}" == *9999* ]]; then
 	inherit subversion
 	case ${PV%.9999} in
-		*.*.*)
-			ESVN_REPO_URI="svn://svn.freebsd.org/base/release/${PV%.9999}"
-			ESVN_PROJECT="freebsd-release"
-			;;
-		*.*)
-			ESVN_REPO_URI="svn://svn.freebsd.org/base/releng/${PV%.9999}"
-			ESVN_PROJECT="freebsd-releng"
-			;;
-		9999)
-			ESVN_REPO_URI="svn://svn.freebsd.org/base/head"
-			ESVN_PROJECT="freebsd-head"
-			;;
-		*)
-			ESVN_REPO_URI="svn://svn.freebsd.org/base/stable/${PV%.9999}"
-			ESVN_PROJECT="freebsd-stable"
-			;;
+		*.*.*)	branch="release";;
+		*.*)	branch="releng"	;;
+		9999)	branch="head"	;;
+		*)	branch="stable"	;;
 	esac
+	[[ "${branch}" == "head" ]] || sub_uri="${branch}/${PV%.9999}"
+	[[ "${branch}" == "head" ]] && sub_uri="${branch}"
+	ESVN_REPO_URI="svn://svn.freebsd.org/base/${sub_uri}"
+	ESVN_PROJECT="freebsd-${branch}"
 fi
 
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
