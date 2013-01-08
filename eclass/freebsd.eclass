@@ -41,6 +41,7 @@ if [[ "${PV}" == *9999* ]]; then
 	[[ "${branch}" == "head" ]] && sub_uri="${branch}"
 	ESVN_REPO_URI="svn://svn.freebsd.org/base/${sub_uri}"
 	ESVN_PROJECT="freebsd-${branch}"
+	[[ ${PN} == "freebsd-mk-defs" ]] || ESVN_OFFLINE="1"
 fi
 
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
@@ -104,7 +105,7 @@ freebsd_rename_libraries() {
 }
 
 freebsd_src_unpack() {
-	if [[ ${PV} == *9999* ]]; then
+	if [[ "${PV}" == *9999* ]]; then
 		S="${WORKDIR}" subversion_src_unpack
 	else
 		unpack ${A}
