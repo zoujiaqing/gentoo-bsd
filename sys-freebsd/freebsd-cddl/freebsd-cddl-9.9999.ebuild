@@ -20,8 +20,7 @@ if [[ ${PV} != *9999* ]]; then
 			mirror://gentoo/${LIB}.tar.bz2
 			mirror://gentoo/${SBIN}.tar.bz2
 			mirror://gentoo/${SYS}.tar.bz2
-			build? ( mirror://gentoo/${SYS}.tar.bz2
-				mirror://gentoo/${INCLUDE}.tar.bz2 )"
+			build? ( mirror://gentoo/${INCLUDE}.tar.bz2 )"
 fi
 
 # sys is required.

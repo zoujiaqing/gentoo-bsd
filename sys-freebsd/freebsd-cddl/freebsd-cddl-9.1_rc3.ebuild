@@ -19,8 +19,7 @@ SRC_URI="mirror://gentoo/${P}.tar.bz2
 		mirror://gentoo/${LIB}.tar.bz2
 		mirror://gentoo/${SBIN}.tar.bz2
 		mirror://gentoo/${SYS}.tar.bz2
-		build? ( mirror://gentoo/${SYS}.tar.bz2
-			mirror://gentoo/${INCLUDE}.tar.bz2 )"
+		build? ( mirror://gentoo/${INCLUDE}.tar.bz2 )"
 
 # sys is required.
 
