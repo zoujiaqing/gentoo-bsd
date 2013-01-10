@@ -42,6 +42,12 @@ if [[ "${PV}" == *9999* ]]; then
 	ESVN_REPO_URI="svn://svn.freebsd.org/base/${sub_uri}"
 	ESVN_PROJECT="freebsd-${branch}"
 	[[ ${PN} == "freebsd-mk-defs" ]] || ESVN_OFFLINE="1"
+else
+	if [ -z "${SRC_URI}" ] && [ -n "${REQUIRED_SRC}" ]; then
+		for src in ${REQUIRED_SRC}; do
+			SRC_URI="${SRC_URI} mirror://gentoo/$(eval echo \"\${${src}}\").tar.bz2"
+		done
+	fi
 fi
 
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
