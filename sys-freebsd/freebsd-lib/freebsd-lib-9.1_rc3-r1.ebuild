@@ -339,7 +339,7 @@ src_compile() {
 		export YACC='yacc -by'
 		CHOST=${CTARGET} tc-export CC LD CXX RANLIB
 		mymakeopts="${mymakeopts} NLS="
-		append-flags "-I/usr/${CTARGET}/usr/include"
+		append-flags "-isystem /usr/${CTARGET}/usr/include"
 		append-ldflags "-L${WORKDIR}/${CHOST}/${WORKDIR}/lib/libc"
 	fi
 
