@@ -5,16 +5,14 @@
 inherit bsdmk freebsd flag-o-matic multilib
 
 DESCRIPTION="Contributed sources for FreeBSD."
-SLOT="0"
-LICENSE="BSD GPL-2 as-is"
-
-IUSE=""
-
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 	SRC_URI="mirror://gentoo/${GNU}.tar.bz2
 		mirror://gentoo/${P}.tar.bz2"
 fi
+LICENSE="BSD GPL-2+ libodialog"
+SLOT="0"
+IUSE=""
 
 RDEPEND=""
 DEPEND="=sys-freebsd/freebsd-sources-${RV}*
