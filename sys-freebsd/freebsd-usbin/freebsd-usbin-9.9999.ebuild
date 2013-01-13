@@ -44,7 +44,7 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/usr.sbin"
 
-IUSE="acpi atm audit bluetooth floppy ipv6 minimal netware nis pam ssl usb build"
+IUSE="acpi atm audit bluetooth floppy ipv6 kerberos minimal netware nis pam ssl usb build"
 
 pkg_setup() {
 	# Release crunch is something like minimal. It seems to remove everything
@@ -62,6 +62,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
 
 	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= "
 
