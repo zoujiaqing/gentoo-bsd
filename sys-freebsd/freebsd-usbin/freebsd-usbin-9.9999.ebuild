@@ -98,6 +98,15 @@ src_prepare() {
 	sed -e "s: mtree.5::g" -i "${S}"/mtree/Makefile
 }
 
+src_compile() {
+	# Preparing to build nmtree
+	cd "${WORKDIR}/lib/libnetbsd"
+	freebsd_src_compile
+
+	cd "${S}"
+	freebsd_src_compile
+}
+
 src_install() {
 	# By creating these directories we avoid having to do a
 	# more complex hack
