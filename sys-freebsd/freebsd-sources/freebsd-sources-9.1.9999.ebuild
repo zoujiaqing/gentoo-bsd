@@ -83,6 +83,10 @@ pkg_postinst() {
 			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
 		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys-${RV}" || \
 			eerror "Couldn't create ${ROOT}/usr/src/sys-${RV} symlink."
+	elif [[ ! -L "${ROOT}/usr/src/sys-${RV}" ]]; then
+		einfo "/usr/src/sys-${RV} symlink doesn't exist; creating symlink to sys-${MY_PVR}..."
+		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys-${RV}" || \
+			eerror "Couldn't create ${ROOT}/usr/src/sys-${RV} symlink."
 	fi
 
 	if use sparc-fbsd ; then
