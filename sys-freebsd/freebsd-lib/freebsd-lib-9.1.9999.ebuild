@@ -22,8 +22,7 @@ if [[ ${PV} != *9999* ]]; then
 			mirror://gentoo/${INCLUDE}.tar.bz2
 			mirror://gentoo/${USBIN}.tar.bz2
 			mirror://gentoo/${GNU}.tar.bz2
-			build? (
-				mirror://gentoo/${SYS}.tar.bz2 )
+			mirror://gentoo/${SYS}.tar.bz2
 			zfs? (
 				mirror://gentoo/${CDDL}.tar.bz2 )"
 fi
