@@ -31,17 +31,20 @@ RV="$(get_version_component_range 1-2)"
 
 if [[ "${PV}" == *9999* ]]; then
 	inherit subversion
-	case ${PV%.9999} in
-		*.*.*)	branch="release";;
-		*.*)	branch="releng"	;;
-		9999)	branch="head"	;;
-		*)	branch="stable"	;;
-	esac
-	[[ "${branch}" == "head" ]] || sub_uri="${branch}/${PV%.9999}"
-	[[ "${branch}" == "head" ]] && sub_uri="${branch}"
-	ESVN_REPO_URI="svn://svn.freebsd.org/base/${sub_uri}"
-	ESVN_PROJECT="freebsd-${branch}"
+	MY_PR=${PR/r/}
+	[[ -n ${MY_PR} ]] && [[ ${MY_PR} -gt 10000 ]] && ESVN_REVISION="${MY_PR}"
 	[[ ${PN} == "freebsd-mk-defs" ]] || ESVN_OFFLINE="1"
+
+	case ${PV%.9999} in
+		*.*.*)	BRANCH="release";;
+		*.*)	BRANCH="releng"	;;
+		9999)	BRANCH="head"	;;
+		*)	BRANCH="stable"	;;
+	esac
+	[[ "${BRANCH}" == "head" ]] || SVN_SUB_URI="${BRANCH}/${PV%.9999}"
+	[[ "${BRANCH}" == "head" ]] && SVN_SUB_URI="${BRANCH}"
+	ESVN_REPO_URI="svn://svn.freebsd.org/base/${SVN_SUB_URI}"
+	ESVN_PROJECT="freebsd-${BRANCH}"
 fi
 
 if [[ ${PN} != "freebsd-share" ]] && [[ ${PN} != freebsd-sources ]]; then
