@@ -5,7 +5,7 @@
 inherit bsdmk freebsd flag-o-matic
 
 DESCRIPTION="FreeBSD kernel sources"
-SLOT="${PVR}"
+SLOT="${RV}"
 
 IUSE="symlink"
 
@@ -20,10 +20,6 @@ DEPEND=""
 RESTRICT="strip binchecks"
 
 S="${WORKDIR}/sys"
-
-MY_PVR="${PVR}"
-
-[[ ${MY_PVR} == "${RV}" ]] && MY_PVR="${MY_PVR}-r0"
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${P}-gentoo.patch"
@@ -61,31 +57,21 @@ src_compile() {
 }
 
 src_install() {
-	insinto "/usr/src/sys-${MY_PVR}"
+	insinto "/usr/src/sys-${RV}"
 	doins -r "${S}/"*
 }
 
 pkg_postinst() {
 	if [[ ! -L "${ROOT}/usr/src/sys" ]]; then
-		einfo "/usr/src/sys symlink doesn't exist; creating symlink to sys-${MY_PVR}..."
-		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys" || \
+		einfo "/usr/src/sys symlink doesn't exist; creating symlink to sys-${RV}..."
+		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
 			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
-		# just in case...
-		[[ -L ""${ROOT}/usr/src/sys-${RV}"" ]] && rm "${ROOT}/usr/src/sys-${RV}"
-		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys-${RV}" || \
-			eerror "Couldn't create ${ROOT}/usr/src/sys-${RV} symlink."
 	elif use symlink; then
 		einfo "Updating /usr/src/sys symlink to sys-${MY_PVR}..."
-		rm "${ROOT}/usr/src/sys" "${ROOT}/usr/src/sys-${RV}" || \
+		rm "${ROOT}/usr/src/sys" || \
 			eerror "Couldn't remove previous symlinks, please fix manually."
-		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys" || \
+		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
 			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
-		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys-${RV}" || \
-			eerror "Couldn't create ${ROOT}/usr/src/sys-${RV} symlink."
-	elif [[ ! -L "${ROOT}/usr/src/sys-${RV}" ]]; then
-		einfo "/usr/src/sys-${RV} symlink doesn't exist; creating symlink to sys-${MY_PVR}..."
-		ln -sf "sys-${MY_PVR}" "${ROOT}/usr/src/sys-${RV}" || \
-			eerror "Couldn't create ${ROOT}/usr/src/sys-${RV} symlink."
 	fi
 
 	if use sparc-fbsd ; then

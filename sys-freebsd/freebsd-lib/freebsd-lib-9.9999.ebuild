@@ -301,11 +301,16 @@ do_bootstrap() {
 do_compile() {
 	export MAKEOBJDIRPREFIX="${WORKDIR}/${CHOST}"
 	mkdir "${MAKEOBJDIRPREFIX}" || die "Could not create ${MAKEOBJDIRPREFIX}."
+	# Bootstrap if needed, otherwise assume the system headers are in
+	# /usr/include.
 	if need_bootstrap ; then
 		[[ "$(tc-getCC)" == *gcc* ]] && export COMPILER_TYPE="gcc"
 		[[ "$(tc-getCC)" == *clang* ]] && export COMPILER_TYPE="clang"
 		do_bootstrap
+	else
+		CFLAGS="${CFLAGS} -isystem /usr/include"
 	fi
+
 	export RAW_LDFLAGS=$(raw-ldflags)
 
 	# Everything is now setup, build it!
@@ -343,7 +348,7 @@ src_compile() {
 		export YACC='yacc -by'
 		CHOST=${CTARGET} tc-export CC LD CXX RANLIB
 		mymakeopts="${mymakeopts} NLS="
-		append-flags "-isystem /usr/${CTARGET}/usr/include"
+		CFLAGS="${CFLAGS} -isystem /usr/${CTARGET}/usr/include"
 		append-ldflags "-L${WORKDIR}/${CHOST}/${WORKDIR}/lib/libc"
 	fi
 
@@ -364,7 +369,6 @@ src_compile() {
 			if ! is_native_abi ; then
 				mymakeopts="${mymakeopts} COMPAT_32BIT="
 			fi
-			need_bootstrap || CFLAGS="${CFLAGS} -isystem /usr/include"
 
 			einfo "Building for ABI ${ABI} and TARGET=$(tc-arch-kernel ${CHOST})"
 

@@ -26,7 +26,7 @@ fi
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
 	ssl? ( dev-libs/openssl )
 	kerberos? ( virtual/krb5 )
-	ar? ( app-arch/libarchive )
+	ar? ( >=app-arch/libarchive-3 )
 	virtual/pam
 	sys-libs/zlib
 	>=sys-libs/ncurses-5.9
@@ -50,10 +50,10 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
 	"${FILESDIR}/${PN}-9.1-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
-	"${FILESDIR}/${PN}-9.0-ar-libarchive3.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
-	"${FILESDIR}/${PN}-9.1-grep.patch" )
+	"${FILESDIR}/${PN}-9.1-grep.patch"
+	"${FILESDIR}/${PN}-9.1-ar-libarchive3.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
