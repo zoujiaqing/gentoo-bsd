@@ -67,7 +67,7 @@ pkg_postinst() {
 		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
 			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
 	elif use symlink; then
-		einfo "Updating /usr/src/sys symlink to sys-${MY_PVR}..."
+		einfo "Updating /usr/src/sys symlink to sys-${RV}..."
 		rm "${ROOT}/usr/src/sys" || \
 			eerror "Couldn't remove previous symlinks, please fix manually."
 		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
