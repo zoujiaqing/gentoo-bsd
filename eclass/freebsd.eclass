@@ -47,8 +47,8 @@ if [[ ${PV} == *9999* ]]; then
 		9999)	BRANCH="head"	;;
 		*)	BRANCH="stable"	;;
 	esac
-	[[ "${BRANCH}" == "head" ]] || SVN_SUB_URI="${BRANCH}/${MY_PV%.9999}"
-	[[ "${BRANCH}" == "head" ]] && SVN_SUB_URI="${BRANCH}"
+	[[ ${BRANCH} == "head" ]] || SVN_SUB_URI="${BRANCH}/${MY_PV%.9999}"
+	[[ ${BRANCH} == "head" ]] && SVN_SUB_URI="${BRANCH}"
 	ESVN_REPO_URI="svn://svn.freebsd.org/base/${SVN_SUB_URI}"
 	ESVN_PROJECT="freebsd-${BRANCH}"
 fi
@@ -114,7 +114,7 @@ freebsd_rename_libraries() {
 }
 
 freebsd_src_unpack() {
-	if [[ "${PV}" == *9999* ]]; then
+	if [[ ${PV} == *9999* ]]; then
 		S="${WORKDIR}" subversion_src_unpack
 	else
 		unpack ${A}
