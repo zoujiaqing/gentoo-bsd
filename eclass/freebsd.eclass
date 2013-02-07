@@ -29,19 +29,25 @@ CDDL="freebsd-cddl-${PV}"
 # Release version (5.3, 5.4, 6.0, etc)
 RV="$(get_version_component_range 1-2)"
 
-if [[ "${PV}" == *9999* ]]; then
+if [[ ${PV} == *9999* ]]; then
 	inherit subversion
-	MY_PR=${PR/r/}
-	[[ -n ${MY_PR} ]] && [[ ${MY_PR} -gt 10000 ]] && ESVN_REVISION="${MY_PR}"
+	MY_PV=${PV/_p*}
+
+	# Set SVN revision using patch level.
+	PLEVEL=${PV##*_p}
+	[[ ${PV} == *_p* ]] && ESVN_REVISION="${PLEVEL}"
+
+	# freebsd-mk-defs is always run svn checkout/update.
+	# Other packages use sources that it checked out.
 	[[ ${PN} == "freebsd-mk-defs" ]] || ESVN_OFFLINE="1"
 
-	case ${PV%.9999} in
+	case ${MY_PV%.9999} in
 		*.*.*)	BRANCH="release";;
 		*.*)	BRANCH="releng"	;;
 		9999)	BRANCH="head"	;;
 		*)	BRANCH="stable"	;;
 	esac
-	[[ "${BRANCH}" == "head" ]] || SVN_SUB_URI="${BRANCH}/${PV%.9999}"
+	[[ "${BRANCH}" == "head" ]] || SVN_SUB_URI="${BRANCH}/${MY_PV%.9999}"
 	[[ "${BRANCH}" == "head" ]] && SVN_SUB_URI="${BRANCH}"
 	ESVN_REPO_URI="svn://svn.freebsd.org/base/${SVN_SUB_URI}"
 	ESVN_PROJECT="freebsd-${BRANCH}"
