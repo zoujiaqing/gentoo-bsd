@@ -22,7 +22,7 @@ RESTRICT="strip binchecks"
 S="${WORKDIR}/sys"
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
-	"${FILESDIR}/${P}-gentoo.patch"
+	"${FILESDIR}/${PN}-9.9999-gentoo.patch"
 	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-6.1-ntfs.patch"
 	"${FILESDIR}/${PN}-7.1-types.h-fix.patch"
