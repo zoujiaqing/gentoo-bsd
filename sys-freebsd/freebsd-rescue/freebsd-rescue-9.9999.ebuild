@@ -56,7 +56,7 @@ pkg_setup() {
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
 	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}"-8.0-pkgconfig_static_libarchive.patch
+	epatch "${FILESDIR}/${PN}"-9.9999-pkgconfig_static_libarchive.patch
 	epatch "${FILESDIR}/${PN}"-7.1-zlib.patch
 	epatch "${FILESDIR}/${PN}"-9.1-libcleverlink.patch
 	epatch "${FILESDIR}/${PN}"-9.1-bsdtar.patch

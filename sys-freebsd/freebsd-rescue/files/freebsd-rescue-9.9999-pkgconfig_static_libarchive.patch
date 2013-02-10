@@ -1,0 +1,12 @@
+diff -Nur rescue.orig/rescue/Makefile rescue/rescue/Makefile
+--- rescue.orig/rescue/Makefile	2013-01-29 00:00:47.000000000 +0900
++++ rescue/rescue/Makefile	2013-01-29 00:09:33.000000000 +0900
+@@ -195,7 +195,7 @@
+ CRUNCH_LIBS+= -llzma
+ 
+ CRUNCH_PROGS_usr.bin+= tar
+-CRUNCH_LIBS+= -larchive -lmd
++CRUNCH_LIBS+= `pkg-config --static --libs libarchive | sed 's:-lz -lxml2 -lz:-lxml2 -lz:'` -lmd
+ .if ${MK_OPENSSL} != "no"
+ CRUNCH_LIBS+= -lcrypto
+ .endif
