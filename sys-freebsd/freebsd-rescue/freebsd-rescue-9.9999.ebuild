@@ -62,3 +62,11 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}"-9.1-bsdtar.patch
 	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
 }
+
+src_compile() {
+	# crunchgen is now checks env MAKE.
+	# Use to force BSD's make
+	export MAKE=/usr/bin/make
+
+	freebsd_src_compile
+}
