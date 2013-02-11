@@ -36,6 +36,8 @@ if [[ ${PV} == *9999* ]]; then
 	# Set SVN revision using patch level.
 	PLEVEL=${PV##*_p}
 	[[ ${PV} == *_p* ]] && ESVN_REVISION="${PLEVEL}"
+	# Drop patch level from RV, -9999 (head) ebuild is required.
+	[[ ${MY_PV} == 9999 ]] && RV="9999"
 
 	# freebsd-mk-defs is always run svn checkout/update.
 	# Other packages use sources that it checked out.
