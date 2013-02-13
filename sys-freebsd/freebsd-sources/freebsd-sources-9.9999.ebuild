@@ -14,7 +14,8 @@ if [[ ${PV} != *9999* ]]; then
 	SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 fi
 
-RDEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*"
+RDEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
+	!sys-freebsd/virtio-kmod"
 DEPEND=""
 
 RESTRICT="strip binchecks"
