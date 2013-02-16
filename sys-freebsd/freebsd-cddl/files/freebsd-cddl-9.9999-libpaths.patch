@@ -36,9 +36,9 @@ diff -Nur cddl.orig/sbin/zfs/Makefile cddl/sbin/zfs/Makefile
 +LDFLAGS+= -L${.CURDIR}/../../lib/libuutil
 +LDFLAGS+= -L${.CURDIR}/../../lib/libzfs
 +
- DPADD=	${LIBGEOM} ${LIBNVPAIR} ${LIBUMEM} \
+ DPADD=	${LIBGEOM} ${LIBJAIL} ${LIBNVPAIR} ${LIBUMEM} \
  	${LIBUTIL} ${LIBUUTIL} ${LIBZFS}
- LDADD=	-lgeom -lnvpair -lumem -lutil -luutil -lzfs
+ LDADD=	-lgeom -ljail -lnvpair -lumem -lutil -luutil -lzfs
 diff -Nur cddl.orig/sbin/zpool/Makefile cddl/sbin/zpool/Makefile
 --- cddl.orig/sbin/zpool/Makefile	2012-12-31 18:30:35.000000000 +0900
 +++ cddl/sbin/zpool/Makefile	2012-12-31 18:31:12.000000000 +0900
