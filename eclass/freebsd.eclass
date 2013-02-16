@@ -6,6 +6,9 @@
 
 inherit versionator eutils flag-o-matic bsdmk
 
+MY_PV=${PV/_p*}
+PLEVEL=${PV##*_p}
+
 LICENSE="BSD"
 HOMEPAGE="http://www.freebsd.org/"
 
@@ -27,17 +30,14 @@ RESCUE="freebsd-rescue-${PV}"
 CDDL="freebsd-cddl-${PV}"
 
 # Release version (5.3, 5.4, 6.0, etc)
-RV="$(get_version_component_range 1-2)"
+# Drop patch level from RV using ${MY_PV}.
+RV="$(get_version_component_range 1-2 ${MY_PV})"
 
 if [[ ${PV} == *9999* ]]; then
 	inherit subversion
-	MY_PV=${PV/_p*}
 
 	# Set SVN revision using patch level.
-	PLEVEL=${PV##*_p}
 	[[ ${PV} == *_p* ]] && ESVN_REVISION="${PLEVEL}"
-	# Drop patch level from RV, -9999 (head) ebuild is required.
-	[[ ${MY_PV} == 9999 ]] && RV="9999"
 
 	# freebsd-mk-defs is always run svn checkout/update.
 	# Other packages use sources that it checked out.
@@ -49,8 +49,8 @@ if [[ ${PV} == *9999* ]]; then
 		9999)	BRANCH="head"	;;
 		*)	BRANCH="stable"	;;
 	esac
-	[[ ${BRANCH} == "head" ]] || SVN_SUB_URI="${BRANCH}/${MY_PV%.9999}"
-	[[ ${BRANCH} == "head" ]] && SVN_SUB_URI="${BRANCH}"
+	[[ ${BRANCH} == head ]] || SVN_SUB_URI="${BRANCH}/${MY_PV%.9999}"
+	[[ ${BRANCH} == head ]] && SVN_SUB_URI="${BRANCH}"
 	ESVN_REPO_URI="svn://svn.freebsd.org/base/${SVN_SUB_URI}"
 	ESVN_PROJECT="freebsd-${BRANCH}"
 fi
