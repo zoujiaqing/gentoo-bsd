@@ -1,5 +1,6 @@
 app-admin/eselect			~x86-fbsd
 app-arch/libarchive			~x86-fbsd
+app-misc/getopt				~x86-fbsd
 dev-libs/libedit			~x86-fbsd
 dev-libs/libelf				~x86-fbsd
 dev-libs/libexecinfo			~x86-fbsd
@@ -7,8 +8,10 @@ dev-libs/libiconv			~x86-fbsd
 dev-libs/libvolume_id			~x86-fbsd
 net-misc/openssh			~x86-fbsd
 sys-apps/baselayout			~x86-fbsd
+sys-apps/flock				~x86-fbsd
 sys-apps/more				~x86-fbsd
 sys-auth/openpam			~x86-fbsd
+sys-block/eject-bsd			~x86-fbsd
 sys-freebsd/boot0			~x86-fbsd
 sys-freebsd/freebsd-bin			~x86-fbsd
 sys-freebsd/freebsd-cddl		~x86-fbsd
