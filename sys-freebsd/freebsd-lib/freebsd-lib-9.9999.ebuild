@@ -151,6 +151,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-includes.patch"
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
+	epatch "${FILESDIR}/${PN}-9.9999-telnet.h.patch"
 
 	# Don't install the hesiod man page or header
 	rm "${WORKDIR}"/include/hesiod.h || die
