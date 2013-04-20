@@ -159,16 +159,14 @@ diff --git a/usr.sbin/dtrace/Makefile b/usr.sbin/dtrace/Makefile
 index 3930f01..4bdbd1a 100644
 --- a/usr.sbin/dtrace/Makefile
 +++ b/usr.sbin/dtrace/Makefile
-@@ -20,6 +20,9 @@ CFLAGS+=	-I${.CURDIR}/../../../sys/cddl/compat/opensolaris \
- #CFLAGS+=	-DNEED_ERRLOC
- #YFLAGS+=	-d
+@@ -25,4 +25,7 @@ DPADD=		${LIBPTHREAD} ${LIBDTRACE} ${LIBY} ${LIBL} ${LIBPROC} \
+ LDADD=		-lpthread -ldtrace -ly -ll -lproc -lctf -lelf -lz -lutil \
+ 		-lrtld_db
  
 +LDFLAGS+=	-L${.CURDIR}/../../lib/libdtrace
 +LDFLAGS+=	-L${.CURDIR}/../../lib/libctf
 +
- DPADD=		${LIBPTHREAD} ${LIBDTRACE} ${LIBY} ${LIBFL} ${LIBPROC} \
- 		${LIBCTF} ${LIBELF} ${LIBZ} ${LIBUTIL} ${LIBRTLD_DB}
- LDADD=		-lpthread -ldtrace -ly -lfl -lproc -lctf -lelf -lz -lutil \
+ .include <bsd.prog.mk>
 diff --git a/usr.sbin/lockstat/Makefile b/usr.sbin/lockstat/Makefile
 index 70515ef..d65e4c3 100644
 --- a/usr.sbin/lockstat/Makefile
