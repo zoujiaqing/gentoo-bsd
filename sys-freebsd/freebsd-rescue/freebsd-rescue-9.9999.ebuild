@@ -42,7 +42,9 @@ DEPEND="sys-devel/flex
 	virtual/pkgconfig
 	=sys-freebsd/freebsd-lib-${RV}*[atm?,netware?]
 	=sys-freebsd/freebsd-sources-${RV}*
-	=sys-freebsd/freebsd-mk-defs-${RV}*"
+	=sys-freebsd/freebsd-mk-defs-${RV}*
+	zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )"
+
 
 S="${WORKDIR}/rescue"
 
