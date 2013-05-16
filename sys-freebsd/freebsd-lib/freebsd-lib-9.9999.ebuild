@@ -247,7 +247,7 @@ is_native_abi() {
 
 # Do we need to bootstrap the csu and libssp_nonshared?
 need_bootstrap() {
-	is_crosscompile || use build || ! is_native_abi || has_version "<${CATEGORY}/${P}"
+	is_crosscompile || use build || ! is_native_abi || has_version "<${CATEGORY}/${P}" || [[ ${PV} == *9999* ]]
 }
 
 # Get the subdirs we are building.
