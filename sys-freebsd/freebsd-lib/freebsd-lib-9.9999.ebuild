@@ -236,7 +236,7 @@ bootstrap_libssp_nonshared() {
 NON_NATIVE_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil"
 
 # Subdirs for a native build:
-NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex"
+NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu"
 
 # Is my $ABI native ?
 is_native_abi() {
@@ -267,13 +267,13 @@ get_subdirs() {
 	elif use build ; then
 		# For the non-native ABIs we only build the csu parts and very core
 		# libraries for now.
-		ret="gnu/lib/libssp/libssp_nonshared"
+		ret="gnu/lib/libssp/libssp_nonshared gnu/lib/csu"
 		if [ "${EBUILD_PHASE}" = "install" ]; then
 			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
 		fi
 	else
 		# Only build the csu parts and core libraries for now.
-		ret="gnu/lib/libssp/libssp_nonshared"
+		ret="gnu/lib/libssp/libssp_nonshared gnu/lib/csu"
 		if [ "${EBUILD_PHASE}" = "install" ]; then
 			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
 		fi
