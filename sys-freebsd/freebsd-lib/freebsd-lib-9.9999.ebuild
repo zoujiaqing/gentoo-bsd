@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=5
 
-inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils
+inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild
 
 DESCRIPTION="FreeBSD's base system libraries"
 SLOT="0"
@@ -106,7 +106,6 @@ PATCHES=(
 # - archiving libraries (have their own ebuild)
 # - sendmail libraries (they are installed by sendmail)
 # - SNMP library and dependency (have their own ebuilds)
-# - Clang (compiler_rt and blocksruntime)
 #
 # The rest are libraries we already have somewhere else because
 # they are contribution.
@@ -118,10 +117,12 @@ REMOVE_SUBDIRS="ncurses \
 	libz libbz2 libarchive liblzma \
 	libsm libsmdb libsmutil \
 	libbegemot libbsnmp \
-	libcompiler_rt libblocksruntime \
 	libpam libpcap bind libwrap libmagic \
 	libcom_err libtelnet
 	libelf libedit"
+
+# For doing multilib over multibuild.eclass
+MULTIBUILD_VARIANTS=( $(get_all_abis) )
 
 # Are we building a cross-compiler?
 is_crosscompile() {
@@ -221,6 +222,15 @@ bootstrap_csu() {
 
 	CFLAGS="${CFLAGS} -B ${MAKEOBJDIRPREFIX}/${WORKDIR}/${csudir}"
 	append-ldflags "-B ${MAKEOBJDIRPREFIX}/${WORKDIR}/${csudir}"
+
+	cd "${WORKDIR}/gnu/lib/csu" || die
+	freebsd_src_compile
+	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
+	for i in *.So ; do
+		ln -s $i ${i%.So}S.o
+	done
+	CFLAGS="${CFLAGS} -B ${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
+	append-ldflags "-B ${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
 }
 
 # Compile libssp_nonshared.a and add it's path to LDFLAGS.
@@ -231,12 +241,28 @@ bootstrap_libssp_nonshared() {
 	export LDADD="-lssp_nonshared"
 }
 
+bootstrap_libgcc() {
+	cd "${WORKDIR}/lib/libcompiler_rt" || die
+	freebsd_src_compile
+	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libcompiler_rt" || die
+	ln -s libcompiler_rt.a libgcc.a || die
+	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libcompiler_rt"
+
+	cd "${WORKDIR}/lib/libc" || die
+	freebsd_src_compile
+	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libc"
+
+	cd "${WORKDIR}/gnu/lib/libgcc" || die
+	freebsd_src_compile
+	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/libgcc"
+}
+
 # What to build for a non-native build: cross-compiler, non-native abi in
 # multilib. We also need the csu but this has to be handled separately.
 NON_NATIVE_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil"
 
 # Subdirs for a native build:
-NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu"
+NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc"
 
 # Is my $ABI native ?
 is_native_abi() {
@@ -272,14 +298,13 @@ get_subdirs() {
 			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
 		fi
 	else
-		# Only build the csu parts and core libraries for now.
-		ret="gnu/lib/libssp/libssp_nonshared gnu/lib/csu"
+		# Finally, with a non-native ABI without USE=build, we build the most
+		# important libraries.
+		ret="${NON_NATIVE_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt"
+
 		if [ "${EBUILD_PHASE}" = "install" ]; then
 			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
 		fi
-		# Finally, with a non-native ABI without USE=build, we build everything
-		# too.
-		#ret="${NATIVE_SUBDIRS}"
 	fi
 	echo "${ret}"
 }
@@ -294,24 +319,24 @@ do_bootstrap() {
 		einfo "Pre-installing includes in include_proper_${ABI}"
 		mkdir "${WORKDIR}/include_proper_${ABI}" || die
 		CTARGET="${CHOST}" install_includes "/include_proper_${ABI}"
-		CFLAGS="${CFLAGS} -isystem ${WORKDIR}/include_proper_${ABI}"
+		CFLAGS="${CFLAGS} -I ${WORKDIR}/include_proper_${ABI}"
 	fi
 	bootstrap_csu
 	bootstrap_libssp_nonshared
+	if ! is_crosscompile && ! is_native_abi ; then
+		# Bootstrap the compiler libs
+		bootstrap_libgcc
+	fi
 }
 
 # Compile it. Assume we have the toolchain setup correctly.
 do_compile() {
-	export MAKEOBJDIRPREFIX="${WORKDIR}/${CHOST}"
-	mkdir "${MAKEOBJDIRPREFIX}" || die "Could not create ${MAKEOBJDIRPREFIX}."
 	# Bootstrap if needed, otherwise assume the system headers are in
 	# /usr/include.
 	if need_bootstrap ; then
 		[[ "$(tc-getCC)" == *gcc* ]] && export COMPILER_TYPE="gcc"
 		[[ "$(tc-getCC)" == *clang* ]] && export COMPILER_TYPE="clang"
 		do_bootstrap
-	else
-		CFLAGS="${CFLAGS} -isystem /usr/include"
 	fi
 
 	export RAW_LDFLAGS=$(raw-ldflags)
@@ -358,31 +383,7 @@ src_compile() {
 	if is_crosscompile ; then
 		do_compile
 	else
-		for ABI in $(get_all_abis) ; do
-			# First, save the variables: CFLAGS, CXXFLAGS, LDFLAGS and mymakeopts.
-			for i in CFLAGS CXXFLAGS LDFLAGS mymakeopts ; do
-				export ${i}_SAVE="${!i}"
-			done
-
-			multilib_toolchain_setup ${ABI}
-
-			local target="$(tc-arch-kernel ${CHOST})"
-			mymakeopts="${mymakeopts} TARGET=${target} MACHINE=${target} MACHINE_ARCH=${target}"
-			CFLAGADD=""
-			if ! is_native_abi ; then
-				mymakeopts="${mymakeopts} COMPAT_32BIT="
-			fi
-
-			einfo "Building for ABI ${ABI} and TARGET=$(tc-arch-kernel ${CHOST})"
-
-			CTARGET="${CHOST}" do_compile
-
-			# Restore the variables now.
-			for i in CFLAGS CXXFLAGS LDFLAGS mymakeopts ; do
-				ii="${i}_SAVE"
-				export ${i}="${!ii}"
-			done
-		done
+		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_compile
 	fi
 }
 
@@ -422,7 +423,6 @@ END_LDSCRIPT
 }
 
 do_install() {
-	export MAKEOBJDIRPREFIX="${WORKDIR}/${CHOST}"
 	for i in $(get_subdirs) ; do
 		einfo "Installing in ${i}..."
 		cd "${WORKDIR}/${i}/" || die "missing ${i}."
@@ -439,7 +439,6 @@ src_install() {
 	install_includes ${INCLUDEDIR}
 
 	use crosscompile_opts_headers-only && return 0
-	local mylibdir=$(get_libdir)
 
 	if is_crosscompile ; then
 		mymakeopts="${mymakeopts} NO_MAN= \
@@ -450,19 +449,8 @@ src_install() {
 		dosym "usr/include" "/usr/${CTARGET}/sys-include"
 		do_install
 	else
-		if ! use multilib ; then
-			# Set SHLIBDIR and LIBDIR for multilib
-			mymakeopts="${mymakeopts} SHLIBDIR=/usr/${mylibdir} LIBDIR=/usr/${mylibdir}"
-			do_install
-		else
-			for ABI in $(get_all_abis) ; do
-				mymakeopts_SAVE="${mymakeopts}"
-				multilib_toolchain_setup ${ABI}
-				mymakeopts="${mymakeopts} SHLIBDIR=/usr/$(get_libdir) LIBDIR=/usr/$(get_libdir)"
-				do_install
-				mymakeopts="${mymakeopts_SAVE}"
-			done
-		fi
+		export STRIP_MASK="*/usr/lib*/*crt*.o"
+		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_install
 	fi
 
 	# Don't install the rest of the configuration files if crosscompiling
@@ -487,7 +475,7 @@ src_install() {
 	gen_usr_ldscript -a alias cam geom ipsec jail kiconv \
 		kvm m md procstat sbuf thr ufs util
 
-	gen_libc_ldscript "${mylibdir}" "usr/${mylibdir}" "usr/${mylibdir}"
+	gen_libc_ldscript "$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
 
 	# Install a libusb.pc for better compat with Linux's libusb
 	if use usb ; then
