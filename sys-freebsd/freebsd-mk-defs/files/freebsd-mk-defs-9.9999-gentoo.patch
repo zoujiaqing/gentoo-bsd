@@ -1,5 +1,4 @@
-tested revision 250694.
-
+tested revision 251934.
 
 diff --git a/share/mk/bsd.compiler.mk b/share/mk/bsd.compiler.mk
 index d9f0ccf..9cf6b4f 100644
@@ -119,21 +118,19 @@ index c54b435..d283240 100644
  .endif
  .endfor
 diff --git a/share/mk/bsd.lib.mk b/share/mk/bsd.lib.mk
-index 6b99a4d..f53f655 100644
+index 05a949f..215d198 100644
 --- a/share/mk/bsd.lib.mk
 +++ b/share/mk/bsd.lib.mk
-@@ -41,10 +41,6 @@ CTFFLAGS+= -g
+@@ -39,8 +39,6 @@ CFLAGS+= ${DEBUG_FLAGS}
+ .if ${MK_CTF} != "no" && ${DEBUG_FLAGS:M-g} != ""
+ CTFFLAGS+= -g
  .endif
- .endif
- 
--.if !defined(DEBUG_FLAGS)
+-.else
 -STRIP?=	-s
--.endif
--
- .include <bsd.libnames.mk>
+ .endif
  
- # prefer .s to a .c, add .po, remove stuff not used in the BSD libraries
-@@ -259,14 +255,17 @@ realinstall: _libinstall
+ .include <bsd.libnames.mk>
+@@ -256,14 +254,17 @@ realinstall: _libinstall
  .ORDER: beforeinstall _libinstall
  _libinstall:
  .if defined(LIB) && !empty(LIB) && ${MK_INSTALLLIB} != "no"
@@ -151,7 +148,7 @@ index 6b99a4d..f53f655 100644
  	${INSTALL} ${STRIP} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
  	    ${_INSTALLFLAGS} ${_SHLINSTALLFLAGS} \
  	    ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
-@@ -304,10 +303,12 @@ _libinstall:
+@@ -306,10 +307,12 @@ _libinstall:
  .endif # SHLIB_LINK
  .endif # SHIB_NAME
  .if defined(INSTALL_PIC_ARCHIVE) && defined(LIB) && !empty(LIB) && ${MK_TOOLCHAIN} != "no"
@@ -280,7 +277,7 @@ index b871f91..bbcd667 100644
  COMPRESS_CMD?=	gzip -cn
  COMPRESS_EXT?=	.gz
 diff --git a/share/mk/bsd.prog.mk b/share/mk/bsd.prog.mk
-index 24f6e1c..48f62d4 100644
+index 0cf2f6d..50d5e54 100644
 --- a/share/mk/bsd.prog.mk
 +++ b/share/mk/bsd.prog.mk
 @@ -28,10 +28,6 @@ CTFFLAGS+= -g
@@ -294,15 +291,15 @@ index 24f6e1c..48f62d4 100644
  .if defined(NO_SHARED) && (${NO_SHARED} != "no" && ${NO_SHARED} != "NO")
  LDFLAGS+= -static
  .endif
-@@ -153,6 +149,7 @@ realinstall: _proginstall
+@@ -152,6 +148,7 @@ realinstall: _proginstall
  .ORDER: beforeinstall _proginstall
  _proginstall:
  .if defined(PROG)
 +	${INSTALL} -d ${DESTDIR}${BINDIR}
- .if defined(PROGNAME)
  	${INSTALL} ${STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
  	    ${_INSTALLFLAGS} ${PROG} ${DESTDIR}${BINDIR}/${PROGNAME}
-@@ -184,6 +181,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
+ .endif
+@@ -178,6 +175,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
  SCRIPTSMODE_${script:T}?=	${SCRIPTSMODE}
  _scriptsinstall: _SCRIPTSINS_${script:T}
  _SCRIPTSINS_${script:T}: ${script}
