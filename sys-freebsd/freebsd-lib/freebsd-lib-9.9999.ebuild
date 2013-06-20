@@ -306,7 +306,7 @@ do_bootstrap() {
 		einfo "Pre-installing includes in include_proper_${ABI}"
 		mkdir "${WORKDIR}/include_proper_${ABI}" || die
 		CTARGET="${CHOST}" install_includes "/include_proper_${ABI}"
-		CFLAGS="${CFLAGS} -I ${WORKDIR}/include_proper_${ABI}"
+		CFLAGS="${CFLAGS} -isystem ${WORKDIR}/include_proper_${ABI}"
 	fi
 	bootstrap_csu
 	bootstrap_libssp_nonshared
