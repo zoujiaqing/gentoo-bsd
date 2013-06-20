@@ -39,8 +39,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
-		=sys-freebsd/freebsd-sources-${RV}*
-		!bootstrap? ( app-arch/bzip2 )"
+		=sys-freebsd/freebsd-sources-${RV}*"
 else
 	SRC_URI="${SRC_URI}
 			mirror://gentoo/${SYS}.tar.bz2"
@@ -58,7 +57,7 @@ if [ "${CTARGET}" = "${CHOST}" -a "${CATEGORY#*cross-}" != "${CATEGORY}" ]; then
 fi
 
 IUSE="atm bluetooth ssl hesiod ipv6 kerberos usb netware
-	build bootstrap crosscompile_opts_headers-only zfs
+	build crosscompile_opts_headers-only zfs
 	userland_GNU userland_BSD multilib"
 
 pkg_setup() {
@@ -106,6 +105,8 @@ PATCHES=(
 # - archiving libraries (have their own ebuild)
 # - sendmail libraries (they are installed by sendmail)
 # - SNMP library and dependency (have their own ebuilds)
+# - libstand: static library, 32bits on amd64 used for boot0, we build it from
+# boot0 instead.
 #
 # The rest are libraries we already have somewhere else because
 # they are contribution.
@@ -119,7 +120,8 @@ REMOVE_SUBDIRS="ncurses \
 	libbegemot libbsnmp \
 	libpam libpcap bind libwrap libmagic \
 	libcom_err libtelnet
-	libelf libedit"
+	libelf libedit
+	libstand"
 
 # For doing multilib over multibuild.eclass
 MULTIBUILD_VARIANTS=( $(get_all_abis) )
@@ -191,16 +193,9 @@ src_prepare() {
 		sed -i.bak -e 's:${INSTALL} -C:${INSTALL}:' "${WORKDIR}/include/Makefile"
 	fi
 
-	# Let arch-specific includes to be found
-	local machine
-	machine=$(tc-arch-kernel ${CTARGET})
-	ln -s "${WORKDIR}/sys/${machine}/include" "${WORKDIR}/include/machine" || \
-		die "Couldn't make ${machine}/include symlink."
-
-	cd "${S}"
-	use bootstrap && dummy_mk libstand
 	# Try to fix sed calls for GNU sed. Do it only with GNU userland and force
 	# BSD's sed on BSD.
+	cd "${S}"
 	if use userland_GNU; then
 		find . -name Makefile -exec sed -ibak 's/sed -i /sed -i/' {} \;
 	fi
@@ -257,9 +252,12 @@ bootstrap_libgcc() {
 	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/libgcc"
 }
 
-# What to build for a non-native build: cross-compiler, non-native abi in
-# multilib. We also need the csu but this has to be handled separately.
-NON_NATIVE_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil"
+# What to build for a cross-compiler.
+# We also need the csu but this has to be handled separately.
+CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil"
+
+# What to build for non-default ABIs.
+NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt"
 
 # Subdirs for a native build:
 NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc"
@@ -273,7 +271,7 @@ is_native_abi() {
 
 # Do we need to bootstrap the csu and libssp_nonshared?
 need_bootstrap() {
-	is_crosscompile || use build || ! is_native_abi || has_version "<${CATEGORY}/${P}" || [[ ${PV} == *9999* ]]
+	is_crosscompile || use build || { ! is_native_abi && ! has_version '>=sys-freebsd/freebsd-lib-9.1-r8[multilib]' ; } || has_version "<${CATEGORY}/${P}" || [[ ${PV} == *9999* ]]
 }
 
 # Get the subdirs we are building.
@@ -284,27 +282,16 @@ get_subdirs() {
 		ret="${NATIVE_SUBDIRS}"
 	elif is_crosscompile ; then
 		# With a cross-compiler we only build the very core parts.
-		ret="${NON_NATIVE_SUBDIRS}"
+		ret="${CROSS_SUBDIRS}"
 		if [ "${EBUILD_PHASE}" = "install" ]; then
 			# Add the csu dir first when installing. We treat it separately for
 			# compiling.
 			ret="$(get_csudir $(tc-arch-kernel ${CTARGET})) ${ret}"
 		fi
-	elif use build ; then
+	else
 		# For the non-native ABIs we only build the csu parts and very core
 		# libraries for now.
-		ret="gnu/lib/libssp/libssp_nonshared gnu/lib/csu"
-		if [ "${EBUILD_PHASE}" = "install" ]; then
-			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
-		fi
-	else
-		# Finally, with a non-native ABI without USE=build, we build the most
-		# important libraries.
-		ret="${NON_NATIVE_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt"
-
-		if [ "${EBUILD_PHASE}" = "install" ]; then
-			ret="$(get_csudir $(tc-arch-kernel ${CHOST})) ${ret}"
-		fi
+		ret="${NON_NATIVE_SUBDIRS} $(get_csudir $(tc-arch-kernel ${CHOST}))"
 	fi
 	echo "${ret}"
 }
@@ -334,9 +321,14 @@ do_compile() {
 	# Bootstrap if needed, otherwise assume the system headers are in
 	# /usr/include.
 	if need_bootstrap ; then
-		[[ "$(tc-getCC)" == *gcc* ]] && export COMPILER_TYPE="gcc"
-		[[ "$(tc-getCC)" == *clang* ]] && export COMPILER_TYPE="clang"
+		# Need set COMPILER_TYPE in FreeBSD 9.2 or later version.
+		case $(tc-getCC) in
+			*gcc*)		export COMPILER_TYPE="gcc";;
+			*clang*)	export COMPILER_TYPE="clang";;
+		esac
 		do_bootstrap
+	else
+		CFLAGS="${CFLAGS} -isystem /usr/include"
 	fi
 
 	export RAW_LDFLAGS=$(raw-ldflags)
@@ -422,25 +414,114 @@ GROUP ( /$1/libc.so.7 /$3/libssp_nonshared.a )
 END_LDSCRIPT
 }
 
+header_list=""
+
+move_header() {
+	local dirname=$(dirname ${1})
+	local filename=$(basename ${1})
+
+	if [ ! -d "${dirname}/${ABI}" ] ; then
+		mkdir "${dirname}/${ABI}" || die
+	fi
+
+	mv "${1}" "${dirname}/${ABI}/" || die
+
+	export header_list="${header_list} ${1}"
+}
+
+make_header_template() {
+	cat <<-END_HEADER
+/*
+ * Wrapped header for multilib support.
+ * See the real headers included below.
+ */
+
+#if defined(__x86_64__)
+  @ABI_amd64_fbsd@
+#elif defined(__i386__)
+  @ABI_x86_fbsd@
+#else
+  @ABI_${DEFAULT_ABI}@
+#endif
+END_HEADER
+}
+
+wrap_header() {
+	local dirname=$(dirname ${1})
+	local filename=$(basename ${1})
+
+	if [ -n "${dirname#.}" ] ; then
+		dirname="${dirname}/${2}"
+	else
+		dirname="${2}"
+	fi
+
+	if [ -f "${dirname}/${filename}" ] ; then
+		sed -e "s:@ABI_${2}@:#include <${dirname}/${filename}>:" ${1}
+	else
+		cat ${1}
+	fi
+}
+
+wrap_header_end() {
+	sed -e "s:@ABI_.*@:#error \"Sorry, no support for your ABI.\":" ${1}
+}
+
 do_install() {
+	INCLUDEDIR="/usr/include"
+	dodir ${INCLUDEDIR}
+	CTARGET="${CHOST}" \
+		install_includes ${INCLUDEDIR}
+
 	for i in $(get_subdirs) ; do
 		einfo "Installing in ${i}..."
 		cd "${WORKDIR}/${i}/" || die "missing ${i}."
 		freebsd_src_install || die "Install ${i} failed"
 	done
+
+	if ! is_crosscompile ; then
+		if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+			gen_libc_ldscript "usr/$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
+		else
+			dodir "$(get_libdir)"
+			gen_libc_ldscript "$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
+		fi
+	else
+		CHOST=${CTARGET} gen_libc_ldscript "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib"
+	fi
+
+	if use multilib ; then
+		cd "${D}/usr/include"
+		for i in machine/*.h fenv.h ; do
+			move_header ${i}
+		done
+		if [ "${ABI}" = "${DEFAULT_ABI}" ] ; then
+			# Supposedly the last one!
+			local uniq_headers="$(echo ${header_list} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')"
+			for j in ${uniq_headers} ; do
+				make_header_template > ${j}
+				for i in $(get_all_abis) ; do
+					wrap_header ${j} ${i} > ${j}.new
+					cp ${j}.new ${j}
+					rm -f ${j}.new
+				done
+				wrap_header_end ${j} > ${j}.new
+				cp ${j}.new ${j}
+				rm -f ${j}.new
+			done
+		fi
+	fi
 }
 
 src_install() {
-	[ "${CTARGET}" = "${CHOST}" ] \
-		&& INCLUDEDIR="/usr/include" \
-		|| INCLUDEDIR="/usr/${CTARGET}/usr/include"
-	dodir ${INCLUDEDIR}
-	einfo "Installing for ${CTARGET} in ${CHOST}.."
-	install_includes ${INCLUDEDIR}
-
-	use crosscompile_opts_headers-only && return 0
-
 	if is_crosscompile ; then
+		einfo "Installing for ${CTARGET} in ${CHOST}.."
+		INCLUDEDIR="/usr/${CTARGET}/usr/include"
+		dodir ${INCLUDEDIR}
+		install_includes ${INCLUDEDIR}
+
+		use crosscompile_opts_headers-only && return 0
+
 		mymakeopts="${mymakeopts} NO_MAN= \
 			INCLUDEDIR=/usr/${CTARGET}/usr/include \
 			SHLIBDIR=/usr/${CTARGET}/usr/lib \
@@ -448,19 +529,14 @@ src_install() {
 
 		dosym "usr/include" "/usr/${CTARGET}/sys-include"
 		do_install
+
+		# This is to get it stripped with the correct tools, otherwise it gets
+		# stripped with the host strip.
+		export CHOST=${CTARGET}
+		return 0
 	else
 		export STRIP_MASK="*/usr/lib*/*crt*.o"
 		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_install
-	fi
-
-	# Don't install the rest of the configuration files if crosscompiling
-	if is_crosscompile ; then
-		# This is to get it stripped with the correct tools, otherwise it gets
-		# stripped with the host strip.
-		# And also get the correct OUTPUT_FORMAT in the libc ldscript.
-		export CHOST=${CTARGET}
-		gen_libc_ldscript "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib"
-		return 0
 	fi
 
 	cd "${WORKDIR}/etc/"
@@ -474,8 +550,6 @@ src_install() {
 	# Generate ldscripts for core libraries that will go in /
 	gen_usr_ldscript -a alias cam geom ipsec jail kiconv \
 		kvm m md procstat sbuf thr ufs util
-
-	gen_libc_ldscript "$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
 
 	# Install a libusb.pc for better compat with Linux's libusb
 	if use usb ; then
