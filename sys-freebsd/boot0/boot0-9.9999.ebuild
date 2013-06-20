@@ -55,6 +55,14 @@ src_prepare() {
 src_compile() {
 	strip-flags
 	append-flags "-fno-strict-aliasing"
+
+	cd "${WORKDIR}/lib/libstand" || die
+	freebsd_src_compile
+
+	cd "${S}"
+	CFLAGS="${CFLAGS} -I${WORKDIR}/lib/libstand"
+	LDFLAGS="${LDFLAGS} -L${WORKDIR}/lib/libstand"
+	export LIBSTAND="${WORKDIR}/lib/libstand/libstand.a"
 	NOFLAGSTRIP="yes" freebsd_src_compile
 }
 
