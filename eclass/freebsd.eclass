@@ -135,9 +135,6 @@ freebsd_src_compile() {
 
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
 
-	# Many things breaks when using ricer flags here
-	[[ -z "${NOFLAGSTRIP}" ]] && strip-flags
-
 	# Make sure to use FreeBSD definitions while crosscompiling
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
@@ -177,6 +174,8 @@ freebsd_multilib_multibuild_wrapper() {
 	mymakeopts="${mymakeopts} TARGET=${target} MACHINE=${target} MACHINE_ARCH=${target} SHLIBDIR=/usr/$(get_libdir) LIBDIR=/usr/$(get_libdir)"
 	if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
 		mymakeopts="${mymakeopts} COMPAT_32BIT="
+		# Teach gcc where to find crt* files.
+		export LDFLAGS="${LDFLAGS} -L/usr/$(get_libdir) -B/usr/$(get_libdir)"
 	fi
 
 	einfo "Building for ABI=${ABI} and TARGET=${target}"
