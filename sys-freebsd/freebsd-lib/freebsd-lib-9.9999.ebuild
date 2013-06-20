@@ -321,11 +321,6 @@ do_compile() {
 	# Bootstrap if needed, otherwise assume the system headers are in
 	# /usr/include.
 	if need_bootstrap ; then
-		# Need set COMPILER_TYPE in FreeBSD 9.2 or later version.
-		case $(tc-getCC) in
-			*gcc*)		export COMPILER_TYPE="gcc";;
-			*clang*)	export COMPILER_TYPE="clang";;
-		esac
 		do_bootstrap
 	else
 		CFLAGS="${CFLAGS} -isystem /usr/include"
