@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=5
 
-inherit bsdmk freebsd pam
+inherit bsdmk freebsd pam multilib multibuild
 
 DESCRIPTION="FreeBSD libexec things"
 SLOT="0"
@@ -21,6 +21,7 @@ if [[ ${PV} != *9999* ]]; then
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
+	>=sys-freebsd/freebsd-lib-9.1-r6[multilib?]
 	pam? ( virtual/pam )"
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
@@ -33,7 +34,9 @@ S="${WORKDIR}/libexec"
 # Remove sendmail, tcp_wrapper and other useless stuff
 REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind lukemftpd ftpd"
 
-IUSE="pam ssl kerberos ipv6 nis xinetd"
+IUSE="pam ssl kerberos ipv6 multilib nis xinetd"
+
+MULTIBUILD_VARIANTS=( $(get_all_abis) )
 
 pkg_setup() {
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
@@ -49,8 +52,22 @@ src_prepare() {
 	ln -s /usr/include "${WORKDIR}/include"
 }
 
+setup_multilib_vars() {
+	if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+		cd "${WORKDIR}/libexec/rtld-elf" || die
+		export mymakeopts="${mymakeopts} PROG=ld-elf32.so.1"
+	else
+		cd "${S}"
+	fi
+	"$@"
+}
+
+src_compile() {
+	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile
+}
+
 src_install() {
-	freebsd_src_install
+	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 
 	insinto /etc
 	doins "${WORKDIR}/etc/gettytab"
