@@ -2,13 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=5
 
-inherit bsdmk freebsd flag-o-matic pam
+inherit bsdmk freebsd flag-o-matic pam multilib multibuild
 
 DESCRIPTION="FreeBSD's base system source for /usr/bin"
 SLOT="0"
-IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build zfs"
+IUSE="ar atm audit bluetooth ipv6 kerberos multilib netware nis ssl usb build zfs"
 LICENSE="BSD zfs? ( CDDL )"
 
 if [[ ${PV} != *9999* ]]; then
@@ -24,6 +24,7 @@ if [[ ${PV} != *9999* ]]; then
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
+	>=sys-freebsd/freebsd-lib-9.1-r7[multilib?]
 	ssl? ( dev-libs/openssl )
 	kerberos? ( virtual/krb5 )
 	ar? ( >=app-arch/libarchive-3 )
@@ -78,6 +79,8 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	bc dc
 	whois tftp man"
 
+MULTIBUILD_VARIANTS=( $(get_all_abis) )
+
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
 	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
@@ -118,8 +121,22 @@ src_prepare() {
 	use ar || dummy_mk ar
 }
 
+setup_multilib_vars() {
+	if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+		cd "${WORKDIR}/usr.bin/ldd" || die
+		export mymakeopts="${mymakeopts} PROG=ldd32 WITHOUT_MAN="
+	else
+		cd "${S}"
+	fi
+	"$@"
+}
+
+src_compile() {
+	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile
+}
+
 src_install() {
-	freebsd_src_install
+	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 
 	# baselayout requires these in /bin
 	dodir /bin
