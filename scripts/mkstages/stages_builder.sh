@@ -27,6 +27,7 @@ prepare(){
 	fi
 
 	export WORKDIR="/tmp/mk_stages_${TARGETARCH}_${TARGETVER}"
+	[[ -n ${CLANG} ]] && WORKDIR="${WORKDIR}_clang"
 
 	if [ -e ${WORKDIR} ] ; then
 		echo "WORKDIR ${WORKDIR} is already exists."
@@ -69,10 +70,8 @@ prepare(){
 		mv gentoo-bsd-* ${WORKDIR}/portage.bsd-overlay
 	fi
 
-	# <app-text/build-docbook-catalog-1.19, Bug 412201
-	# =app-arch/libarchive-3.0.3, Bug 421191
 	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools '<app-text/build-docbook-catalog-1.19' dev-util/catalyst::gentoo-bsd =app-arch/libarchive-3.0.3 || exit 1
+	PORTDIR_OVERLAY=${WORKDIR}/portage.bsd-overlay ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools app-text/build-docbook-catalog dev-util/catalyst::gentoo-bsd || exit 1
 	grep "^export MAKEOPTS" /etc/catalyst/catalystrc > /dev/null 2>&1
 	if [ $? -ne 0 ] ; then
 		echo "export MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/catalyst/catalystrc
@@ -127,12 +126,6 @@ prepare(){
 		fi
 	else
 		export WORKDATE="`date +%Y%m%d`"
-	fi
-
-	#fixes bug 447808
-	grep "python_targets_python2_7" /usr/portage/profiles/default/bsd/fbsd/make.defaults > /dev/null 2>&1
-	if [ $? -ne 0 ] ; then
-		gsed -i 's:BOOTSTRAP_USE="\(.*\)":BOOTSTRAP_USE="\1 python_targets_python2_7":g' /usr/portage/profiles/default/bsd/fbsd/make.defaults
 	fi
 
 	if [ -n "${STABLE}" ] ; then
@@ -256,14 +249,20 @@ run_catalyst() {
 		fi
 		if [ -n "${STABLE}" ] ; then
 			C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage"
+		else
+			if [ -e ${WORKDIR}/portage.bsd-overlay/etc/portage ] ; then
+				C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/portage.bsd-overlay/etc/portage"
+			fi
 		fi
-
-		catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT}
+		if [ -n "${CLANG}" ] ; then
+			C_APPEND_PROFILE="/clang"
+		fi
+		catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT}
 
 		if [ $? -ne 0 ] ; then
 			check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
 			if [ $? -ne 0 ] ; then
-				catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT} || exit 1
+				catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/portage.bsd-overlay ${C_APPEND_OPT} || exit 1
 			fi
 		fi
 
@@ -277,8 +276,10 @@ run_catalyst() {
 }
 
 mk_stages() {
-	local C_TMP_APPEND_VERSION="t"
-
+	if [ -n "${CLANG}" ] ; then
+		local C_CLANG_APPEND_VERSION="-cl"
+	fi
+	local C_TMP_APPEND_VERSION="${C_CLANG_APPEND_VERSION}t"
 	if [ "${OLDVER}" != "${TARGETVER}" ] ; then
 		local SOURCE_STAGE3="stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}"
 	else
@@ -296,9 +297,9 @@ mk_stages() {
 	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION} ${C_TMP_APPEND_VERSION}
 
 
-	run_catalyst stage1 stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}
-	run_catalyst stage2 stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}
-	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}
+	run_catalyst stage1 stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION} ${C_CLANG_APPEND_VERSION}
+	run_catalyst stage2 stage1-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_CLANG_APPEND_VERSION} ${C_CLANG_APPEND_VERSION}
+	run_catalyst stage3 stage2-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_CLANG_APPEND_VERSION} ${C_CLANG_APPEND_VERSION}
 
 }
 
