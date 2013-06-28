@@ -31,7 +31,7 @@ fi
 if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 	RDEPEND="ssl? ( dev-libs/openssl )
 		hesiod? ( net-dns/hesiod )
-		kerberos? ( virtual/krb5 )
+		kerberos? ( app-crypt/heimdal )
 		usb? ( !dev-libs/libusb !dev-libs/libusbx )
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
@@ -72,7 +72,7 @@ pkg_setup() {
 	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "
 	use hesiod || mymakeopts="${mymakeopts} WITHOUT_HESIOD= "
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6_SUPPORT= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= WITHOUT_GSSAPI= "
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
@@ -88,9 +88,7 @@ pkg_setup() {
 
 PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
-	"${FILESDIR}/${PN}-6.0-gccfloat.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
-	"${FILESDIR}/${PN}-8.0-rpcsec_gss.patch"
 	"${FILESDIR}/${PN}-9.0-liblink.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.0-netware.patch"
@@ -121,7 +119,8 @@ REMOVE_SUBDIRS="ncurses \
 	libpam libpcap bind libwrap libmagic \
 	libcom_err libtelnet
 	libelf libedit
-	libstand"
+	libstand
+	libgssapi"
 
 # For doing multilib over multibuild.eclass
 MULTIBUILD_VARIANTS=( $(get_all_abis) )
@@ -154,6 +153,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-includes.patch"
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
+	epatch "${FILESDIR}/${PN}-9.1-rmgssapi.patch"
 	epatch "${FILESDIR}/${PN}-9.9999-telnet.h.patch"
 
 	# Don't install the hesiod man page or header
@@ -236,6 +236,12 @@ bootstrap_libssp_nonshared() {
 	export LDADD="-lssp_nonshared"
 }
 
+bootstrap_libc() {
+	cd "${WORKDIR}/lib/libc" || die
+	freebsd_src_compile
+	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libc"
+}
+
 bootstrap_libgcc() {
 	cd "${WORKDIR}/lib/libcompiler_rt" || die
 	freebsd_src_compile
@@ -243,9 +249,7 @@ bootstrap_libgcc() {
 	ln -s libcompiler_rt.a libgcc.a || die
 	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libcompiler_rt"
 
-	cd "${WORKDIR}/lib/libc" || die
-	freebsd_src_compile
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libc"
+	bootstrap_libc
 
 	cd "${WORKDIR}/gnu/lib/libgcc" || die
 	freebsd_src_compile
@@ -310,10 +314,8 @@ do_bootstrap() {
 	fi
 	bootstrap_csu
 	bootstrap_libssp_nonshared
-	if ! is_crosscompile && ! is_native_abi ; then
-		# Bootstrap the compiler libs
-		bootstrap_libgcc
-	fi
+	is_crosscompile && bootstrap_libc
+	is_crosscompile || is_native_abi || bootstrap_libgcc
 }
 
 # Compile it. Assume we have the toolchain setup correctly.
