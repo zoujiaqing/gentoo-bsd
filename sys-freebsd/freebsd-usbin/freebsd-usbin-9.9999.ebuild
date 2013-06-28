@@ -34,7 +34,8 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 	dev-util/dialog
 	dev-libs/libelf
 	>=dev-libs/libedit-20120311.3.0-r1
-	net-libs/libpcap"
+	net-libs/libpcap
+	kerberos? ( app-crypt/heimdal )"
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	=sys-freebsd/freebsd-ubin-${RV}*
@@ -62,7 +63,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_GSSAPI= "
 
 	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= "
 
