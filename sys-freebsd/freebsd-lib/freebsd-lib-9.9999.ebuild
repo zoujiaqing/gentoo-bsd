@@ -465,10 +465,17 @@ wrap_header_end() {
 }
 
 do_install() {
-	INCLUDEDIR="/usr/include"
+	if is_crosscompile ; then
+		INCLUDEDIR="/usr/${CTARGET}/usr/include"
+	else
+		INCLUDEDIR="/usr/include"
+	fi
+
 	dodir ${INCLUDEDIR}
 	CTARGET="${CHOST}" \
 		install_includes ${INCLUDEDIR}
+
+	is_crosscompile && use crosscompile_opts_headers-only && return 0
 
 	for i in $(get_subdirs) ; do
 		einfo "Installing in ${i}..."
@@ -513,11 +520,9 @@ do_install() {
 src_install() {
 	if is_crosscompile ; then
 		einfo "Installing for ${CTARGET} in ${CHOST}.."
-		INCLUDEDIR="/usr/${CTARGET}/usr/include"
-		dodir ${INCLUDEDIR}
-		install_includes ${INCLUDEDIR}
-
-		use crosscompile_opts_headers-only && return 0
+		# From this point we need to force: get stripped with the correct tools,
+		# get tc-arch-kernel to return the right value, etc.
+		export CHOST=${CTARGET}
 
 		mymakeopts="${mymakeopts} NO_MAN= \
 			INCLUDEDIR=/usr/${CTARGET}/usr/include \
@@ -527,9 +532,6 @@ src_install() {
 		dosym "usr/include" "/usr/${CTARGET}/sys-include"
 		do_install
 
-		# This is to get it stripped with the correct tools, otherwise it gets
-		# stripped with the host strip.
-		export CHOST=${CTARGET}
 		return 0
 	else
 		export STRIP_MASK="*/usr/lib*/*crt*.o"
