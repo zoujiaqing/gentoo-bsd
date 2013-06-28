@@ -89,13 +89,13 @@ pkg_setup() {
 PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.0-gccfloat.patch"
-	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-8.0-rpcsec_gss.patch"
 	"${FILESDIR}/${PN}-9.0-liblink.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.0-netware.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
+	"${FILESDIR}/${PN}-9.9999-flex.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
 
 # Here we disable and remove source which we don't need or want
