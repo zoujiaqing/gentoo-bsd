@@ -35,7 +35,7 @@ pkg_setup() {
 src_unpack() {
 	freebsd_src_unpack
 
-	for module in pam_deny pam_passwdqc pam_permit; do
+	for module in pam_deny pam_passwdqc pam_permit pam_krb5; do
 		sed -i -e "s:${module}::" "${S}"/modules.inc
 	done
 }
