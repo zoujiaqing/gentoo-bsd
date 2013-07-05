@@ -256,9 +256,17 @@ bootstrap_libgcc() {
 	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/libgcc"
 }
 
+bootstrap_libthr() {
+	cd "${WORKDIR}/lib/libthr" || die
+	freebsd_src_compile
+	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libthr"
+	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libthr" || die
+	ln -s libthr.so libpthread.so
+}
+
 # What to build for a cross-compiler.
 # We also need the csu but this has to be handled separately.
-CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil"
+CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil lib/librt"
 
 # What to build for non-default ABIs.
 NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt"
@@ -316,6 +324,7 @@ do_bootstrap() {
 	bootstrap_libssp_nonshared
 	is_crosscompile && bootstrap_libc
 	is_crosscompile || is_native_abi || bootstrap_libgcc
+	is_native_abi   || bootstrap_libthr
 }
 
 # Compile it. Assume we have the toolchain setup correctly.
