@@ -63,7 +63,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_GSSAPI= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= WITHOUT_GSSAPI= "
 
 	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= "
 
