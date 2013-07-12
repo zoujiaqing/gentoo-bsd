@@ -24,6 +24,8 @@ DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 
 S="${WORKDIR}/sys/boot"
 
+PATCHES=( "${FILESDIR}/${PN}-9.9999-gcc46.patch" )
+
 boot0_use_enable() {
 	use ${1} && mymakeopts="${mymakeopts} LOADER_${2}_SUPPORT=\"yes\""
 }
@@ -36,20 +38,11 @@ pkg_setup() {
 }
 
 src_prepare() {
-	sed -e '/-mno-align-long-strings/d' \
+	sed -e '/-fomit-frame-pointer/d' -e '/-mno-align-long-strings/d' \
 		-i "${S}"/i386/boot2/Makefile \
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
-
-	# gcc-4.6 or later version support, bug #409815
-	if ( [[ $(gcc-major-version) -eq 4 && $(gcc-minor-version) -ge 6 ]] ) ; then
-		sed -i -e '/-m elf_i386_fbsd/d' "${S}"/i386/Makefile.inc || die
-		for dir in boot2 gptboot gptzfsboot zfsboot; do
-			echo "LDFLAGS+= -m elf_i386_fbsd" >> "${S}"/i386/${dir}/Makefile || die
-		done
-		echo "CFLAGS+= -fno-asynchronous-unwind-tables" >> "${S}"/i386/boot2/Makefile || die
-	fi
 }
 
 src_compile() {
