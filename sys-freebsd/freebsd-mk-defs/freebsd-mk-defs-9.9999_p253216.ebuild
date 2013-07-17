@@ -25,7 +25,7 @@ S="${WORKDIR}/share/mk"
 
 src_prepare() {
 	epatch "${FILESDIR}/${PN}-9.9999-gentoo.patch"
-	use userland_GNU && epatch "${FILESDIR}/${PN}-9.1-gnu.patch"
+	use userland_GNU && epatch "${FILESDIR}/${PN}-9.9999-gnu.patch"
 }
 
 src_compile() { :; }
