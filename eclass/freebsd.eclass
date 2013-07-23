@@ -138,6 +138,13 @@ freebsd_src_compile() {
 	# Make sure to use FreeBSD definitions while crosscompiling
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
+	# Support for upgrade from a previous version.
+	# If install command does not support -l option, this is necessary.
+	if [[ ${RV} > 9.1 ]] && has_version '<sys-freebsd/freebsd-ubin-9.2_beta1' ; then
+		export INSTALL_LINK="ln -f"
+		export INSTALL_SYMLINK="ln -fs"
+	fi
+
 	# Create objdir if MAKEOBJDIRPREFIX is defined, so that we can make out of
 	# tree builds easily.
 	if [[ -n "${MAKEOBJDIRPREFIX}" ]] ; then

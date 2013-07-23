@@ -355,6 +355,13 @@ src_compile() {
 		unalias sed
 	fi
 
+	# Support for upgrade from a previous version.
+	# If install command does not support -l option, this is necessary.
+	if is_crosscompile || has_version '<sys-freebsd/freebsd-ubin-9.2_beta1' ; then
+		export INSTALL_LINK="ln -f"
+		export INSTALL_SYMLINK="ln -fs"
+	fi
+
 	cd "${WORKDIR}/include"
 	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 

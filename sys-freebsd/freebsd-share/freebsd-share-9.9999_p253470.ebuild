@@ -83,7 +83,7 @@ src_compile() {
 
 	# This is a groff problem and not a -shared problem.
 	export GROFF_TMAC_PATH="/usr/share/tmac/:/usr/share/groff/1.19.1/tmac/"
-	mkmake || die "emake failed"
+	freebsd_src_compile || die "emake failed"
 }
 
 src_install() {
