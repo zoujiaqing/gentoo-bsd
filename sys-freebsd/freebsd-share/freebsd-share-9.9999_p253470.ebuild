@@ -7,7 +7,7 @@ inherit bsdmk freebsd
 DESCRIPTION="FreeBSD shared tools/files"
 SLOT="0"
 
-IUSE="doc"
+IUSE="doc zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -19,7 +19,8 @@ if [[ ${PV} != *9999* ]]; then
 		mirror://gentoo/${SBIN}.tar.bz2
 		mirror://gentoo/${BIN}.tar.bz2
 		mirror://gentoo/${LIB}.tar.bz2
-		mirror://gentoo/${ETC}.tar.bz2"
+		mirror://gentoo/${ETC}.tar.bz2
+		zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
 fi
 
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
@@ -32,6 +33,7 @@ S="${WORKDIR}/share"
 
 pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
 	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
