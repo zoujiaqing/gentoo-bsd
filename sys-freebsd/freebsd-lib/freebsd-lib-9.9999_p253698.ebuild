@@ -570,7 +570,7 @@ src_install() {
 	if use usb ; then
 		dodir /usr/$(get_libdir)/pkgconfig
 		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb.pc" || die
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb1.0.pc" || die
+		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb-1.0.pc" || die
 	fi
 }
 
