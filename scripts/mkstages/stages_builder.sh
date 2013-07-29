@@ -3,6 +3,7 @@ export TARGETVER="${TARGETVER:-9.1}"
 export MKSRC="${MKSRC:-NONE}"
 export WORKDATE="${WORKDATE:-local}"
 export WORKARCH="`uname -m`"
+export FORCESTAGE3="${FORCESTAGE3:-}"
 OLDVER="${OLDVER:-9.0}"
 OVERLAY_SNAPSHOT="http://git.overlays.gentoo.org/gitweb/?p=proj/gentoo-bsd.git;a=snapshot;h=HEAD;sf=tgz"
 
@@ -11,9 +12,9 @@ prepare(){
 		local MAJORVER=`echo ${TARGETVER} | awk -F \. '{ print $1 }'`
 	fi
 	if [ -n "${MAJORVER}" ] ; then
-		local CHOSTVER="${MAJORVER}.0"
+		export CHOSTVER="${MAJORVER}.0"
 	else
-		local CHOSTVER="${TARGETVER}"
+		export CHOSTVER="${TARGETVER}"
 	fi
 
 	if [ "$1" = "x86" ] || [ "${WORKARCH}" = "i386" ] ; then
@@ -43,12 +44,10 @@ prepare(){
 		mkdir -p /var/tmp/catalyst/builds/default
 	fi
 
-	if [ ! -e "/var/tmp/catalyst/builds/default/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2" ] ; then
+	if [ ! -e "/var/tmp/catalyst/builds/default/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2" ] && [ -z "${FORCESTAGE3}" ]; then
 		echo "Downloading aballier's ${TARGETSUBARCH} stage3 file..."
 		wget -q -P /var/tmp/catalyst/builds/default http://dev.gentoo.org/~aballier/fbsd${OLDVER}/${TARGETARCH}/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2
-		if [ $? -ne 0 ] ; then
-			exit 1
-		fi
+		[[ $? -ne 0 ] && exit 1
 	fi
 
 	cd ${WORKDIR}
@@ -58,9 +57,7 @@ prepare(){
 	else
 		echo "Downloading gentoo-bsd overlay snapshot..."
 		wget -q -O bsd-overlay.tar.gz "${OVERLAY_SNAPSHOT}"
-		if [ $? -ne 0 ] ; then
-			exit 1
-		fi
+		[[ $? -ne 0 ]] && exit 1
 
 		if [ -e "${WORKDIR}/portage.bsd-overlay" ] ; then
 			rm -rf ${WORKDIR}/portage.bsd-overlay
@@ -131,20 +128,17 @@ prepare(){
 	if [ -n "${STABLE}" ] ; then
 		echo "create stages, mixed stable ${TARGETARCH} and minimal ${TARGETARCH}-fbsd flag on"
 		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile
-		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/minimal-fbsd-list ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords
+		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords
+		cp -a ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/minimal-fbsd-list ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.keywords/
 		echo "ACCEPT_KEYWORDS=\"-${TARGETARCH}-fbsd -~${TARGETARCH}-fbsd ${TARGETARCH}\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
 		echo "CHOST=\"${CATALYST_CHOST}\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo 'CHOST_amd64_fbsd="${CHOST}"' >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
+		echo "CHOST_x86_fbsd=\"i686-gentoo-freebsd${CHOSTVER}\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
 		echo "FEATURES=\"preserve-libs\"" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/make.defaults
-		echo "sys-apps/portage python2" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/package.use
 
-		#fixes bug 443810
-		grep "app-editors/nano" /usr/portage/profiles/default/bsd/fbsd/packages > /dev/null 2>&1
-		if [ $? -ne 0 ] ; then
-			echo "*app-editors/nano" >> ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/profile/packages
-		fi
 		#fixes bug 447810
 		mkdir -p ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/patches/app-shells/bash
-		wget -q -O ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/patches/app-shells/bash/bash-4.2-redir-fbsd.patch "https://447810.bugs.gentoo.org/attachment.cgi?id=333210"
+		wget -q -O ${WORKDIR}/portage.bsd-overlay/scripts/mkstages/etc/portage/patches/app-shells/bash/bash-4.2-fbsd-EINTR.patch "http://git.savannah.gnu.org/cgit/bash.git/patch/redir.c?id=208fdb509e072977ae7a621e916dfcd32c76047d"
 	fi
 }
 
@@ -276,15 +270,14 @@ run_catalyst() {
 }
 
 mk_stages() {
-	if [ -n "${CLANG}" ] ; then
-		local C_CLANG_APPEND_VERSION="-cl"
-	fi
+	[[ -n "${CLANG}" ]] && local C_CLANG_APPEND_VERSION="-cl"
 	local C_TMP_APPEND_VERSION="${C_CLANG_APPEND_VERSION}t"
 	if [ "${OLDVER}" != "${TARGETVER}" ] ; then
 		local SOURCE_STAGE3="stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}"
 	else
 		local SOURCE_STAGE3="stage3-${TARGETSUBARCH}-freebsd-${OLDVER}"
 	fi
+	[[ -n ${FORCESTAGE3} ]] && SOURCE_STAGE3="${FORCESTAGE3}"
 
 	run_catalyst stage1 ${SOURCE_STAGE3} ${C_TMP_APPEND_VERSION}
 
@@ -313,7 +306,7 @@ if [ ! -e "/var/tmp/catalyst/snapshots/portage-${WORKDATE}.tar.bz2" ] ; then
 	catalyst -C target=snapshot version_stamp=${WORKDATE} || exit 1
 fi
 
-if [ ! -e "/var/tmp/catalyst/builds/default/stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}.tar.bz2" ] && [ "${OLDVER}" != "${TARGETVER}" ] ; then
+if [ ! -e "/var/tmp/catalyst/builds/default/stage3tmp-${TARGETSUBARCH}-freebsd-${TARGETVER}.tar.bz2" ] && [ "${OLDVER}" != "${TARGETVER}" ] && [ -z "${FORCESTAGE3}" ]; then
 	upgrade_src_stage3
 	echo "upgrade done"
 fi
