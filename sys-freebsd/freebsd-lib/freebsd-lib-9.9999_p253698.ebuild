@@ -123,7 +123,11 @@ REMOVE_SUBDIRS="ncurses \
 	libgssapi"
 
 # For doing multilib over multibuild.eclass
-MULTIBUILD_VARIANTS=( $(get_all_abis) )
+if use multilib ; then
+	MULTIBUILD_VARIANTS=( $(get_all_abis) )
+else
+	MULTIBUILD_VARIANTS=${DEFAULT_ABI}
+fi
 
 # Are we building a cross-compiler?
 is_crosscompile() {

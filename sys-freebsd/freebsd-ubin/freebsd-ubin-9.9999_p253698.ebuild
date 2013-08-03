@@ -79,7 +79,11 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	bc dc
 	whois tftp man"
 
-MULTIBUILD_VARIANTS=( $(get_all_abis) )
+if use multilib ; then
+	MULTIBUILD_VARIANTS=( $(get_all_abis) )
+else
+	MULTIBUILD_VARIANTS=${DEFAULT_ABI}
+fi
 
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "

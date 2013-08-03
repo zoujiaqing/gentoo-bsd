@@ -36,7 +36,11 @@ REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind lukemftpd ftpd"
 
 IUSE="pam ssl kerberos ipv6 multilib nis xinetd"
 
-MULTIBUILD_VARIANTS=( $(get_all_abis) )
+if use multilib ; then
+	MULTIBUILD_VARIANTS=( $(get_all_abis) )
+else
+	MULTIBUILD_VARIANTS=${DEFAULT_ABI}
+fi
 
 pkg_setup() {
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
