@@ -36,7 +36,7 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/cddl"
 
-PATCHES=( "${FILESDIR}/${PN}-9.9999-libpaths.patch" )
+PATCHES=( "${FILESDIR}/${PN}-9.2-libpaths.patch" )
 
 src_unpack() {
 	freebsd_src_unpack

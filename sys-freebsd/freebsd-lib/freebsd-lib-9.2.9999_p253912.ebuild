@@ -93,7 +93,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.0-netware.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
-	"${FILESDIR}/${PN}-9.9999-flex.patch"
+	"${FILESDIR}/${PN}-9.2-flex.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
 
 # Here we disable and remove source which we don't need or want
@@ -158,7 +158,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
 	epatch "${FILESDIR}/${PN}-9.1-rmgssapi.patch"
-	epatch "${FILESDIR}/${PN}-9.9999-telnet.h.patch"
+	epatch "${FILESDIR}/${PN}-9.2-telnet.h.patch"
 
 	# Don't install the hesiod man page or header
 	rm "${WORKDIR}"/include/hesiod.h || die
