@@ -175,7 +175,7 @@ src_prepare() {
 	fi
 
 	if ! is_crosscompile ; then
-		[[ ${PV} != *9999* ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "Couldn't make sys symlink!"
+		[[ ${PV} != *9999* ]] && ( ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "Couldn't make sys symlink!" )
 	else
 		sed -i.bak -e "s:/usr/include:/usr/${CTARGET}/usr/include:g" \
 			"${S}/libc/rpc/Makefile.inc" \
