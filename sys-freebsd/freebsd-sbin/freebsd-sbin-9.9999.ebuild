@@ -55,7 +55,7 @@ PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
 
 src_prepare() {
-	use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	[[ ${PV} != *9999* ]] && use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
 }
 
 src_install() {

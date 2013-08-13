@@ -43,7 +43,7 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-9.0-bpf.patch"
 	epatch "${FILESDIR}/${PN}-9.0-getline.patch"
 	# Link in kernel sources
-	ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	[[ ${PV} != *9999* ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys"
 }
 
 src_compile() {

@@ -102,7 +102,7 @@ pkg_preinst() {
 }
 
 src_prepare() {
-	use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	[[ ${PV} != *9999* ]] && use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
 
 	# Rename manpage for renamed cmp
 	mv "${S}"/cmp/cmp.1 "${S}"/cmp/bsdcmp.1 || die
