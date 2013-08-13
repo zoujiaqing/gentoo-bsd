@@ -22,6 +22,7 @@ if [[ ${PV} != *9999* ]]; then
 			mirror://gentoo/${INCLUDE}.tar.bz2
 			mirror://gentoo/${USBIN}.tar.bz2
 			mirror://gentoo/${GNU}.tar.bz2
+			mirror://gentoo/${SECURE}.tar.bz2
 			build? ( mirror://gentoo/${SYS}.tar.bz2 )
 			zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
 fi
@@ -307,7 +308,6 @@ do_bootstrap() {
 	is_crosscompile && bootstrap_lib "lib/libc"
 	is_crosscompile || is_native_abi || bootstrap_libgcc
 	is_native_abi   || bootstrap_libthr
-	is_native_abi   || bootstrap_lib "lib/libsbuf"
 }
 
 # Compile it. Assume we have the toolchain setup correctly.
