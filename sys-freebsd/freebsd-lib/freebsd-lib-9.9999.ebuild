@@ -4,7 +4,7 @@
 
 EAPI=5
 
-inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild
+inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild multilib-build
 
 DESCRIPTION="FreeBSD's base system libraries"
 SLOT="0"
@@ -22,10 +22,8 @@ if [[ ${PV} != *9999* ]]; then
 			mirror://gentoo/${INCLUDE}.tar.bz2
 			mirror://gentoo/${USBIN}.tar.bz2
 			mirror://gentoo/${GNU}.tar.bz2
-			build? (
-				mirror://gentoo/${SYS}.tar.bz2 )
-			zfs? (
-				mirror://gentoo/${CDDL}.tar.bz2 )"
+			build? ( mirror://gentoo/${SYS}.tar.bz2 )
+			zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
 fi
 
 if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
@@ -36,6 +34,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
 		!sys-libs/libutempter
+		!dev-libs/libelf
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
@@ -58,7 +57,7 @@ fi
 
 IUSE="atm bluetooth ssl hesiod ipv6 kerberos usb netware
 	build crosscompile_opts_headers-only zfs
-	userland_GNU userland_BSD multilib"
+	userland_GNU userland_BSD"
 
 pkg_setup() {
 	[ -c /dev/zero ] || \
@@ -78,7 +77,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS="
+	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -89,12 +88,12 @@ pkg_setup() {
 PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
-	"${FILESDIR}/${PN}-9.0-liblink.patch"
-	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
+	"${FILESDIR}/${PN}-9.2-liblink.patch"
+	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-netware.patch"
+	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
-	"${FILESDIR}/${PN}-9.2-flex.patch"
-	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
+	)
 
 # Here we disable and remove source which we don't need or want
 # In order:
@@ -108,26 +107,16 @@ PATCHES=(
 #
 # The rest are libraries we already have somewhere else because
 # they are contribution.
-# Note: libtelnet is an internal lib used by telnet and telnetd programs
-# as it's not used in freebsd-lib package itself, it's pointless building
-# it here.
 REMOVE_SUBDIRS="ncurses \
 	libexpat \
 	libz libbz2 libarchive liblzma \
 	libsm libsmdb libsmutil \
 	libbegemot libbsnmp \
 	libpam libpcap bind libwrap libmagic \
-	libcom_err libtelnet
-	libelf libedit
+	libcom_err
+	libedit
 	libstand
 	libgssapi"
-
-# For doing multilib over multibuild.eclass
-if use multilib ; then
-	MULTIBUILD_VARIANTS=( $(get_all_abis) )
-else
-	MULTIBUILD_VARIANTS=${DEFAULT_ABI}
-fi
 
 # Are we building a cross-compiler?
 is_crosscompile() {
@@ -158,7 +147,6 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
 	epatch "${FILESDIR}/${PN}-9.1-rmgssapi.patch"
-	epatch "${FILESDIR}/${PN}-9.2-telnet.h.patch"
 
 	# Don't install the hesiod man page or header
 	rm "${WORKDIR}"/include/hesiod.h || die
@@ -186,7 +174,7 @@ src_prepare() {
 	fi
 
 	if ! is_crosscompile ; then
-		ln -s "/usr/src/sys-${RV}" "${WORKDIR}/sys" || die "Couldn't make sys symlink!"
+		ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "Couldn't make sys symlink!"
 	else
 		sed -i.bak -e "s:/usr/include:/usr/${CTARGET}/usr/include:g" \
 			"${S}/libc/rpc/Makefile.inc" \
@@ -205,6 +193,14 @@ src_prepare() {
 	fi
 }
 
+bootstrap_lib() {
+	for i ; do
+		cd "${WORKDIR}/${i}" || die "missing ${i}"
+		freebsd_src_compile
+		append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/${i}"
+	done
+}
+
 get_csudir() {
 	if [ -d "${WORKDIR}/lib/csu/$1-elf" ]; then
 		echo "lib/csu/$1-elf"
@@ -216,14 +212,13 @@ get_csudir() {
 bootstrap_csu() {
 	local csudir="$(get_csudir $(tc-arch-kernel ${CTARGET}))"
 	export RAW_LDFLAGS=$(raw-ldflags)
-	cd "${WORKDIR}/${csudir}" || die "Missing ${csudir}."
-	freebsd_src_compile
+	bootstrap_lib "${csudir}"
 
 	CFLAGS="${CFLAGS} -B ${MAKEOBJDIRPREFIX}/${WORKDIR}/${csudir}"
 	append-ldflags "-B ${MAKEOBJDIRPREFIX}/${WORKDIR}/${csudir}"
 
-	cd "${WORKDIR}/gnu/lib/csu" || die
-	freebsd_src_compile
+	bootstrap_lib "gnu/lib/csu"
+
 	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
 	for i in *.So ; do
 		ln -s $i ${i%.So}S.o
@@ -234,36 +229,20 @@ bootstrap_csu() {
 
 # Compile libssp_nonshared.a and add it's path to LDFLAGS.
 bootstrap_libssp_nonshared() {
-	cd "${WORKDIR}/gnu/lib/libssp/libssp_nonshared/" || die "missing libssp."
-	freebsd_src_compile
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/libssp/libssp_nonshared/"
+	bootstrap_lib "gnu/lib/libssp/libssp_nonshared"
 	export LDADD="-lssp_nonshared"
 }
 
-bootstrap_libc() {
-	cd "${WORKDIR}/lib/libc" || die
-	freebsd_src_compile
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libc"
-}
-
 bootstrap_libgcc() {
-	cd "${WORKDIR}/lib/libcompiler_rt" || die
-	freebsd_src_compile
+	bootstrap_lib "lib/libcompiler_rt"
 	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libcompiler_rt" || die
 	ln -s libcompiler_rt.a libgcc.a || die
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libcompiler_rt"
 
-	bootstrap_libc
-
-	cd "${WORKDIR}/gnu/lib/libgcc" || die
-	freebsd_src_compile
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/libgcc"
+	bootstrap_lib "lib/libc" "gnu/lib/libgcc"
 }
 
 bootstrap_libthr() {
-	cd "${WORKDIR}/lib/libthr" || die
-	freebsd_src_compile
-	append-ldflags "-L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libthr"
+	bootstrap_lib "lib/libthr"
 	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libthr" || die
 	ln -s libthr.so libpthread.so
 }
@@ -273,7 +252,7 @@ bootstrap_libthr() {
 CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil lib/librt"
 
 # What to build for non-default ABIs.
-NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt"
+NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt lib/libsbuf lib/libcam lib/libelf"
 
 # Subdirs for a native build:
 NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc"
@@ -281,13 +260,12 @@ NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu
 # Is my $ABI native ?
 is_native_abi() {
 	is_crosscompile && return 1
-	use multilib || return 0
-	[ "${ABI}" = "${DEFAULT_ABI}" ]
+	multilib_is_native_abi
 }
 
 # Do we need to bootstrap the csu and libssp_nonshared?
 need_bootstrap() {
-	is_crosscompile || use build || { ! is_native_abi && ! has_version '>=sys-freebsd/freebsd-lib-9.1-r8[multilib]' ; } || has_version "<${CATEGORY}/${P}" || [[ ${PV} == *9999* ]]
+	is_crosscompile || use build || { ! is_native_abi && ! has_version '>=sys-freebsd/freebsd-lib-9.1-r8[multilib]' && ! has_version ">=sys-freebsd/freebsd-lib-9.1-r11[${MULTILIB_USEDEP}]" ; } || has_version "<${CATEGORY}/${P}"
 }
 
 # Get the subdirs we are building.
@@ -326,9 +304,10 @@ do_bootstrap() {
 	fi
 	bootstrap_csu
 	bootstrap_libssp_nonshared
-	is_crosscompile && bootstrap_libc
+	is_crosscompile && bootstrap_lib "lib/libc"
 	is_crosscompile || is_native_abi || bootstrap_libgcc
 	is_native_abi   || bootstrap_libthr
+	is_native_abi   || bootstrap_lib "lib/libsbuf"
 }
 
 # Compile it. Assume we have the toolchain setup correctly.
@@ -359,12 +338,7 @@ src_compile() {
 		unalias sed
 	fi
 
-	# Support for upgrade from a previous version.
-	# If install command does not support -l option, this is necessary.
-	if is_crosscompile || has_version '<sys-freebsd/freebsd-ubin-9.2_beta1' ; then
-		export INSTALL_LINK="ln -f"
-		export INSTALL_SYMLINK="ln -fs"
-	fi
+	use usb && export NON_NATIVE_SUBDIRS="${NON_NATIVE_SUBDIRS} lib/libusb lib/libusbhid"
 
 	cd "${WORKDIR}/include"
 	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
@@ -392,6 +366,7 @@ src_compile() {
 	if is_crosscompile ; then
 		do_compile
 	else
+		local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_compile
 	fi
 }
@@ -504,7 +479,7 @@ do_install() {
 	done
 
 	if ! is_crosscompile ; then
-		if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+		if ! multilib_is_native_abi ; then
 			gen_libc_ldscript "usr/$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
 		else
 			dodir "$(get_libdir)"
@@ -512,14 +487,28 @@ do_install() {
 		fi
 	else
 		CHOST=${CTARGET} gen_libc_ldscript "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib"
+		# We're done for the cross libc here.
+		return 0
 	fi
 
-	if use multilib ; then
+	# Install a libusb.pc for better compat with Linux's libusb
+	if use usb ; then
+		dodir /usr/$(get_libdir)/pkgconfig
+		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb.pc" || die
+		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb-1.0.pc" || die
+	fi
+
+	# Generate ldscripts for core libraries that will go in /
+	multilib_is_native_abi && \
+		gen_usr_ldscript -a alias cam geom ipsec jail kiconv \
+			kvm m md procstat sbuf thr ufs util elf
+
+	if [[ ${#MULTIBUILD_VARIANTS[@]} -gt 1 ]] ; then
 		cd "${D}/usr/include"
 		for i in machine/*.h fenv.h ; do
 			move_header ${i}
 		done
-		if [ "${ABI}" = "${DEFAULT_ABI}" ] ; then
+		if multilib_is_native_abi ; then
 			# Supposedly the last one!
 			local uniq_headers="$(echo ${header_list} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')"
 			for j in ${uniq_headers} ; do
@@ -555,6 +544,7 @@ src_install() {
 		return 0
 	else
 		export STRIP_MASK="*/usr/lib*/*crt*.o"
+		local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_install
 	fi
 
@@ -565,17 +555,6 @@ src_install() {
 	# Install ttys file
 	local MACHINE="$(tc-arch-kernel)"
 	doins "etc.${MACHINE}"/*
-
-	# Generate ldscripts for core libraries that will go in /
-	gen_usr_ldscript -a alias cam geom ipsec jail kiconv \
-		kvm m md procstat sbuf thr ufs util
-
-	# Install a libusb.pc for better compat with Linux's libusb
-	if use usb ; then
-		dodir /usr/$(get_libdir)/pkgconfig
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb.pc" || die
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb-1.0.pc" || die
-	fi
 }
 
 install_includes()

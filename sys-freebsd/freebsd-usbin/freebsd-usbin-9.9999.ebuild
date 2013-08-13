@@ -20,18 +20,18 @@ if [[ ${PV} != *9999* ]]; then
 			mirror://gentoo/${GNU}.tar.bz2
 			nis? ( mirror://gentoo/${LIBEXEC}.tar.bz2 )
 			build? ( mirror://gentoo/${SYS}.tar.bz2
-				mirror://gentoo/${INCLUDE}.tar.bz2 )"
+			mirror://gentoo/${INCLUDE}.tar.bz2 )"
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 	=sys-freebsd/freebsd-libexec-${RV}*
 	=sys-freebsd/freebsd-contrib-${RV}*
+	acpi? ( sys-power/iasl )
 	build? ( sys-apps/baselayout )
 	ssl? ( dev-libs/openssl )
 	>=app-arch/libarchive-3
 	sys-apps/tcp-wrappers
 	dev-util/dialog
-	dev-libs/libelf
 	>=dev-libs/libedit-20120311.3.0-r1
 	net-libs/libpcap
 	kerberos? ( app-crypt/heimdal )"
@@ -62,7 +62,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= WITHOUT_GSSAPI= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_GSSAPI= "
 
 	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= "
 
@@ -84,11 +84,11 @@ REMOVE_SUBDIRS="
 	tcpdump ndp inetd
 	wpa/wpa_supplicant wpa/hostapd wpa/hostapd_cli wpa/wpa_cli wpa/wpa_passphrase
 	zic amd
-	pkg pkg_install freebsd-update sysrc service"
+	pkg pkg_install freebsd-update service sysrc"
 
 src_prepare() {
 	if ! use build; then
-		ln -s "/usr/src/sys-${RV}" "${WORKDIR}/sys"
+		ln -s "/usr/src/sys" "${WORKDIR}/sys"
 		ln -s "/usr/include" "${WORKDIR}/include"
 	else
 		dummy_mk mount_smbfs

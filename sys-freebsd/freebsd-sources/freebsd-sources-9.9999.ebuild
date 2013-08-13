@@ -2,25 +2,34 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit bsdmk freebsd flag-o-matic
+EAPI=5
+
+inherit bsdmk freebsd flag-o-matic toolchain-funcs
 
 DESCRIPTION="FreeBSD kernel sources"
-SLOT="${RV}"
+SLOT="0"
 
-IUSE="symlink"
+IUSE="+build-generic profile"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 	SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 fi
 
-RDEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
+RDEPEND="=sys-freebsd/freebsd-cddl-${RV}*
+	=sys-freebsd/freebsd-mk-defs-${RV}*
 	!sys-freebsd/virtio-kmod"
-DEPEND=""
+DEPEND="build-generic? (
+		=sys-freebsd/freebsd-cddl-${RV}*
+		=sys-freebsd/freebsd-usbin-${RV}*
+		=sys-freebsd/freebsd-mk-defs-${RV}*
+	)"
 
 RESTRICT="strip binchecks"
 
 S="${WORKDIR}/sys"
+
+KERN_BUILD=GENERIC
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-9.2-gentoo.patch"
@@ -30,13 +39,10 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-8.0-subnet-route-pr40133.patch"
 	"${FILESDIR}/${PN}-7.1-includes.patch"
 	"${FILESDIR}/${PN}-9.0-sysctluint.patch"
-	"${FILESDIR}/${PN}-9.2-no_ctf.patch"
 	"${FILESDIR}/${PN}-9.2-gentoo-gcc.patch"
 	"${FILESDIR}/${PN}-7.0-tmpfs_whiteout_stub.patch" )
 
-src_unpack() {
-	freebsd_src_unpack
-
+src_prepare() {
 	# This replaces the gentoover patch, it doesn't need reapply every time.
 	sed -i -e 's:^REVISION=.*:REVISION="'${PVR}'":' \
 		-e 's:^BRANCH=.*:BRANCH="Gentoo":' \
@@ -53,28 +59,45 @@ src_unpack() {
 	sed -e "s:-Werror:-Wno-error:g" \
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die
+
+	# Only used with USE=build-generic, let the kernel build with its own flags, its safer.
+	unset LDFLAGS CFLAGS CXXFLAGS ASFLAGS KERNEL
+}
+
+src_configure() {
+	if use build-generic ; then
+		tc-export CC
+		cd "${S}/$(tc-arch-kernel)/conf" || die
+		config ${KERN_BUILD} || die
+	fi
 }
 
 src_compile() {
-	einfo "Nothing to compile.."
+	if use build-generic ; then
+		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
+		freebsd_src_compile depend
+		freebsd_src_compile
+	else
+		einfo "Nothing to compile.."
+	fi
 }
 
 src_install() {
-	insinto "/usr/src/sys-${RV}"
+	if use build-generic ; then
+		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
+		freebsd_src_install
+		rm -rf "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}"
+		cd "${S}"
+	fi
+
+	insinto "/usr/src/sys"
 	doins -r "${S}/"*
 }
 
-pkg_postinst() {
-	if [[ ! -L "${ROOT}/usr/src/sys" ]]; then
-		einfo "/usr/src/sys symlink doesn't exist; creating symlink to sys-${RV}..."
-		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
-			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
-	elif use symlink; then
-		einfo "Updating /usr/src/sys symlink to sys-${RV}..."
-		rm "${ROOT}/usr/src/sys" || \
-			eerror "Couldn't remove previous symlinks, please fix manually."
-		ln -sf "sys-${RV}" "${ROOT}/usr/src/sys" || \
-			eerror "Couldn't create ${ROOT}/usr/src/sys symlink."
+pkg_preinst() {
+	if [[ -L "${ROOT}/usr/src/sys" ]]; then
+		einfo "/usr/src/sys is a symlink, removing it..."
+		rm -f "${ROOT}/usr/src/sys"
 	fi
 
 	if use sparc-fbsd ; then

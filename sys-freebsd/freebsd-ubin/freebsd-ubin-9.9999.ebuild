@@ -4,11 +4,11 @@
 
 EAPI=5
 
-inherit bsdmk freebsd flag-o-matic pam multilib multibuild
+inherit bsdmk freebsd flag-o-matic pam multilib multibuild multilib-build
 
 DESCRIPTION="FreeBSD's base system source for /usr/bin"
 SLOT="0"
-IUSE="ar atm audit bluetooth ipv6 kerberos multilib netware nis ssl usb build zfs"
+IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build zfs"
 LICENSE="BSD zfs? ( CDDL )"
 
 if [[ ${PV} != *9999* ]]; then
@@ -23,8 +23,7 @@ if [[ ${PV} != *9999* ]]; then
 			build? ( mirror://gentoo/${SYS}.tar.bz2 )"
 fi
 
-RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?]
-	>=sys-freebsd/freebsd-lib-9.1-r7[multilib?]
+RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
 	ssl? ( dev-libs/openssl )
 	kerberos? ( virtual/krb5 )
 	ar? ( >=app-arch/libarchive-3 )
@@ -79,12 +78,6 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	bc dc
 	whois tftp man"
 
-if use multilib ; then
-	MULTIBUILD_VARIANTS=( $(get_all_abis) )
-else
-	MULTIBUILD_VARIANTS=${DEFAULT_ABI}
-fi
-
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
 	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
@@ -109,7 +102,7 @@ pkg_preinst() {
 }
 
 src_prepare() {
-	use build || ln -s "/usr/src/sys-${RV}" "${WORKDIR}/sys"
+	use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
 
 	# Rename manpage for renamed cmp
 	mv "${S}"/cmp/cmp.1 "${S}"/cmp/bsdcmp.1 || die
@@ -126,7 +119,7 @@ src_prepare() {
 }
 
 setup_multilib_vars() {
-	if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+	if ! multilib_is_native_abi ; then
 		cd "${WORKDIR}/usr.bin/ldd" || die
 		export mymakeopts="${mymakeopts} PROG=ldd32 WITHOUT_MAN="
 	else
@@ -136,10 +129,12 @@ setup_multilib_vars() {
 }
 
 src_compile() {
+	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile
 }
 
 src_install() {
+	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 
 	# baselayout requires these in /bin

@@ -27,8 +27,7 @@ fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
 	=sys-freebsd/freebsd-libexec-${RV}*
-	build? ( sys-apps/baselayout )
-	dev-libs/libelf"
+	build? ( sys-apps/baselayout )"
 
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
@@ -36,7 +35,10 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/cddl"
 
-PATCHES=( "${FILESDIR}/${PN}-9.2-libpaths.patch" )
+PATCHES=(
+	"${FILESDIR}/${PN}-9.2-libpaths.patch"
+	"${FILESDIR}/${PN}-9.2-underlink.patch"
+	)
 
 src_unpack() {
 	freebsd_src_unpack
@@ -49,7 +51,7 @@ src_install() {
 	local mylibdir=$(get_libdir)
 	mkinstall SHLIBDIR="/usr/${mylibdir}" LIBDIR="/usr/${mylibdir}" || die
 
-	gen_usr_ldscript -a avl nvpair umem uutil zfs zpool
+	gen_usr_ldscript -a avl nvpair umem uutil zfs zpool zfs_core
 
 	# Install zfs volinit script.
 	newinitd "${FILESDIR}"/zvol.initd-9.0 zvol

@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=5
 
-inherit bsdmk freebsd
+inherit bsdmk freebsd toolchain-funcs
 
 DESCRIPTION="FreeBSD's rescue binaries"
 SLOT="0"
@@ -29,7 +29,6 @@ fi
 
 RDEPEND=""
 DEPEND="sys-devel/flex
-	>=app-arch/libarchive-3.0.3[static-libs]
 	app-arch/xz-utils[static-libs]
 	sys-libs/ncurses[static-libs]
 	dev-libs/expat[static-libs]
@@ -39,12 +38,10 @@ DEPEND="sys-devel/flex
 	dev-libs/openssl[static-libs]
 	sys-libs/zlib[static-libs]
 	sys-libs/readline[static-libs]
-	virtual/pkgconfig
 	=sys-freebsd/freebsd-lib-${RV}*[atm?,netware?]
 	=sys-freebsd/freebsd-sources-${RV}*
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )"
-
 
 S="${WORKDIR}/rescue"
 
@@ -53,22 +50,27 @@ pkg_setup() {
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= "
 	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
+	mymakeopts="${mymakeopts} NO_PIC= "
 }
 
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
 	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}"-9.2-pkgconfig_static_libarchive.patch
 	epatch "${FILESDIR}/${PN}"-7.1-zlib.patch
-	epatch "${FILESDIR}/${PN}"-9.1-libcleverlink.patch
-	epatch "${FILESDIR}/${PN}"-9.1-bsdtar.patch
 	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
 }
 
 src_compile() {
+	tc-export CC
 	# crunchgen is now checks env MAKE.
 	# Use to force BSD's make
 	export MAKE=/usr/bin/make
 
+	cd "${WORKDIR}/lib/libarchive"
+	echo "#include <expat.h>" > bsdxml.h
+	freebsd_src_compile
+	export CC="${CC} -L${WORKDIR}/lib/libarchive"
+
+	cd "${S}"
 	freebsd_src_compile
 }

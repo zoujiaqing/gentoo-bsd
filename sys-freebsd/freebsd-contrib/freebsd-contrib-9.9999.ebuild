@@ -20,20 +20,6 @@ DEPEND="=sys-freebsd/freebsd-sources-${RV}*
 
 S="${WORKDIR}/gnu"
 
-src_unpack() {
-	if [[ ${PV} == *9999* ]]; then
-		freebsd_src_unpack
-	else
-		echo ">>> Unpacking needed parts of ${GNU}.tar.bz2 to ${WORKDIR}"
-		tar -jxpf "${DISTDIR}/${GNU}.tar.bz2" gnu/lib/libodialog gnu/usr.bin/sort gnu/usr.bin/patch
-		echo ">>> Unpacking needed parts of ${CONTRIB}.tar.bz2 to ${WORKDIR}"
-		tar -jxpf "${DISTDIR}/${CONTRIB}.tar.bz2" contrib/gnu-sort
-
-		freebsd_do_patches
-		freebsd_rename_libraries
-	fi
-}
-
 src_compile() {
 	cd "${S}/lib/libodialog"
 	freebsd_src_compile
