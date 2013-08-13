@@ -28,6 +28,7 @@ SYS="freebsd-sys-${PV}"
 INCLUDE="freebsd-include-${PV}"
 RESCUE="freebsd-rescue-${PV}"
 CDDL="freebsd-cddl-${PV}"
+SECURE="freebsd-secure-${PV}"
 
 # Release version (5.3, 5.4, 6.0, etc)
 # Drop patch level from RV using ${MY_PV}.
@@ -127,6 +128,13 @@ freebsd_src_unpack() {
 
 	freebsd_do_patches
 	freebsd_rename_libraries
+
+	# Starting from FreeBSD 9.2, its install command supports the -l option and
+	# they now use it. Emulate it if we are on a system that does not have it.
+	if [[ ${RV} > 9.1 ]] && ! has_version '>=sys-freebsd/freebsd-ubin-9.2_beta1' ; then
+		export INSTALL_LINK="ln -f"
+		export INSTALL_SYMLINK="ln -fs"
+	fi
 }
 
 freebsd_src_compile() {
@@ -138,20 +146,13 @@ freebsd_src_compile() {
 	# Make sure to use FreeBSD definitions while crosscompiling
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
-	# Support for upgrade from a previous version.
-	# If install command does not support -l option, this is necessary.
-	if [[ ${RV} > 9.1 ]] && [[ ${PV} != *9999* ]] && has_version '<sys-freebsd/freebsd-ubin-9.2_beta1' ; then
-		export INSTALL_LINK="ln -f"
-		export INSTALL_SYMLINK="ln -fs"
-	fi
-
 	# Create objdir if MAKEOBJDIRPREFIX is defined, so that we can make out of
 	# tree builds easily.
 	if [[ -n "${MAKEOBJDIRPREFIX}" ]] ; then
 		mkmake obj || die
 	fi
 
-	bsdmk_src_compile
+	bsdmk_src_compile "$@"
 }
 
 # Helper function to make a multilib build with FreeBSD Makefiles.
@@ -161,12 +162,11 @@ freebsd_src_compile() {
 #
 # Important note: To use this function you _have_ to:
 # - inherit multilib.eclass and multibuild.eclass
-# - set MULTILIB_VARIANTS
-# - have a multilib useflag in IUSE
+# - set MULTIBUILD_VARIANTS
 
 freebsd_multilib_multibuild_wrapper() {
 	# Get the ABI from multibuild.eclass
-	# This assumes MULTILIB_VARIANTS contains only valid ABIs.
+	# This assumes MULTIBUILD_VARIANTS contains only valid ABIs.
 	local ABI=${MULTIBUILD_VARIANT}
 
 	# First, save the variables: CFLAGS, CXXFLAGS, LDFLAGS, LDADD and mymakeopts.
@@ -179,7 +179,7 @@ freebsd_multilib_multibuild_wrapper() {
 
 	local target="$(tc-arch-kernel ${CHOST})"
 	mymakeopts="${mymakeopts} TARGET=${target} MACHINE=${target} MACHINE_ARCH=${target} SHLIBDIR=/usr/$(get_libdir) LIBDIR=/usr/$(get_libdir)"
-	if use multilib && [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
+	if [ "${ABI}" != "${DEFAULT_ABI}" ] ; then
 		mymakeopts="${mymakeopts} COMPAT_32BIT="
 	fi
 
