@@ -26,7 +26,6 @@ fi
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 	=sys-freebsd/freebsd-libexec-${RV}*
 	=sys-freebsd/freebsd-contrib-${RV}*
-	acpi? ( sys-power/iasl )
 	build? ( sys-apps/baselayout )
 	ssl? ( dev-libs/openssl )
 	>=app-arch/libarchive-3
