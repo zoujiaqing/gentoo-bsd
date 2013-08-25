@@ -62,4 +62,11 @@ src_compile() {
 src_install() {
 	dodir /boot/defaults
 	mkinstall FILESDIR=/boot || die "mkinstall failed"
+
+	cd "${WORKDIR}/sys/$(tc-arch-kernel)/conf" || die
+	insinto /boot
+	newins GENERIC.hints device.hints
+
+	echo 'CONFIG_PROTECT="/boot/device.hints"' > "${T}"/50boot0
+	doenvd "${T}"/50boot0
 }
