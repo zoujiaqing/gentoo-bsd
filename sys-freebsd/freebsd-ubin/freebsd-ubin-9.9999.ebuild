@@ -139,7 +139,7 @@ src_install() {
 
 	# baselayout requires these in /bin
 	dodir /bin
-	for bin in sed printf fuser; do
+	for bin in sed printf ; do
 		mv "${D}/usr/bin/${bin}" "${D}/bin/" || die "mv ${bin} failed"
 		dosym /bin/${bin} /usr/bin/${bin} || die "dosym ${bin} failed"
 	done
