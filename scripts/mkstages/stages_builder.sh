@@ -47,7 +47,7 @@ prepare(){
 	if [ ! -e "/var/tmp/catalyst/builds/default/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2" ] && [ -z "${FORCESTAGE3}" ]; then
 		echo "Downloading aballier's ${TARGETSUBARCH} stage3 file..."
 		wget -q -P /var/tmp/catalyst/builds/default http://dev.gentoo.org/~aballier/fbsd${OLDVER}/${TARGETARCH}/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2
-		[[ $? -ne 0 ] && exit 1
+		[[ $? -ne 0 ]] && exit 1
 	fi
 
 	cd ${WORKDIR}
