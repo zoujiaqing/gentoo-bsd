@@ -35,7 +35,7 @@ pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= "
+	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_ATF= WITHOUT_ICONV= WITHOUT_GROFF= "
 }
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
@@ -81,9 +81,14 @@ src_unpack() {
 src_compile() {
 	export ESED="/usr/bin/sed"
 
+	# i18n/csmapper/APPLE requires mkcsmapper_static
+	# cd "${WORKDIR}"/usr.bin/mkcsmapper_static
+	# freebsd_src_compile
+
 	# This is a groff problem and not a -shared problem.
+	cd "${S}"
 	export GROFF_TMAC_PATH="/usr/share/tmac/:/usr/share/groff/1.19.1/tmac/"
-	freebsd_src_compile || die "emake failed"
+	freebsd_src_compile -j1 || die "emake failed"
 }
 
 src_install() {
