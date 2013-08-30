@@ -43,6 +43,8 @@ src_prepare() {
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
+	# fails to build. I'll be fixed in the future.
+	sed -e '/SUBDIR+=.*userboot/d' -i "${S}"/Makefile.amd64 || die
 }
 
 src_compile() {
