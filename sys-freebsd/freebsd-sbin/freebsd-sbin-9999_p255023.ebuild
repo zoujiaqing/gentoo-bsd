@@ -56,9 +56,6 @@ PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
 
 src_prepare() {
 	[[ ${PV} != *9999* ]] && use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
-
-	# fix Consider setting COMPILER_TYPE.
-	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_install() {

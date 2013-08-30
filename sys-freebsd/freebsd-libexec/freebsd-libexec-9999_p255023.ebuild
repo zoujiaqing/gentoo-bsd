@@ -48,9 +48,6 @@ pkg_setup() {
 
 src_prepare() {
 	ln -s /usr/include "${WORKDIR}/include"
-
-	# fix Consider setting COMPILER_TYPE.
-	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 setup_multilib_vars() {

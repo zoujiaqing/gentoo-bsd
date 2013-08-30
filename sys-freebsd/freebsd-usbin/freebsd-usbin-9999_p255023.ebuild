@@ -95,9 +95,6 @@ src_prepare() {
 	# Don't install mtree format manpage
 	# it's installed by libarchive.
 	sed -e "s: mtree.5::g" -i "${S}"/mtree/Makefile
-
-	# fix Consider setting COMPILER_TYPE.
-	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_compile() {

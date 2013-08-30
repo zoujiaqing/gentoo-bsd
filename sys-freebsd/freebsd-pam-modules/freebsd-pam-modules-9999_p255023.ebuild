@@ -38,9 +38,6 @@ src_unpack() {
 	for module in pam_deny pam_passwdqc pam_permit pam_krb5; do
 		sed -i -e "s:${module}::" "${S}"/modules.inc
 	done
-
-	# fix Consider setting COMPILER_TYPE.
-	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_install() {
