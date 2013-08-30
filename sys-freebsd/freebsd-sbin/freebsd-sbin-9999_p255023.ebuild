@@ -49,13 +49,16 @@ pkg_setup() {
 REMOVE_SUBDIRS="dhclient pfctl pflogd rcorder resolvconf"
 
 PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
-	"${FILESDIR}/${PN}-7.1-zlib.patch"
+	"${FILESDIR}/${PN}-9999-zlib.patch"
 	"${FILESDIR}/${PN}-6.2-ldconfig.patch"
 	"${FILESDIR}/${PN}-6.1-pr102701.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
 
 src_prepare() {
 	[[ ${PV} != *9999* ]] && use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
+
+	# fix Consider setting COMPILER_TYPE.
+	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_install() {
