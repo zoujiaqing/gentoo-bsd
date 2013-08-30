@@ -195,7 +195,7 @@ src_prepare() {
 	# fix file collisions, dev-libs/libiconv-1.14:0::gentoo
 	# /usr/include/iconv.h
 	cd "${S}"
-	rm include/iconv.h || die
+	[[ -e include/iconv.h ]] && rm include/iconv.h
 }
 
 bootstrap_lib() {
