@@ -27,9 +27,9 @@ PATCHES=( "${FILESDIR}"/${PN}-9.0-gentoo.patch )
 
 pkg_setup() {
 	# Avoid installing pam_ssh as that has its own ebuild.
-	mymakeopts="${mymakeopts} NO_OPENSSH= "
-	use kerberos || mymakeopts="${mymakeopts} NO_KERBEROS= "
-	use nis || mymakeopts="${mymakeopts} NO_NIS= "
+	mymakeopts="${mymakeopts} WITHOUT_OPENSSH= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS= "
+	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 }
 
 src_unpack() {
@@ -38,6 +38,9 @@ src_unpack() {
 	for module in pam_deny pam_passwdqc pam_permit pam_krb5; do
 		sed -i -e "s:${module}::" "${S}"/modules.inc
 	done
+
+	# fix Consider setting COMPILER_TYPE.
+	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_install() {
