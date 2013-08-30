@@ -48,12 +48,9 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-9.0-fixmakefiles.patch"
 	"${FILESDIR}/${PN}-setXid.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
-	"${FILESDIR}/${PN}-9.1-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
-	"${FILESDIR}/${PN}-9.1-minigzip.patch"
-	"${FILESDIR}/${PN}-9.1-grep.patch"
-	"${FILESDIR}/${PN}-9.1-ar-libarchive3.patch" )
+	"${FILESDIR}/${PN}-9.1-minigzip.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -65,6 +62,10 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 # - binutils gprof
 # - dc stuff
 # and the rest are misc utils we already provide somewhere else.
+
+# fix later
+# gcc-4.6 build fails, dtc
+# build fails, kdump mandoc truss xlint
 REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	gzip gprof
 	lzmainfo xz xzdec
@@ -76,7 +77,8 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	compile_et lex vi smbutil file vacation nc ftp telnet
 	c99 c89
 	bc dc
-	whois tftp man"
+	whois tftp man
+	dtc kdump mandoc truss xlint"
 
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
@@ -89,7 +91,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
-	mymakeopts="${mymakeopts} WITHOUT_CLANG= "
+	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_ATF= WITHOUT_ICONV= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= "
 }
 
 pkg_preinst() {
