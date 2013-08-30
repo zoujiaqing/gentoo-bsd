@@ -65,3 +65,16 @@ index fcb16de..6d0312b 100644
  
  MAN=		cam.3 cam_cdbparse.3
  
+diff --git a/lib/libtelnet/Makefile b/lib/libtelnet/Makefile
+index 446f552..f55b3ba 100644
+--- a/lib/libtelnet/Makefile
++++ b/lib/libtelnet/Makefile
+@@ -13,6 +13,8 @@ INTERNALLIB=
+ SRCS=		genget.c getent.c misc.c
+ CFLAGS+=	-I${TELNETDIR}
+ 
++CFLAGS+=	-I${.CURDIR}/../libmp
++
+ WARNS?=		2
+ 
+ .if !defined(RELEASE_CRUNCH)
