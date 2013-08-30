@@ -38,8 +38,8 @@ src_unpack() {
 	# pcap-int.h redefines snprintf as pcap_snprintf
 	epatch "${FILESDIR}/${PN}-9.0-pcap_pollution.patch"
 	# Use system's libevent
-	epatch "${FILESDIR}/${PN}-9.0-libevent.patch"
-	epatch "${FILESDIR}/${PN}-9.0-pflogd.patch"
+	epatch "${FILESDIR}/${PN}-9999-libevent.patch"
+	epatch "${FILESDIR}/${PN}-9999-pflogd.patch"
 	epatch "${FILESDIR}/${PN}-9.0-bpf.patch"
 	epatch "${FILESDIR}/${PN}-9.0-getline.patch"
 	# Link in kernel sources
