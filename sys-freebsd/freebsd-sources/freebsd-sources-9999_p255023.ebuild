@@ -49,8 +49,8 @@ src_prepare() {
 		"${S}/conf/newvers.sh"
 
 	# __FreeBSD_cc_version comes from FreeBSD's gcc.
-	# on 9.0-RELEASE it's 900001.
-	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=900001:g" \
+	# on 10.0-RELEASE it's 1000001.
+	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=1000001:g" \
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die "Couldn't set __FreeBSD_cc_version"
 
