@@ -43,6 +43,8 @@ src_prepare() {
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
+	# fix Consider setting COMPILER_TYPE.
+	[[ ${PV} == *9999* ]] && rm -rf "${WORKDIR}"/share
 }
 
 src_compile() {
