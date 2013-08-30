@@ -132,6 +132,13 @@ freebsd_src_unpack() {
 	else
 		unpack ${A}
 	fi
+
+	# When share/mk exists in ${WORKDIR}, it is used on FreeBSD 10.0.
+	# I would enable the code until I find a better solution.
+	if [[ ${PV} == 9999 ]] && [[ ${PN} != freebsd-mk-defs ]]; then
+		[[ -e "${WORKDIR}"/share/mk ]] && rm -rf "${WORKDIR}"/share/mk
+	fi
+
 	cd "${S}"
 
 	dummy_mk ${REMOVE_SUBDIRS}
