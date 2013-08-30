@@ -14,19 +14,13 @@ LICENSE="BSD GPL-2+ libodialog"
 SLOT="0"
 IUSE=""
 
-RDEPEND=""
+RDEPEND="=sys-freebsd/freebsd-ubin-${RV}*"
 DEPEND="=sys-freebsd/freebsd-sources-${RV}*
 	=sys-freebsd/freebsd-mk-defs-${RV}*"
 
 S="${WORKDIR}/gnu"
 
 src_compile() {
-	cd "${S}/lib/libodialog"
-	freebsd_src_compile
-
-	cd "${S}/usr.bin/sort"
-	freebsd_src_compile
-
 	cd "${S}/usr.bin/patch"
 	freebsd_src_compile
 }
@@ -34,12 +28,6 @@ src_compile() {
 src_install() {
 	use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
-
-	cd "${S}/lib/libodialog"
-	mkinstall LIBDIR="/usr/$(get_libdir)" || die "libodialog install failed"
-
-	cd "${S}/usr.bin/sort"
-	mkinstall BINDIR="/bin/" || die "sort install failed"
 
 	cd "${S}/usr.bin/patch"
 	mkinstall BINDIR="/usr/bin/" || die "patch install failed"

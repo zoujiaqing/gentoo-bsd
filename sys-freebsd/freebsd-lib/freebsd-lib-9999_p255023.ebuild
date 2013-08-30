@@ -78,7 +78,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= "
+	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_ATF= WITHOUT_LDNS= WITHOUT_ICONV= "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -89,9 +89,8 @@ pkg_setup() {
 PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
-	"${FILESDIR}/${PN}-9.2-liblink.patch"
+	"${FILESDIR}/${PN}-9999-liblink.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
-	"${FILESDIR}/${PN}-9.0-netware.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
 	)
@@ -192,6 +191,11 @@ src_prepare() {
 	if use userland_GNU; then
 		find . -name Makefile -exec sed -ibak 's/sed -i /sed -i/' {} \;
 	fi
+
+	# fix file collisions, dev-libs/libiconv-1.14:0::gentoo
+	# /usr/include/iconv.h
+	cd "${S}"
+	rm include/iconv.h || die
 }
 
 bootstrap_lib() {
