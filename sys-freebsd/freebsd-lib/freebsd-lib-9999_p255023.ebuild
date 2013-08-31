@@ -154,6 +154,10 @@ src_prepare() {
 	sed -i.bak -e 's:hesiod.c::' -e 's:hesiod.3::' \
 	"${WORKDIR}"/lib/libc/net/Makefile.inc || die
 
+	# fix file collisions, dev-libs/libiconv-1.14:0::gentoo
+	# /usr/include/iconv.h
+	rm "${WORKDIR}"/include/iconv.h || die
+
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
@@ -191,11 +195,6 @@ src_prepare() {
 	if use userland_GNU; then
 		find . -name Makefile -exec sed -ibak 's/sed -i /sed -i/' {} \;
 	fi
-
-	# fix file collisions, dev-libs/libiconv-1.14:0::gentoo
-	# /usr/include/iconv.h
-	cd "${S}"
-	[[ -e include/iconv.h ]] && rm include/iconv.h
 }
 
 bootstrap_lib() {
@@ -345,7 +344,7 @@ src_compile() {
 	use usb && export NON_NATIVE_SUBDIRS="${NON_NATIVE_SUBDIRS} lib/libusb lib/libusbhid"
 
 	cd "${WORKDIR}/include"
-	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
+	WITHOUT_ICONV= $(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
 
@@ -586,7 +585,7 @@ install_includes()
 	local MACHINE="$(tc-arch-kernel)"
 
 	einfo "Installing includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
-	$(freebsd_get_bmake) installincludes \
+	WITHOUT_ICONV= $(freebsd_get_bmake) installincludes \
 		MACHINE=${MACHINE} MACHINE_ARCH=${MACHINE} \
 		DESTDIR="${DESTDIR}" \
 		INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
@@ -596,7 +595,7 @@ install_includes()
 	for i in $EXTRA_INCLUDES; do
 		einfo "Installing $i includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 		cd "${WORKDIR}/$i" || die
-		$(freebsd_get_bmake) installincludes DESTDIR="${DESTDIR}" \
+		WITHOUT_ICONV= $(freebsd_get_bmake) installincludes DESTDIR="${DESTDIR}" \
 			MACHINE=${MACHINE} MACHINE_ARCH=${MACHINE} \
 			INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
 			BINGRP="${BINGRP}" || die "problem installing $i includes."
