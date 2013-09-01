@@ -14,9 +14,10 @@ LICENSE="BSD GPL-2+ libodialog"
 SLOT="0"
 IUSE=""
 
-RDEPEND="=sys-freebsd/freebsd-ubin-${RV}*"
+RDEPEND=""
 DEPEND="=sys-freebsd/freebsd-sources-${RV}*
-	=sys-freebsd/freebsd-mk-defs-${RV}*"
+	=sys-freebsd/freebsd-mk-defs-${RV}*
+	=sys-freebsd/freebsd-ubin-${RV}*"
 
 S="${WORKDIR}/gnu"
 
