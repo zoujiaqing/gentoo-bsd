@@ -50,7 +50,8 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
-	"${FILESDIR}/${PN}-9.1-minigzip.patch" )
+	"${FILESDIR}/${PN}-9.1-minigzip.patch"
+	"${FILESDIR}/${PN}-9999-mandoc.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -65,7 +66,6 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 
 # fix later
 # gcc-4.6 build fails, dtc
-# build fails, kdump mandoc truss xlint
 REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	gzip gprof
 	lzmainfo xz xzdec
@@ -78,7 +78,7 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	c99 c89
 	bc dc
 	whois tftp man
-	dtc kdump mandoc truss xlint"
+	dtc"
 
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
@@ -118,6 +118,9 @@ src_prepare() {
 
 	# Disable it here otherwise our patch wont apply
 	use ar || dummy_mk ar
+
+	# Preparing to build xlint
+	export LINT=xlint
 }
 
 setup_multilib_vars() {
@@ -131,6 +134,11 @@ setup_multilib_vars() {
 }
 
 src_compile() {
+	# Preparing to build mandoc
+	cd "${WORKDIR}/lib/libmandoc"
+	freebsd_src_compile
+
+	cd "${S}"
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile
 }
