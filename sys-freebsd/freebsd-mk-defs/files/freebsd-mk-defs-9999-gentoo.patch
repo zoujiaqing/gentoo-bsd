@@ -1,4 +1,4 @@
-tested revision 255023.
+tested revision 255489
 
 diff --git a/share/mk/bsd.compiler.mk b/share/mk/bsd.compiler.mk
 index 2d648de..e456a4b 100644
@@ -118,7 +118,7 @@ index c54b435..d283240 100644
  .endif
  .endfor
 diff --git a/share/mk/bsd.lib.mk b/share/mk/bsd.lib.mk
-index 66d0a29..3ac8706 100644
+index bb3db64..dbb9bf4 100644
 --- a/share/mk/bsd.lib.mk
 +++ b/share/mk/bsd.lib.mk
 @@ -39,8 +39,6 @@ CFLAGS+= ${DEBUG_FLAGS}
@@ -130,31 +130,31 @@ index 66d0a29..3ac8706 100644
  .endif
  
  .if ${MK_DEBUG_FILES} != "no" && empty(DEBUG_FLAGS:M-g) && \
-@@ -290,14 +288,17 @@ realinstall: _libinstall
+@@ -302,14 +300,17 @@ realinstall: _libinstall
  .ORDER: beforeinstall _libinstall
  _libinstall:
  .if defined(LIB) && !empty(LIB) && ${MK_INSTALLLIB} != "no"
-+	${INSTALL} -d ${DESTDIR}${LIBDIR}
++	${INSTALL} -d ${DESTDIR}${_LIBDIR}
  	${INSTALL} -C -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
- 	    ${_INSTALLFLAGS} lib${LIB}.a ${DESTDIR}${LIBDIR}
+ 	    ${_INSTALLFLAGS} lib${LIB}.a ${DESTDIR}${_LIBDIR}
  .endif
  .if ${MK_PROFILE} != "no" && defined(LIB) && !empty(LIB)
-+	${INSTALL} -d ${DESTDIR}${LIBDIR}
++	${INSTALL} -d ${DESTDIR}${_LIBDIR}
  	${INSTALL} -C -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
- 	    ${_INSTALLFLAGS} lib${LIB}_p.a ${DESTDIR}${LIBDIR}
+ 	    ${_INSTALLFLAGS} lib${LIB}_p.a ${DESTDIR}${_LIBDIR}
  .endif
  .if defined(SHLIB_NAME)
-+	${INSTALL} -d ${DESTDIR}${SHLIBDIR}
++	${INSTALL} -d ${DESTDIR}${_SHLIBDIR}
  	${INSTALL} ${STRIP} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
  	    ${_INSTALLFLAGS} ${_SHLINSTALLFLAGS} \
- 	    ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
-@@ -351,10 +352,12 @@ _libinstall:
+ 	    ${SHLIB_NAME} ${DESTDIR}${_SHLIBDIR}
+@@ -363,10 +364,12 @@ _libinstall:
  .endif # SHLIB_LINK
  .endif # SHIB_NAME
  .if defined(INSTALL_PIC_ARCHIVE) && defined(LIB) && !empty(LIB) && ${MK_TOOLCHAIN} != "no"
-+	${INSTALL} -d ${DESTDIR}${LIBDIR}
++	${INSTALL} -d ${DESTDIR}${_LIBDIR}
  	${INSTALL} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
- 	    ${_INSTALLFLAGS} lib${LIB}_pic.a ${DESTDIR}${LIBDIR}
+ 	    ${_INSTALLFLAGS} lib${LIB}_pic.a ${DESTDIR}${_LIBDIR}
  .endif
  .if defined(WANT_LINT) && !defined(NO_LINT) && defined(LIB) && !empty(LIB)
 +	${INSTALL} -d ${DESTDIR}${LINTLIBDIR}
@@ -162,26 +162,26 @@ index 66d0a29..3ac8706 100644
  	    ${_INSTALLFLAGS} ${LINTLIB} ${DESTDIR}${LINTLIBDIR}
  .endif
 diff --git a/share/mk/bsd.libnames.mk b/share/mk/bsd.libnames.mk
-index f78a656..59e3511 100644
+index 00d38ff..86792f4 100644
 --- a/share/mk/bsd.libnames.mk
 +++ b/share/mk/bsd.libnames.mk
-@@ -52,7 +52,7 @@ LIBDWARF?=	${DESTDIR}${LIBDIR}/libdwarf.a
- LIBEDIT?=	${DESTDIR}${LIBDIR}/libedit.a
+@@ -53,7 +53,7 @@ LIBEDIT?=	${DESTDIR}${LIBDIR}/libedit.a
  LIBELF?=	${DESTDIR}${LIBDIR}/libelf.a
+ LIBEXECINFO?=	${DESTDIR}${LIBDIR}/libexecinfo.a
  LIBFETCH?=	${DESTDIR}${LIBDIR}/libfetch.a
 -LIBFL?=		"don't use LIBFL, use LIBL"
 +LIBFL?=		${DESTDIR}${LIBDIR}/libfl.a
  LIBFORM?=	${DESTDIR}${LIBDIR}/libform.a
  LIBG2C?=	${DESTDIR}${LIBDIR}/libg2c.a
  LIBGCC?=	${DESTDIR}${LIBDIR}/libgcc.a
-@@ -85,7 +85,7 @@ LIBKEYCAP?=	${DESTDIR}${LIBDIR}/libkeycap.a
+@@ -88,7 +88,7 @@ LIBKEYCAP?=	${DESTDIR}${LIBDIR}/libkeycap.a
  LIBKICONV?=	${DESTDIR}${LIBDIR}/libkiconv.a
  LIBKRB5?=	${DESTDIR}${LIBDIR}/libkrb5.a
  LIBKVM?=	${DESTDIR}${LIBDIR}/libkvm.a
 -LIBL?=		${DESTDIR}${LIBDIR}/libl.a
 +LIBL?=		${DESTDIR}${LIBDIR}/libfl.a
  .if ${MK_LDNS} != "no"
- LIBLDNS?=	${DESTDIR}${LIBDIR}/libldns.a
+ LIBLDNS?=	${DESTDIR}${LIBPRIVATEDIR}/libldns.a
  .endif
 diff --git a/share/mk/bsd.links.mk b/share/mk/bsd.links.mk
 index 1e4d57e..fcb81fe 100644
@@ -263,10 +263,10 @@ index 48093eb..69f56bc 100644
  NLSLINKS+=	${file:R}
  .endif
 diff --git a/share/mk/bsd.own.mk b/share/mk/bsd.own.mk
-index da758d5..7461f68 100644
+index 8f7f0b9..189ccec 100644
 --- a/share/mk/bsd.own.mk
 +++ b/share/mk/bsd.own.mk
-@@ -199,9 +199,6 @@ INSTALL_LINK?=		${INSTALL} ${HRDLINK}
+@@ -202,9 +202,6 @@ INSTALL_LINK?=		${INSTALL} ${HRDLINK}
  INSTALL_SYMLINK?=	${INSTALL} ${SYMLINK}
  
  # Common variables
@@ -277,7 +277,7 @@ index da758d5..7461f68 100644
  COMPRESS_CMD?=	gzip -cn
  COMPRESS_EXT?=	.gz
 diff --git a/share/mk/bsd.prog.mk b/share/mk/bsd.prog.mk
-index f4546dc..372bb98 100644
+index 22ddfb5..f6a4939 100644
 --- a/share/mk/bsd.prog.mk
 +++ b/share/mk/bsd.prog.mk
 @@ -44,10 +44,6 @@ CTFFLAGS+= -g
@@ -291,7 +291,7 @@ index f4546dc..372bb98 100644
  .if defined(NO_SHARED) && (${NO_SHARED} != "no" && ${NO_SHARED} != "NO")
  LDFLAGS+= -static
  .endif
-@@ -197,6 +193,7 @@ realinstall: _proginstall
+@@ -201,6 +197,7 @@ realinstall: _proginstall
  .ORDER: beforeinstall _proginstall
  _proginstall:
  .if defined(PROG)
@@ -299,7 +299,7 @@ index f4546dc..372bb98 100644
  	${INSTALL} ${STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
  	    ${_INSTALLFLAGS} ${PROG} ${DESTDIR}${BINDIR}/${PROGNAME}
  .if ${MK_DEBUG_FILES} != "no"
-@@ -230,6 +227,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
+@@ -234,6 +231,7 @@ SCRIPTSGRP_${script:T}?=	${SCRIPTSGRP}
  SCRIPTSMODE_${script:T}?=	${SCRIPTSMODE}
  _scriptsinstall: _SCRIPTSINS_${script:T}
  _SCRIPTSINS_${script:T}: ${script}
