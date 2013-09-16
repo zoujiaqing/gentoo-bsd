@@ -78,7 +78,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_ATF= WITHOUT_LDNS= WITHOUT_ICONV= "
+	mymakeopts="${mymakeopts} WITHOUT_BIND= WITHOUT_BIND_LIBS= WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_ICONV= "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -90,6 +90,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-9999-liblink.patch"
+	"${FILESDIR}/${PN}-9999-atfcxx.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
@@ -305,6 +306,7 @@ do_bootstrap() {
 		mkdir "${WORKDIR}/include_proper_${ABI}" || die
 		CTARGET="${CHOST}" install_includes "/include_proper_${ABI}"
 		CFLAGS="${CFLAGS} -isystem ${WORKDIR}/include_proper_${ABI}"
+		CXXFLAGS="${CXXFLAGS} -isystem ${WORKDIR}/include_proper_${ABI}"
 	fi
 	bootstrap_csu
 	bootstrap_libssp_nonshared
@@ -321,6 +323,7 @@ do_compile() {
 		do_bootstrap
 	else
 		CFLAGS="${CFLAGS} -isystem /usr/include"
+		CXXFLAGS="${CXXFLAGS} -isystem /usr/include"
 	fi
 
 	export RAW_LDFLAGS=$(raw-ldflags)
@@ -363,6 +366,7 @@ src_compile() {
 		CHOST=${CTARGET} tc-export CC LD CXX RANLIB
 		mymakeopts="${mymakeopts} NLS="
 		CFLAGS="${CFLAGS} -isystem /usr/${CTARGET}/usr/include"
+		CXXFLAGS="${CXXFLAGS} -isystem /usr/${CTARGET}/usr/include"
 		append-ldflags "-L${WORKDIR}/${CHOST}/${WORKDIR}/lib/libc"
 	fi
 
