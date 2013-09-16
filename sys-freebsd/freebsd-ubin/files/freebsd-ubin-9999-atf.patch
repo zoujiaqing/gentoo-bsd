@@ -1,0 +1,86 @@
+diff --git a/usr.bin/atf/atf-config/Makefile b/usr.bin/atf/atf-config/Makefile
+index d84ed11..d4c4303 100644
+--- a/usr.bin/atf/atf-config/Makefile
++++ b/usr.bin/atf/atf-config/Makefile
+@@ -36,6 +36,9 @@ MAN=		atf-config.1
+ CFLAGS+=	-DHAVE_CONFIG_H
+ CFLAGS+=	-I${ATF}
+ 
++CXXFLAGS+=	-DHAVE_CONFIG_H
++CXXFLAGS+=	-I${ATF}
++
+ DPADD+=		${LIBATF_C} ${LIBATF_CXX}
+ LDADD+=		-latf-c++ -latf-c
+ 
+diff --git a/usr.bin/atf/atf-report/Makefile b/usr.bin/atf/atf-report/Makefile
+index 0b1e8d2..8c300e4 100644
+--- a/usr.bin/atf/atf-report/Makefile
++++ b/usr.bin/atf/atf-report/Makefile
+@@ -36,6 +36,9 @@ MAN=		atf-report.1
+ CFLAGS+=	-DHAVE_CONFIG_H
+ CFLAGS+=	-I${ATF}
+ 
++CXXFLAGS+=	-DHAVE_CONFIG_H
++CXXFLAGS+=	-I${ATF}
++
+ DPADD+=		${LIBATF_C} ${LIBATF_CXX}
+ LDADD+=		-latf-c++ -latf-c
+ 
+diff --git a/usr.bin/atf/atf-run/Makefile b/usr.bin/atf/atf-run/Makefile
+index d33cae1..fef144e 100644
+--- a/usr.bin/atf/atf-run/Makefile
++++ b/usr.bin/atf/atf-run/Makefile
+@@ -38,6 +38,10 @@ CFLAGS+=	-DHAVE_CONFIG_H
+ CFLAGS+=	-I${ATF}
+ CFLAGS+=	-I${.CURDIR}/../../lib/libatf-c
+ 
++CXXFLAGS+=	-DHAVE_CONFIG_H
++CXXFLAGS+=	-I${ATF}
++CXXFLAGS+=	-I${.CURDIR}/../../lib/libatf-c
++
+ DPADD+=		${LIBATF_C} ${LIBATF_CXX}
+ LDADD+=		-latf-c++ -latf-c
+ 
+diff --git a/usr.bin/atf/atf-sh/Makefile b/usr.bin/atf/atf-sh/Makefile
+index 8112098..5c256c1 100644
+--- a/usr.bin/atf/atf-sh/Makefile
++++ b/usr.bin/atf/atf-sh/Makefile
+@@ -36,6 +36,9 @@ MAN=            atf-sh.1 atf-sh-api.3
+ CFLAGS+=	-DHAVE_CONFIG_H
+ CFLAGS+=	-I${ATF}
+ 
++CXXFLAGS+=	-DHAVE_CONFIG_H
++CXXFLAGS+=	-I${ATF}
++
+ DPADD+=		${LIBATF_C} ${LIBATF_CXX}
+ LDADD+=		-latf-c++ -latf-c
+ 
+diff --git a/usr.bin/atf/atf-version/Makefile b/usr.bin/atf/atf-version/Makefile
+index 0320380..84db6fa 100644
+--- a/usr.bin/atf/atf-version/Makefile
++++ b/usr.bin/atf/atf-version/Makefile
+@@ -39,6 +39,12 @@ CFLAGS+=	-I${.CURDIR}/../../lib/libatf-c
+ CFLAGS+=	-I${.CURDIR}
+ CFLAGS+=	-I.
+ 
++CXXFLAGS+=	-DHAVE_CONFIG_H
++CXXFLAGS+=	-I${ATF}
++CXXFLAGS+=	-I${.CURDIR}/../../lib/libatf-c
++CXXFLAGS+=	-I${.CURDIR}
++CXXFLAGS+=	-I.
++
+ CLEANFILES+=	revision.h
+ revision.h:
+ 	@sh ${ATF}/atf-version/generate-revision.sh \
+diff --git a/usr.bin/atf/Makefile.inc b/usr.bin/atf/Makefile.inc
+index 0b2188b..08e4aaf 100644
+--- a/usr.bin/atf/Makefile.inc
++++ b/usr.bin/atf/Makefile.inc
+@@ -3,6 +3,7 @@
+ ATF=		${.CURDIR}/../../../contrib/atf
+ 
+ CFLAGS+=	-DGDB=\"gdb\"
++CXXFLAGS+=	-DGDB=\"gdb\"
+ 
+ BINDIR?=	/usr/bin
+ WARNS?=		3

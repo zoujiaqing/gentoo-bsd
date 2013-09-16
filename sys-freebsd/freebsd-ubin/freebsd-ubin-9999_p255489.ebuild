@@ -52,6 +52,7 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
+	"${FILESDIR}/${PN}-9999-atf.patch"
 	"${FILESDIR}/${PN}-9999-mandoc.patch" )
 
 # Here we remove some sources we don't need because they are already
@@ -92,7 +93,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
-	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_ATF= WITHOUT_ICONV= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= "
+	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_ICONV= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= "
 }
 
 pkg_preinst() {
