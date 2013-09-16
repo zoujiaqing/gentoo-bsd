@@ -1,0 +1,12 @@
+diff --git a/libexec/atf/atf-check/Makefile b/libexec/atf/atf-check/Makefile
+index fafb1e4..56da31e 100644
+--- a/libexec/atf/atf-check/Makefile
++++ b/libexec/atf/atf-check/Makefile
+@@ -35,6 +35,7 @@ SRCS=		atf-check.cpp
+ MAN=		atf-check.1
+ 
+ CFLAGS+=	-I${ATF}
++CXXFLAGS+=	-I${ATF}
+ 
+ DPADD+=		${LIBATF_CXX} ${LIBATF_C}
+ 
