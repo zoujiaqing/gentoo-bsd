@@ -43,14 +43,16 @@ src_prepare() {
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
-	# fails to build. I'll be fixed in the future.
-	sed -e '/SUBDIR+=.*userboot/d' -i "${S}"/Makefile.amd64 || die
 }
 
 src_compile() {
 	strip-flags
 	append-flags "-fno-strict-aliasing"
 
+	if use amd64-fbsd; then
+		cd "${S}/userboot/libstand" || die
+		freebsd_src_compile
+	fi
 	cd "${WORKDIR}/lib/libstand" || die
 	freebsd_src_compile
 
