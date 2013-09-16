@@ -1,0 +1,16 @@
+diff --git a/lib/atf/libatf-c++/Makefile b/lib/atf/libatf-c++/Makefile
+index 37d6073..47cb495 100644
+--- a/lib/atf/libatf-c++/Makefile
++++ b/lib/atf/libatf-c++/Makefile
+@@ -46,6 +46,11 @@ CFLAGS+=	-I.
+ 
+ CFLAGS+=	-DHAVE_CONFIG_H
+ 
++CXXFLAGS+=	-I${ATF}
++CXXFLAGS+=	-I${.CURDIR}/../libatf-c
++CXXFLAGS+=	-I.
++CXXFLAGS+=	-DHAVE_CONFIG_H
++
+ SRCS=		application.cpp \
+ 		build.cpp \
+ 		check.cpp \
