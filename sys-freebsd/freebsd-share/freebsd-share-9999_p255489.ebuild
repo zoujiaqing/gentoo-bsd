@@ -35,7 +35,7 @@ pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_ATF= WITHOUT_ICONV= WITHOUT_GROFF= "
+	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_ICONV= WITHOUT_GROFF= "
 }
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
