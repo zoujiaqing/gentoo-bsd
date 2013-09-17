@@ -53,6 +53,7 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
 	"${FILESDIR}/${PN}-9999-atf.patch"
+	"${FILESDIR}/${PN}-9999-dtc-gcc46.patch"
 	"${FILESDIR}/${PN}-9999-mandoc.patch" )
 
 # Here we remove some sources we don't need because they are already
@@ -65,9 +66,6 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 # - binutils gprof
 # - dc stuff
 # and the rest are misc utils we already provide somewhere else.
-
-# fix later
-# gcc-4.6 build fails, dtc
 REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	gzip gprof
 	lzmainfo xz xzdec
@@ -79,8 +77,7 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	compile_et lex vi smbutil file vacation nc ftp telnet
 	c99 c89
 	bc dc
-	whois tftp man
-	dtc"
+	whois tftp man"
 
 pkg_setup() {
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
