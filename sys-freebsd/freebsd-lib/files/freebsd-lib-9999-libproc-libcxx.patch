@@ -1,0 +1,13 @@
+diff --git a/lib/libproc/Makefile b/lib/libproc/Makefile
+index 4449c06..c4b703f 100644
+--- a/lib/libproc/Makefile
++++ b/lib/libproc/Makefile
+@@ -15,7 +15,7 @@ INCS=	libproc.h
+ 
+ CFLAGS+=	-I${.CURDIR}
+ 
+-.if ${MK_LIBCPLUSPLUS} != "no"
++.if ${CXXFLAGS:T:M*-stdlib=libc++*}
+ LDADD+=		-lcxxrt
+ DPADD+=		${LIBCXXRT}
+ .else
