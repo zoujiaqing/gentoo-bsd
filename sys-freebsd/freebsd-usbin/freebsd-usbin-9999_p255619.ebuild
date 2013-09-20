@@ -70,7 +70,7 @@ pkg_setup() {
 PATCHES=(
 	"${FILESDIR}/${PN}-adduser.patch"
 	"${FILESDIR}/${PN}-9.0-newsyslog.patch"
-	"${FILESDIR}/${PN}-9.1-bsdxml2expat.patch"
+	"${FILESDIR}/${PN}-9999-bsdxml2expat.patch"
 	)
 
 REMOVE_SUBDIRS="
