@@ -36,8 +36,7 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
 DEPEND="${RDEPEND}
 	sys-devel/flex
 	!build? ( =sys-freebsd/freebsd-sources-${RV}* )
-	=sys-freebsd/freebsd-mk-defs-${RV}*
-	!sys-freebsd/freebsd-contrib"
+	=sys-freebsd/freebsd-mk-defs-${RV}*"
 
 RDEPEND="${RDEPEND}
 	>=sys-auth/pambase-20080219.1
