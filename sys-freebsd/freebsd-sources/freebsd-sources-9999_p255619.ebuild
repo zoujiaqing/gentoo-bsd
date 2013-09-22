@@ -18,7 +18,8 @@ fi
 
 RDEPEND="dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
 	=sys-freebsd/freebsd-mk-defs-${RV}*
-	!sys-freebsd/virtio-kmod"
+	!sys-freebsd/virtio-kmod
+	!sys-fs/fuse4bsd"
 DEPEND="build-generic? (
 		dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
 		>=sys-freebsd/freebsd-usbin-9.1
