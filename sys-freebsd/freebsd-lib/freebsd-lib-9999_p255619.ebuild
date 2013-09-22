@@ -156,10 +156,6 @@ src_prepare() {
 	sed -i.bak -e 's:hesiod.c::' -e 's:hesiod.3::' \
 	"${WORKDIR}"/lib/libc/net/Makefile.inc || die
 
-	# fix file collisions, dev-libs/libiconv-1.14:0::gentoo
-	# /usr/include/iconv.h
-	rm "${WORKDIR}"/include/iconv.h || die
-
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
 	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
