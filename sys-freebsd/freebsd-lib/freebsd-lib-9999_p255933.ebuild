@@ -36,6 +36,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		>=dev-libs/expat-2.0.1
 		!sys-libs/libutempter
 		!dev-libs/libelf
+		!dev-libs/libexecinfo
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
