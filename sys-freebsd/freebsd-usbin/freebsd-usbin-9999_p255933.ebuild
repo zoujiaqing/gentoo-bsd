@@ -118,7 +118,7 @@ src_install() {
 	mkinstall DOCDIR=/usr/share/doc/${PF} || die "Install failed"
 
 	# Most of these now come from openrc.
-	for util in nfs rpc.statd rpc.lockd; do
+	for util in iscsid nfs nfsuserd rpc.statd rpc.lockd; do
 		newinitd "${FILESDIR}/"${util}.initd ${util} || die
 		if [[ -e "${FILESDIR}"/${util}.confd ]]; then \
 			newconfd "${FILESDIR}"/${util}.confd ${util} || die
