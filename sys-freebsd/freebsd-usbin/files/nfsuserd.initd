@@ -9,7 +9,7 @@ depend() {
 start() {
 	ebegin "Starting nfsuserd"
 	start-stop-daemon --start --quiet --exec \
-		/usr/sbin/nfsuserd -- $rpclockdopts
+		/usr/sbin/nfsuserd -- $nfsuserdopts
 	eend $? "Error starting nfsuserd"
 }
 
