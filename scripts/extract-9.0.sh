@@ -11,7 +11,7 @@ fi
 # Added cddl and compat.
 
 if [[ -z $2 ]]; then
-	dists="bin cddl contrib crypto gnu include lib libexec sbin share usr.bin usr.sbin sys etc rescue "
+	dists="bin cddl contrib crypto gnu include lib libexec sbin share usr.bin usr.sbin sys etc rescue secure "
 else
 	dists="$2"
 fi
@@ -22,6 +22,8 @@ echo "Using mirror ${MIRROR}"
 P=$1
 MY_P=${P/_rc/-RC}
 MY_P=${MY_P/_beta/-BETA}
+MY_P=${MY_P/_alpha/-ALPHA}
+
 echo "Getting version ${P} [${MY_P}].."
 if [[ ${MY_P} == ${P} ]]; then
 	MY_P="${MY_P}-RELEASE"
