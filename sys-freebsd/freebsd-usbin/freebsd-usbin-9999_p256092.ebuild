@@ -62,7 +62,7 @@ pkg_setup() {
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
 	use kerberos || mymakeopts="${mymakeopts} WITHOUT_GSSAPI= "
 
-	mymakeopts="${mymakeopts} WITHOUT_BIND_NAMED= WITHOUT_BIND_DNSSEC= WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= WITHOUT_UNBOUND= "
+	mymakeopts="${mymakeopts} WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= WITHOUT_UNBOUND= "
 
 	append-flags $(test-flags -fno-strict-aliasing)
 }
