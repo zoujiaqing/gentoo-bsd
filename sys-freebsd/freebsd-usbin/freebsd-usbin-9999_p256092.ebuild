@@ -74,11 +74,9 @@ PATCHES=(
 	)
 
 REMOVE_SUBDIRS="
-	named named-checkzone named-checkconf rndc rndc-confgen
-	dnssec-keygen dnssec-signzone
 	tcpdchk tcpdmatch
 	sendmail praliases editmap mailstats makemap
-	sysinstall cron mailwrapper ntp bsnmpd
+	cron mailwrapper ntp bsnmpd
 	tcpdump ndp inetd
 	wpa/wpa_supplicant wpa/hostapd wpa/hostapd_cli wpa/wpa_cli wpa/wpa_passphrase
 	zic amd

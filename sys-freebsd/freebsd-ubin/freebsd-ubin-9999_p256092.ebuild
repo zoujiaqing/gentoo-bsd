@@ -71,7 +71,7 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	unzip
 	tput tset tabs
 	less lessecho lesskey
-	dig hesinfo nslookup nsupdate host
+	hesinfo host
 	rsh rlogin rusers rwho ruptime
 	compile_et lex vi smbutil file vacation nc ftp telnet
 	c99 c89
