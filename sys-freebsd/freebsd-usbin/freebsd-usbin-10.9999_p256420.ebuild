@@ -76,7 +76,7 @@ PATCHES=(
 REMOVE_SUBDIRS="
 	tcpdchk tcpdmatch
 	sendmail praliases editmap mailstats makemap
-	cron mailwrapper ntp bsnmpd
+	pc-sysinstall cron mailwrapper ntp bsnmpd
 	tcpdump ndp inetd
 	wpa/wpa_supplicant wpa/hostapd wpa/hostapd_cli wpa/wpa_cli wpa/wpa_passphrase
 	zic amd
