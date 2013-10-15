@@ -56,7 +56,7 @@ pkg_setup() {
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
 	cd "${WORKDIR}"
-	epatch "${FILESDIR}/${PN}"-7.1-zlib.patch
+	epatch "${FILESDIR}/${PN}"-10.0-zlib.patch
 	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
 }
 
