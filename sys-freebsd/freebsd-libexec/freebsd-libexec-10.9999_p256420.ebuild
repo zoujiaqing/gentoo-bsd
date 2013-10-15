@@ -37,7 +37,7 @@ REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind lukemftpd ftpd"
 IUSE="pam ssl kerberos ipv6 nis xinetd"
 
 PATCHES=( "${FILESDIR}/${PN}-9.2-no_ld32.patch"
-	"${FILESDIR}/${PN}-9999-atf-check.patch" )
+	"${FILESDIR}/${PN}-10.0-atf-check.patch" )
 
 pkg_setup() {
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "

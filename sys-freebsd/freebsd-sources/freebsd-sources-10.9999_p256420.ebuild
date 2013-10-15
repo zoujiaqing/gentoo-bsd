@@ -33,7 +33,7 @@ S="${WORKDIR}/sys"
 KERN_BUILD=GENERIC
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
-	"${FILESDIR}/${PN}-9999-gentoo.patch"
+	"${FILESDIR}/${PN}-10.0-gentoo.patch"
 	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-7.1-types.h-fix.patch"
 	"${FILESDIR}/${PN}-8.0-subnet-route-pr40133.patch"

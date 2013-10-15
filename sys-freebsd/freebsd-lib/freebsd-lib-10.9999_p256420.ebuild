@@ -90,9 +90,9 @@ pkg_setup() {
 PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
-	"${FILESDIR}/${PN}-9999-liblink.patch"
-	"${FILESDIR}/${PN}-9999-atfcxx.patch"
-	"${FILESDIR}/${PN}-9999-libproc-libcxx.patch"
+	"${FILESDIR}/${PN}-10.0-liblink.patch"
+	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
+	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"

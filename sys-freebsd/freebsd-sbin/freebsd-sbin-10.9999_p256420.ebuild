@@ -49,7 +49,7 @@ pkg_setup() {
 REMOVE_SUBDIRS="dhclient pfctl pflogd rcorder resolvconf"
 
 PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
-	"${FILESDIR}/${PN}-9999-zlib.patch"
+	"${FILESDIR}/${PN}-10.0-zlib.patch"
 	"${FILESDIR}/${PN}-6.2-ldconfig.patch"
 	"${FILESDIR}/${PN}-6.1-pr102701.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )

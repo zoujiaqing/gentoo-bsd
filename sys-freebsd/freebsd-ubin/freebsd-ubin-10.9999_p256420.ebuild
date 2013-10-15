@@ -51,9 +51,9 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-8.0-xinstall.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
-	"${FILESDIR}/${PN}-9999-atf.patch"
-	"${FILESDIR}/${PN}-9999-dtc-gcc46.patch"
-	"${FILESDIR}/${PN}-9999-mandoc.patch" )
+	"${FILESDIR}/${PN}-10.0-atf.patch"
+	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
+	"${FILESDIR}/${PN}-10.0-mandoc.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
