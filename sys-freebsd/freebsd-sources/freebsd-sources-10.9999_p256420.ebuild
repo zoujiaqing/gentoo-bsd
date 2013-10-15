@@ -9,7 +9,7 @@ inherit bsdmk freebsd flag-o-matic toolchain-funcs
 DESCRIPTION="FreeBSD kernel sources"
 SLOT="0"
 
-IUSE="+build-generic dtrace profile"
+IUSE="+build-generic debug dtrace profile zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -30,7 +30,7 @@ RESTRICT="strip binchecks"
 
 S="${WORKDIR}/sys"
 
-KERN_BUILD=GENERIC
+KERN_BUILD=GENTOO
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-10.0-gentoo.patch"
@@ -42,7 +42,13 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-9.2-gentoo-gcc.patch"
 	"${FILESDIR}/${PN}-7.0-tmpfs_whiteout_stub.patch" )
 
+pkg_setup() {
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL="
+}
+
 src_prepare() {
+	local conf="${S}/$(tc-arch-kernel)/conf/${KERN_BUILD}"
+
 	# This replaces the gentoover patch, it doesn't need reapply every time.
 	sed -i -e 's:^REVISION=.*:REVISION="'${PVR}'":' \
 		-e 's:^BRANCH=.*:BRANCH="Gentoo":' \
@@ -60,6 +66,11 @@ src_prepare() {
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die
 
+	# Set the kernel configuration using USE flags.
+	cp -f "${FILESDIR}/config-GENTOO" "${conf}" || die
+	use debug || echo 'nomakeoptions DEBUG' >> "${conf}"
+	use dtrace || echo 'nomakeoptions WITH_CTF' >> "${conf}"
+	
 	# Only used with USE=build-generic, let the kernel build with its own flags, its safer.
 	unset LDFLAGS CFLAGS CXXFLAGS ASFLAGS KERNEL
 }
@@ -74,12 +85,9 @@ src_configure() {
 
 src_compile() {
 	if use build-generic ; then
-		local myconf
-		use dtrace || myconf="-DNO_CTF "
-
 		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
-		freebsd_src_compile depend ${myconf}
-		freebsd_src_compile ${myconf}
+		freebsd_src_compile depend
+		freebsd_src_compile
 	else
 		einfo "Nothing to compile.."
 	fi
