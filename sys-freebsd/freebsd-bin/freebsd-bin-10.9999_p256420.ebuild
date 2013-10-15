@@ -30,7 +30,7 @@ DEPEND="${RDEPEND}
 S=${WORKDIR}/bin
 
 # csh and tcsh are provided by tcsh package, rmail is sendmail stuff.
-REMOVE_SUBDIRS="csh rmail ed"
+REMOVE_SUBDIRS="csh rmail ed freebsd-version"
 
 pkg_setup() {
 	mymakeopts="${mymakeopts} WITHOUT_TCSH= WITHOUT_SENDMAIL= WITHOUT_RCMDS= "
