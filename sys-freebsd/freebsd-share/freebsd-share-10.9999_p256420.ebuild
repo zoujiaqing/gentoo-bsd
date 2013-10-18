@@ -35,7 +35,7 @@ pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_ICONV= "
+	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
@@ -83,9 +83,19 @@ src_unpack() {
 src_compile() {
 	export ESED="/usr/bin/sed"
 
+	# libiconv support.
+	# i18n/csmapper/APPLE requires mkcsmapper_static
+	# i18n/esdb/APPLE requires mkesdb_static
+	for pkg in mkcsmapper_static mkesdb_static
+	do
+		cd "${WORKDIR}"/usr.bin/${pkg}
+		freebsd_src_compile
+	done
+
 	# This is a groff problem and not a -shared problem.
+	cd "${S}"
 	export GROFF_TMAC_PATH="/usr/share/tmac/:/usr/share/groff/1.22.2/tmac/"
-	freebsd_src_compile || die "emake failed"
+	freebsd_src_compile -j1 || die "emake failed"
 }
 
 src_install() {

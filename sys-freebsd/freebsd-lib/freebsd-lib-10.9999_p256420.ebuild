@@ -37,6 +37,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		!sys-libs/libutempter
 		!dev-libs/libelf
 		!dev-libs/libexecinfo
+		!dev-libs/libiconv
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
@@ -79,7 +80,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= WITHOUT_ICONV= "
+	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= WITH_LIBICONV_COMPAT=yes "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -257,10 +258,10 @@ bootstrap_libthr() {
 CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil lib/librt"
 
 # What to build for non-default ABIs.
-NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt lib/libsbuf lib/libcam lib/libelf"
+NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt lib/libsbuf lib/libcam lib/libelf lib/libiconv_modules lib/libiconv_compat"
 
 # Subdirs for a native build:
-NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc"
+NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc lib/libiconv_compat"
 
 # Is my $ABI native ?
 is_native_abi() {
@@ -480,10 +481,23 @@ do_install() {
 	is_crosscompile && use crosscompile_opts_headers-only && return 0
 
 	for i in $(get_subdirs) ; do
-		einfo "Installing in ${i}..."
-		cd "${WORKDIR}/${i}/" || die "missing ${i}."
-		freebsd_src_install || die "Install ${i} failed"
+		if [[ ${i} != *libiconv_modules* ]] ; then
+			einfo "Installing in ${i}..."
+			cd "${WORKDIR}/${i}/" || die "missing ${i}."
+			freebsd_src_install || die "Install ${i} failed"
+		fi
 	done
+
+	if ! is_crosscompile; then
+		local mymakeopts_save="${mymakeopts}"
+		mymakeopts="${mymakeopts} SHLIBDIR=/usr/$(get_libdir)/i18n LIBDIR=/usr/$(get_libdir)/i18n"
+
+		einfo "Installing in lib/libiconv_modules..."
+		cd "${WORKDIR}/lib/libiconv_modules/" || die "missing libiconv_modules."
+		freebsd_src_install || die "Install lib/libiconv_modules failed"
+
+		mymakeopts="${mymakeopts_save}"
+	fi
 
 	if ! is_crosscompile ; then
 		if ! multilib_is_native_abi ; then
