@@ -348,7 +348,7 @@ src_compile() {
 	use usb && export NON_NATIVE_SUBDIRS="${NON_NATIVE_SUBDIRS} lib/libusb lib/libusbhid"
 
 	cd "${WORKDIR}/include"
-	WITHOUT_ICONV= $(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
+	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
 
@@ -603,7 +603,7 @@ install_includes()
 	local MACHINE="$(tc-arch-kernel)"
 
 	einfo "Installing includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
-	WITHOUT_ICONV= $(freebsd_get_bmake) installincludes \
+	$(freebsd_get_bmake) installincludes \
 		MACHINE=${MACHINE} MACHINE_ARCH=${MACHINE} \
 		DESTDIR="${DESTDIR}" \
 		INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
@@ -613,7 +613,7 @@ install_includes()
 	for i in $EXTRA_INCLUDES; do
 		einfo "Installing $i includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 		cd "${WORKDIR}/$i" || die
-		WITHOUT_ICONV= $(freebsd_get_bmake) installincludes DESTDIR="${DESTDIR}" \
+		$(freebsd_get_bmake) installincludes DESTDIR="${DESTDIR}" \
 			MACHINE=${MACHINE} MACHINE_ARCH=${MACHINE} \
 			INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
 			BINGRP="${BINGRP}" || die "problem installing $i includes."
