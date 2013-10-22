@@ -32,7 +32,8 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
 	>=sys-libs/ncurses-5.9
 	!sys-process/fuser-bsd
 	!dev-util/csup
-	!dev-libs/libiconv"
+	!dev-libs/libiconv
+	!sys-freebsd/freebsd-contrib"
 
 DEPEND="${RDEPEND}
 	sys-devel/flex
@@ -90,7 +91,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
-	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= "
+	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= WITHOUT_LDNS_UTILS= "
 }
 
 pkg_preinst() {
