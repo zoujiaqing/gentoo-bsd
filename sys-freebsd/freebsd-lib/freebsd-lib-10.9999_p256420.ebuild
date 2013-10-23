@@ -93,6 +93,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-10.0-liblink.patch"
 	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
+	"${FILESDIR}/${PN}-10.0-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
@@ -480,6 +481,12 @@ do_install() {
 
 	is_crosscompile && use crosscompile_opts_headers-only && return 0
 
+	# Install a libusb.pc for better compat with Linux's libusb
+	if use usb ; then
+		dodir /usr/$(get_libdir)/pkgconfig
+		sed -i.bkp "s:^libdir=.*:libdir=/usr/$(get_libdir):g" ${S}/libusb/libusb-*.pc
+	fi
+
 	for i in $(get_subdirs) ; do
 		if [[ ${i} != *libiconv_modules* ]] ; then
 			einfo "Installing in ${i}..."
@@ -510,13 +517,6 @@ do_install() {
 		CHOST=${CTARGET} gen_libc_ldscript "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib"
 		# We're done for the cross libc here.
 		return 0
-	fi
-
-	# Install a libusb.pc for better compat with Linux's libusb
-	if use usb ; then
-		dodir /usr/$(get_libdir)/pkgconfig
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb.pc" || die
-		sed -e "s:@LIBDIR@:/usr/$(get_libdir):" "${FILESDIR}/libusb-1.0.pc.in" > "${D}/usr/$(get_libdir)/pkgconfig/libusb-1.0.pc" || die
 	fi
 
 	# Generate ldscripts for core libraries that will go in /
