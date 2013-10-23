@@ -55,6 +55,7 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
 	"${FILESDIR}/${PN}-10.0-atf.patch"
 	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
+	"${FILESDIR}/${PN}-10.0-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-10.0-mandoc.patch" )
 
 # Here we remove some sources we don't need because they are already
