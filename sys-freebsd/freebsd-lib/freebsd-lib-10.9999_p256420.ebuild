@@ -117,7 +117,7 @@ REMOVE_SUBDIRS="ncurses \
 	libz libbz2 libarchive liblzma \
 	libsm libsmdb libsmutil \
 	libbegemot libbsnmp \
-	libpam libpcap bind libwrap libmagic \
+	libpam libpcap libwrap libmagic \
 	libcom_err
 	libedit
 	libstand
