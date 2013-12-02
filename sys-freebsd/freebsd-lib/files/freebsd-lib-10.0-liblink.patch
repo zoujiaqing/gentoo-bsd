@@ -81,3 +81,18 @@ index 1cf52a0..3d25fae 100644
  WARNS?=		2
  
  .if !defined(RELEASE_CRUNCH)
+diff --git a/lib/libexecinfo/Makefile b/lib/libexecinfo/Makefile
+index 30a1dfb..9f8a99c 100644
+--- a/lib/libexecinfo/Makefile
++++ b/lib/libexecinfo/Makefile
+@@ -10,8 +10,10 @@ SHLIB_MAJOR=	1
+ INCS=		execinfo.h
+ SRCS=		backtrace.c symtab.c unwind.c
+ 
++CFLAGS+=	-I${.CURDIR}/../libelf
+ DPADD=		${LIBELF}
+ LDADD=		-lelf
++LDFLAGS+=	-L${.OBJDIR}/../libelf
+ 
+ MAN=		backtrace.3
+ 
