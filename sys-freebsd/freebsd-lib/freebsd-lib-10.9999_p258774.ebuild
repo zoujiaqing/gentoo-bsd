@@ -80,7 +80,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= WITH_LIBICONV_COMPAT=yes "
+	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -95,6 +95,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
 	"${FILESDIR}/${PN}-10.0-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
+	"${FILESDIR}/${PN}-10.0-libiconv_modules.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
@@ -256,13 +257,13 @@ bootstrap_libthr() {
 
 # What to build for a cross-compiler.
 # We also need the csu but this has to be handled separately.
-CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil lib/librt"
+CROSS_SUBDIRS="lib/libc lib/msun gnu/lib/libssp/libssp_nonshared lib/libthr lib/libutil lib/librt lib/libc_nonshared"
 
 # What to build for non-default ABIs.
-NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt lib/libsbuf lib/libcam lib/libelf lib/libiconv_modules lib/libiconv_compat"
+NON_NATIVE_SUBDIRS="${CROSS_SUBDIRS} gnu/lib/csu lib/libcompiler_rt gnu/lib/libgcc lib/libmd lib/libcrypt lib/libsbuf lib/libcam lib/libelf lib/libiconv_modules"
 
 # Subdirs for a native build:
-NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc lib/libiconv_compat"
+NATIVE_SUBDIRS="lib gnu/lib/libssp/libssp_nonshared gnu/lib/libregex gnu/lib/csu gnu/lib/libgcc lib/libiconv_modules"
 
 # Is my $ABI native ?
 is_native_abi() {
@@ -403,6 +404,8 @@ gen_libc_ldscript() {
 	output_format=$($(tc-getCC) ${CFLAGS} ${LDFLAGS} -Wl,--verbose 2>&1 | sed -n 's/^OUTPUT_FORMAT("\([^"]*\)",.*/\1/p')
 	[[ -n ${output_format} ]] && output_format="OUTPUT_FORMAT ( ${output_format} )"
 
+	# iconv symbol provided by libc_nonshared.a.
+	# http://svnweb.freebsd.org/base?view=revision&amp;revision=258283
 	cat > "${D}/$2/libc.so" <<-END_LDSCRIPT
 /* GNU ld script
    SSP (-fstack-protector) requires __stack_chk_fail_local to be local.
@@ -411,7 +414,7 @@ gen_libc_ldscript() {
    libssp_nonshared.a from here.
  */
 ${output_format}
-GROUP ( /$1/libc.so.7 /$3/libssp_nonshared.a )
+GROUP ( /$1/libc.so.7 /$3/libc_nonshared.a /$3/libssp_nonshared.a )
 END_LDSCRIPT
 }
 
