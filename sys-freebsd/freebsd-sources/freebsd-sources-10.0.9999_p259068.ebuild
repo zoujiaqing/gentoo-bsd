@@ -9,22 +9,21 @@ inherit bsdmk freebsd flag-o-matic toolchain-funcs
 DESCRIPTION="FreeBSD kernel sources"
 SLOT="0"
 
-IUSE="+build-generic +clang debug dtrace profile zfs"
+IUSE="+build-generic debug dtrace profile zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 	SRC_URI="mirror://gentoo/${SYS}.tar.bz2"
 fi
 
-RDEPEND="clang? ( sys-devel/clang )
-	dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
+RDEPEND="dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	!sys-freebsd/virtio-kmod
 	!sys-fs/fuse4bsd
 	!<sys-freebsd/freebsd-sources-9.2_beta1"
 DEPEND="build-generic? (
-		clang? ( sys-devel/clang )
 		dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
+		!sparc-fbsd? ( sys-devel/clang )
 		>=sys-freebsd/freebsd-usbin-9.1
 		=sys-freebsd/freebsd-mk-defs-${RV}*
 	)"
@@ -47,7 +46,7 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 
 pkg_setup() {
 	# Force set CC=clang. when using gcc, aesni fails to build.
-	use clang && export CC=clang
+	use sparc-fbsd || export CC=clang
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL="
 }
 
