@@ -42,6 +42,9 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
 		=sys-freebsd/freebsd-sources-${RV}*"
+	RDEPEND="${RDEPEND}
+		=sys-freebsd/freebsd-share-${RV}*
+		>=virtual/libiconv-0-r2"
 else
 	SRC_URI="${SRC_URI}
 			mirror://gentoo/${SYS}.tar.bz2"
