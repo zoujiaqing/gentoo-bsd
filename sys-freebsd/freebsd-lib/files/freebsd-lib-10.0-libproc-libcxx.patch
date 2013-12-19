@@ -7,7 +7,7 @@ index 4449c06..c4b703f 100644
  CFLAGS+=	-I${.CURDIR}
  
 -.if ${MK_LIBCPLUSPLUS} != "no"
-+.if ${CXXFLAGS:T:M*-stdlib=libc++*}
++.if ${CXX:T:M*-stdlib=libc++*}||${CXXFLAGS:T:M*-stdlib=libc++*}
  LDADD+=		-lcxxrt
  DPADD+=		${LIBCXXRT}
  .else
