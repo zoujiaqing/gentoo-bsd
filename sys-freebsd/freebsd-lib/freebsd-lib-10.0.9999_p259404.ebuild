@@ -183,7 +183,7 @@ src_prepare() {
 	fi
 
 	if ! is_crosscompile ; then
-		if [[ ${PV} != *9999* ]]; then
+		if [[ ! -e "${WORKDIR}/sys" ]]; then
 			ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "Couldn't make sys symlink!"
 		fi
 	else

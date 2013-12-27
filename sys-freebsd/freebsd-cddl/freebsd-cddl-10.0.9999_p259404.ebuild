@@ -42,8 +42,10 @@ PATCHES=(
 
 src_unpack() {
 	freebsd_src_unpack
-	# Link in include headers.
-	ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
+	if [[ ! -e "${WORKDIR}/include" ]]; then
+		# Link in include headers.
+		ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
+	fi
 }
 
 src_install() {

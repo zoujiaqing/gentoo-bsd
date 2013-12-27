@@ -105,7 +105,7 @@ pkg_preinst() {
 }
 
 src_prepare() {
-	if [[ ${PV} != *9999* ]]; then
+	if [[ ! -e "${WORKDIR}/sys" ]]; then
 		use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
 	fi
 

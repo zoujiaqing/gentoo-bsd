@@ -83,9 +83,9 @@ REMOVE_SUBDIRS="
 	pkg pkg_install freebsd-update service sysrc"
 
 src_prepare() {
-	if [[ ${PV} != *9999* ]] && ! use build; then
-		ln -s "/usr/src/sys" "${WORKDIR}/sys"
-		ln -s "/usr/include" "${WORKDIR}/include"
+	if ! use build; then
+		[[ ! -e "${WORKDIR}/sys" ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys"
+		[[ ! -e "${WORKDIR}/include" ]] && ln -s "/usr/include" "${WORKDIR}/include"
 	else
 		dummy_mk mount_smbfs
 	fi
