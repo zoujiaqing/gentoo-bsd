@@ -170,6 +170,12 @@ src_install() {
 
 	# tip requires /var/spool/lock/, bug #200700
 	keepdir /var/spool/lock
+
+	# create locate database #472468
+	local f=/var/db/locate.database
+	mkdir "${ED}${f%/*}" || die
+	touch "${ED}${f}" || die
+	fowners nobody:nobody ${f}
 }
 
 pkg_postinst() {
