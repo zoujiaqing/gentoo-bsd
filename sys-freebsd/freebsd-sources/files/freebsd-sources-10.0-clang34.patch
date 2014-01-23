@@ -1,0 +1,26 @@
+http://svnweb.freebsd.org/base/stable/10/sys/modules/drm2/radeonkms/Makefile?r1=260321&r2=256281&view=patch
+
+diff -Nur sys.orig/modules/drm2/radeonkms/Makefile sys/modules/drm2/radeonkms/Makefile
+--- sys.orig/modules/drm2/radeonkms/Makefile	2014-01-25 00:19:59.000000000 +0900
++++ sys/modules/drm2/radeonkms/Makefile	2014-01-25 00:22:07.000000000 +0900
+@@ -1,5 +1,7 @@
+ # $FreeBSD: release/10.0.0/sys/modules/drm2/radeonkms/Makefile 254885 2013-08-25 19:37:15Z dumbbell $
+ 
++.include <bsd.own.mk>
++
+ .PATH:	${.CURDIR}/../../../dev/drm2/radeon
+ 
+ KMOD	= radeonkms
+@@ -101,7 +103,10 @@
+ 	iicbus_if.h							\
+ 	pci_if.h
+ 
+-CFLAGS  += -I${.CURDIR}/../../../dev/drm2/radeon			\
+-	   -fms-extensions
++
++CFLAGS  += -I${.CURDIR}/../../../dev/drm2/radeon
++.if ${COMPILER_TYPE} == "gcc"
++CFLAGS	+= -fms-extensions
++.endif
+ 
+ .include <bsd.kmod.mk>
