@@ -156,6 +156,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
 	epatch "${FILESDIR}/${PN}-9.1-rmgssapi.patch"
+	epatch "${FILESDIR}/${PN}-10.0-clang34.patch"
 
 	# Don't install the hesiod man page or header
 	rm "${WORKDIR}"/include/hesiod.h || die
