@@ -42,7 +42,8 @@ REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
 
 PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
 	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
-	"${FILESDIR}/${PN}-9.2-gnu-miscfiles.patch" )
+	"${FILESDIR}/${PN}-9.2-gnu-miscfiles.patch"
+	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch" )
 
 src_unpack() {
 	freebsd_src_unpack
