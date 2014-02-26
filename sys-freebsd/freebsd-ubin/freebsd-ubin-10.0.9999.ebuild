@@ -13,14 +13,14 @@ LICENSE="BSD zfs? ( CDDL )"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
-			mirror://gentoo/${CONTRIB}.tar.bz2
-			mirror://gentoo/${LIB}.tar.bz2
-			mirror://gentoo/${ETC}.tar.bz2
-			mirror://gentoo/${BIN}.tar.bz2
-			mirror://gentoo/${INCLUDE}.tar.bz2
-			zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )
-			build? ( mirror://gentoo/${SYS}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${UBIN}.tar.xz
+			mirror://gentoo/${CONTRIB}.tar.xz
+			mirror://gentoo/${LIB}.tar.xz
+			mirror://gentoo/${ETC}.tar.xz
+			mirror://gentoo/${BIN}.tar.xz
+			mirror://gentoo/${INCLUDE}.tar.xz
+			zfs? ( mirror://gentoo/${CDDL}.tar.xz )
+			build? ( mirror://gentoo/${SYS}.tar.xz )"
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]

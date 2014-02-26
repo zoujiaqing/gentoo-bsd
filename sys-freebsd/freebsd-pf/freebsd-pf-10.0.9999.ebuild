@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=3
+
 inherit bsdmk freebsd user
 
 DESCRIPTION="FreeBSD's base system libraries"
@@ -12,10 +14,10 @@ IUSE=""
 # Crypto is needed to have an internal OpenSSL header
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${USBIN}.tar.bz2
-			mirror://gentoo/${SBIN}.tar.bz2
-			mirror://gentoo/${CONTRIB}.tar.bz2
-			mirror://gentoo/${ETC}.tar.bz2"
+	SRC_URI="mirror://gentoo/${USBIN}.tar.xz
+			mirror://gentoo/${SBIN}.tar.xz
+			mirror://gentoo/${CONTRIB}.tar.xz
+			mirror://gentoo/${ETC}.tar.xz"
 fi
 
 RDEPEND="net-libs/libpcap"
@@ -33,8 +35,7 @@ pkg_setup() {
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
 
-src_unpack() {
-	freebsd_src_unpack
+src_prepare() {
 	# pcap-int.h redefines snprintf as pcap_snprintf
 	epatch "${FILESDIR}/${PN}-9.0-pcap_pollution.patch"
 	# Use system's libevent

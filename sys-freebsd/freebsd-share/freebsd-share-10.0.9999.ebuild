@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=3
+
 inherit bsdmk freebsd
 
 DESCRIPTION="FreeBSD shared tools/files"
@@ -11,16 +13,16 @@ IUSE="doc zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${SHARE}.tar.bz2
-		mirror://gentoo/${CONTRIB}.tar.bz2
-		mirror://gentoo/${GNU}.tar.bz2
-		mirror://gentoo/${UBIN}.tar.bz2
-		mirror://gentoo/${USBIN}.tar.bz2
-		mirror://gentoo/${SBIN}.tar.bz2
-		mirror://gentoo/${BIN}.tar.bz2
-		mirror://gentoo/${LIB}.tar.bz2
-		mirror://gentoo/${ETC}.tar.bz2
-		zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${SHARE}.tar.xz
+		mirror://gentoo/${CONTRIB}.tar.xz
+		mirror://gentoo/${GNU}.tar.xz
+		mirror://gentoo/${UBIN}.tar.xz
+		mirror://gentoo/${USBIN}.tar.xz
+		mirror://gentoo/${SBIN}.tar.xz
+		mirror://gentoo/${BIN}.tar.xz
+		mirror://gentoo/${LIB}.tar.xz
+		mirror://gentoo/${ETC}.tar.xz
+		zfs? ( mirror://gentoo/${CDDL}.tar.xz )"
 fi
 
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
@@ -45,9 +47,7 @@ PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
 	"${FILESDIR}/${PN}-9.2-gnu-miscfiles.patch"
 	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch" )
 
-src_unpack() {
-	freebsd_src_unpack
-
+src_prepare() {
 	# Remove make.conf manpage as it describes bsdmk's make.conf.
 	sed -i -e 's:make.conf.5::' "${S}/man/man5/Makefile"
 	# Remove rc.conf manpage as it describes bsd's rc.conf.

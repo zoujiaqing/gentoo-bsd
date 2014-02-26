@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=3
+
 inherit bsdmk freebsd multilib pam
 
 DESCRIPTION="FreeBSD's PAM authentication modules"
@@ -32,9 +34,7 @@ pkg_setup() {
 	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
 }
 
-src_unpack() {
-	freebsd_src_unpack
-
+src_prepare() {
 	for module in pam_deny pam_passwdqc pam_permit pam_krb5; do
 		sed -i -e "s:${module}::" "${S}"/modules.inc
 	done

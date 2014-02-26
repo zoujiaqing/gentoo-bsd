@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=3
 
 inherit bsdmk freebsd multilib
 
@@ -11,13 +11,13 @@ SLOT="0"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${SBIN}.tar.bz2
-		mirror://gentoo/${CONTRIB}.tar.bz2
-		mirror://gentoo/${LIB}.tar.bz2
-		mirror://gentoo/${LIBEXEC}.tar.bz2
-		mirror://gentoo/${USBIN}.tar.bz2
-		mirror://gentoo/${ETC}.tar.bz2
-		build? ( mirror://gentoo/${SYS}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${SBIN}.tar.xz
+		mirror://gentoo/${CONTRIB}.tar.xz
+		mirror://gentoo/${LIB}.tar.xz
+		mirror://gentoo/${LIBEXEC}.tar.xz
+		mirror://gentoo/${USBIN}.tar.xz
+		mirror://gentoo/${ETC}.tar.xz
+		build? ( mirror://gentoo/${SYS}.tar.xz )"
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[ipv6?,atm?,netware?]

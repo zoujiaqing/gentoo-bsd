@@ -14,17 +14,17 @@ SLOT="0"
 # extracting the whole tarball
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${LIB}.tar.bz2
-			mirror://gentoo/${CONTRIB}.tar.bz2
-			mirror://gentoo/${CRYPTO}.tar.bz2
-			mirror://gentoo/${LIBEXEC}.tar.bz2
-			mirror://gentoo/${ETC}.tar.bz2
-			mirror://gentoo/${INCLUDE}.tar.bz2
-			mirror://gentoo/${USBIN}.tar.bz2
-			mirror://gentoo/${GNU}.tar.bz2
-			mirror://gentoo/${SECURE}.tar.bz2
-			build? ( mirror://gentoo/${SYS}.tar.bz2 )
-			zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${LIB}.tar.xz
+			mirror://gentoo/${CONTRIB}.tar.xz
+			mirror://gentoo/${CRYPTO}.tar.xz
+			mirror://gentoo/${LIBEXEC}.tar.xz
+			mirror://gentoo/${ETC}.tar.xz
+			mirror://gentoo/${INCLUDE}.tar.xz
+			mirror://gentoo/${USBIN}.tar.xz
+			mirror://gentoo/${GNU}.tar.xz
+			mirror://gentoo/${SECURE}.tar.xz
+			build? ( mirror://gentoo/${SYS}.tar.xz )
+			zfs? ( mirror://gentoo/${CDDL}.tar.xz )"
 fi
 
 if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then

@@ -11,13 +11,13 @@ SLOT="0"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${LIBEXEC}.tar.bz2
-		mirror://gentoo/${UBIN}.tar.bz2
-		mirror://gentoo/${BIN}.tar.bz2
-		mirror://gentoo/${CONTRIB}.tar.bz2
-		mirror://gentoo/${LIB}.tar.bz2
-		mirror://gentoo/${ETC}.tar.bz2
-		mirror://gentoo/${USBIN}.tar.bz2"
+	SRC_URI="mirror://gentoo/${LIBEXEC}.tar.xz
+		mirror://gentoo/${UBIN}.tar.xz
+		mirror://gentoo/${BIN}.tar.xz
+		mirror://gentoo/${CONTRIB}.tar.xz
+		mirror://gentoo/${LIB}.tar.xz
+		mirror://gentoo/${ETC}.tar.xz
+		mirror://gentoo/${USBIN}.tar.xz"
 fi
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*

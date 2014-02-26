@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=3
 
 inherit bsdmk freebsd flag-o-matic toolchain-funcs
 
@@ -13,9 +13,9 @@ IUSE="bzip2 ieee1394 tftp zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${SYS}.tar.bz2
-		mirror://gentoo/${LIB}.tar.bz2
-		mirror://gentoo/${CONTRIB}.tar.bz2"
+	SRC_URI="mirror://gentoo/${SYS}.tar.xz
+		mirror://gentoo/${LIB}.tar.xz
+		mirror://gentoo/${CONTRIB}.tar.xz"
 fi
 
 RDEPEND=""

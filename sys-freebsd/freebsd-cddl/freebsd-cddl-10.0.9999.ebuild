@@ -14,13 +14,13 @@ LICENSE="CDDL GPL-2"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${P}.tar.bz2
-			mirror://gentoo/${CONTRIB}.tar.bz2
-			mirror://gentoo/${UBIN}.tar.bz2
-			mirror://gentoo/${LIB}.tar.bz2
-			mirror://gentoo/${SBIN}.tar.bz2
-			mirror://gentoo/${SYS}.tar.bz2
-			build? ( mirror://gentoo/${INCLUDE}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${P}.tar.xz
+			mirror://gentoo/${CONTRIB}.tar.xz
+			mirror://gentoo/${UBIN}.tar.xz
+			mirror://gentoo/${LIB}.tar.xz
+			mirror://gentoo/${SBIN}.tar.xz
+			mirror://gentoo/${SYS}.tar.xz
+			build? ( mirror://gentoo/${INCLUDE}.tar.xz )"
 fi
 
 # sys is required.
@@ -40,8 +40,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-9.2-underlink.patch"
 	)
 
-src_unpack() {
-	freebsd_src_unpack
+src_prepare() {
 	if [[ ! -e "${WORKDIR}/include" ]]; then
 		# Link in include headers.
 		ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."

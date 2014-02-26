@@ -14,17 +14,17 @@ IUSE="atm netware nis zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${UBIN}.tar.bz2
-			mirror://gentoo/${CONTRIB}.tar.bz2
-			mirror://gentoo/${LIB}.tar.bz2
-			mirror://gentoo/${BIN}.tar.bz2
-			mirror://gentoo/${SBIN}.tar.bz2
-			mirror://gentoo/${USBIN}.tar.bz2
-			mirror://gentoo/${GNU}.tar.bz2
-			mirror://gentoo/${SYS}.tar.bz2
-			mirror://gentoo/${LIBEXEC}.tar.bz2
-			mirror://gentoo/${RESCUE}.tar.bz2
-			zfs? ( mirror://gentoo/${CDDL}.tar.bz2 )"
+	SRC_URI="mirror://gentoo/${UBIN}.tar.xz
+			mirror://gentoo/${CONTRIB}.tar.xz
+			mirror://gentoo/${LIB}.tar.xz
+			mirror://gentoo/${BIN}.tar.xz
+			mirror://gentoo/${SBIN}.tar.xz
+			mirror://gentoo/${USBIN}.tar.xz
+			mirror://gentoo/${GNU}.tar.xz
+			mirror://gentoo/${SYS}.tar.xz
+			mirror://gentoo/${LIBEXEC}.tar.xz
+			mirror://gentoo/${RESCUE}.tar.xz
+			zfs? ( mirror://gentoo/${CDDL}.tar.xz )"
 fi
 
 RDEPEND=""
