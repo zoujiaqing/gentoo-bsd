@@ -31,7 +31,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 	RDEPEND="ssl? ( dev-libs/openssl )
 		hesiod? ( net-dns/hesiod )
 		kerberos? ( app-crypt/heimdal )
-		usb? ( !dev-libs/libusb !dev-libs/libusbx )
+		usb? ( !dev-libs/libusb )
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
 		!sys-libs/libutempter
