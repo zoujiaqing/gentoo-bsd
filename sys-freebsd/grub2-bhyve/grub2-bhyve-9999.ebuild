@@ -12,7 +12,7 @@ if [[ ${PV} == *9999* ]]; then
 	EGIT_REPO_URI="git://github.com/grehan-freebsd/grub2-bhyve.git"
 else
 	KEYWORDS="~amd64-fbsd"
-	SRC_URI="https://github.com/grehan-freebsd/grub2-bhyve/archive/v${PV}.tar.gz"
+	SRC_URI="https://github.com/grehan-freebsd/grub2-bhyve/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 fi
 
 DESCRIPTION="Grub-emu loader for bhyve"
