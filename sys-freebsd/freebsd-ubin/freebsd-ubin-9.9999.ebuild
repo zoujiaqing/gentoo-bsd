@@ -53,7 +53,8 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
 	"${FILESDIR}/${PN}-9.1-grep.patch"
-	"${FILESDIR}/${PN}-9.1-ar-libarchive3.patch" )
+	"${FILESDIR}/${PN}-9.1-ar-libarchive3.patch"
+	"${FILESDIR}/${PN}-9.3-kdump-workaround.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
