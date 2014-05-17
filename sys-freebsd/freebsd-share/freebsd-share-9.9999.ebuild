@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=3
+
 inherit bsdmk freebsd
 
 DESCRIPTION="FreeBSD shared tools/files"
@@ -44,9 +46,7 @@ PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
 	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
 	"${FILESDIR}/${PN}-9.2-gnu-miscfiles.patch" )
 
-src_unpack() {
-	freebsd_src_unpack
-
+src_prepare() {
 	# Remove make.conf manpage as it describes bsdmk's make.conf.
 	sed -i -e 's:make.conf.5::' "${S}/man/man5/Makefile"
 	# Remove rc.conf manpage as it describes bsd's rc.conf.

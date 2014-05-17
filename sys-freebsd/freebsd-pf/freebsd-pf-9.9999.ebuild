@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI=3
+
 inherit bsdmk freebsd user
 
 DESCRIPTION="FreeBSD's base system libraries"
@@ -33,8 +35,7 @@ pkg_setup() {
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
 
-src_unpack() {
-	freebsd_src_unpack
+src_prepare() {
 	# pcap-int.h redefines snprintf as pcap_snprintf
 	epatch "${FILESDIR}/${PN}-9.0-pcap_pollution.patch"
 	# Use system's libevent
@@ -43,7 +44,7 @@ src_unpack() {
 	epatch "${FILESDIR}/${PN}-9.0-bpf.patch"
 	epatch "${FILESDIR}/${PN}-9.0-getline.patch"
 	# Link in kernel sources
-	ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	[[ ! -e "${WORKDIR}/sys" ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys"
 }
 
 src_compile() {

@@ -49,7 +49,9 @@ pkg_setup() {
 }
 
 src_prepare() {
-	ln -s /usr/include "${WORKDIR}/include"
+	if [[ ! -e "${WORKDIR}/include" ]]; then
+		ln -s /usr/include "${WORKDIR}/include" || die "Symlinking /usr/include.."
+	fi
 }
 
 setup_multilib_vars() {

@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=3
 
 inherit bsdmk freebsd flag-o-matic eutils
 
@@ -26,7 +26,6 @@ fi
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 	=sys-freebsd/freebsd-libexec-${RV}*
 	=sys-freebsd/freebsd-contrib-${RV}*
-	acpi? ( sys-power/iasl )
 	build? ( sys-apps/baselayout )
 	ssl? ( dev-libs/openssl )
 	>=app-arch/libarchive-3
@@ -88,8 +87,8 @@ REMOVE_SUBDIRS="
 
 src_prepare() {
 	if ! use build; then
-		ln -s "/usr/src/sys" "${WORKDIR}/sys"
-		ln -s "/usr/include" "${WORKDIR}/include"
+		[[ ! -e "${WORKDIR}/sys" ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys"
+		[[ ! -e "${WORKDIR}/include" ]] && ln -s "/usr/include" "${WORKDIR}/include"
 	else
 		dummy_mk mount_smbfs
 	fi
@@ -120,7 +119,7 @@ src_install() {
 	mkinstall DOCDIR=/usr/share/doc/${PF} || die "Install failed"
 
 	# Most of these now come from openrc.
-	for util in nfs rpc.statd rpc.lockd; do
+	for util in nfs nfsuserd rpc.statd rpc.lockd; do
 		newinitd "${FILESDIR}/"${util}.initd ${util} || die
 		if [[ -e "${FILESDIR}"/${util}.confd ]]; then \
 			newconfd "${FILESDIR}"/${util}.confd ${util} || die

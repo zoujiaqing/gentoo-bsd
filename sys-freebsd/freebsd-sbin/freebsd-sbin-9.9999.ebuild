@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=2
+EAPI=3
 
 inherit bsdmk freebsd multilib
 
@@ -55,7 +55,9 @@ PATCHES=( "${FILESDIR}/${PN}-setXid.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch" )
 
 src_prepare() {
-	use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	if [[ ! -e "${WORKDIR}/sys" ]]; then
+		use build || ln -s "/usr/src/sys" "${WORKDIR}/sys"
+	fi
 }
 
 src_install() {
