@@ -24,7 +24,7 @@ RESTRICT="strip"
 S="${WORKDIR}/share/mk"
 
 src_prepare() {
-	epatch "${FILESDIR}/${PN}-9.2-gentoo.patch"
+	epatch "${FILESDIR}/${PN}-9.3-gentoo.patch"
 	use userland_GNU && epatch "${FILESDIR}/${PN}-9.2-gnu.patch"
 }
 
