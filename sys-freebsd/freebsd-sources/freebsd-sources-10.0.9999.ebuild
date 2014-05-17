@@ -9,7 +9,7 @@ inherit bsdmk freebsd flag-o-matic toolchain-funcs
 DESCRIPTION="FreeBSD kernel sources"
 SLOT="0"
 
-IUSE="+build-generic debug dtrace profile zfs"
+IUSE="+build-kernel debug dtrace profile zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -21,7 +21,7 @@ RDEPEND="dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
 	!sys-freebsd/virtio-kmod
 	!sys-fs/fuse4bsd
 	!<sys-freebsd/freebsd-sources-9.2_beta1"
-DEPEND="build-generic? (
+DEPEND="build-kernel? (
 		dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
 		!sparc-fbsd? ( sys-devel/clang )
 		>=sys-freebsd/freebsd-usbin-9.1
@@ -77,12 +77,12 @@ src_prepare() {
 	use debug || echo 'nomakeoptions DEBUG' >> "${conf}"
 	use dtrace || echo 'nomakeoptions WITH_CTF' >> "${conf}"
 	
-	# Only used with USE=build-generic, let the kernel build with its own flags, its safer.
+	# Only used with USE=build-kernel, let the kernel build with its own flags, its safer.
 	unset LDFLAGS CFLAGS CXXFLAGS ASFLAGS KERNEL
 }
 
 src_configure() {
-	if use build-generic ; then
+	if use build-kernel ; then
 		tc-export CC
 		cd "${S}/$(tc-arch-kernel)/conf" || die
 		config ${KERN_BUILD} || die
@@ -90,7 +90,7 @@ src_configure() {
 }
 
 src_compile() {
-	if use build-generic ; then
+	if use build-kernel ; then
 		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
 		freebsd_src_compile depend
 		freebsd_src_compile
@@ -100,7 +100,7 @@ src_compile() {
 }
 
 src_install() {
-	if use build-generic ; then
+	if use build-kernel ; then
 		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
 		freebsd_src_install
 		rm -rf "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}"
