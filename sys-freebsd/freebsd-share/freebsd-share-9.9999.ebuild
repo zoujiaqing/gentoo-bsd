@@ -75,7 +75,9 @@ src_unpack() {
 			"${S}/${sdir}/Makefile" || \
 			die "Error fixing ${sdir}/Makefile"
 	done
-	ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "failed to set sys symlink"
+	if [[ ! -e "${WORKDIR}/sys" ]]; then
+		ln -s "/usr/src/sys" "${WORKDIR}/sys" || die "failed to set sys symlink"
+	fi
 }
 
 src_compile() {
