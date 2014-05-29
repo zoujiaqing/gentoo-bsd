@@ -37,7 +37,7 @@ S="${WORKDIR}/cddl"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-9.2-libpaths.patch"
-	"${FILESDIR}/${PN}-9.2-underlink.patch"
+	"${FILESDIR}/${PN}-9.3-underlink.patch"
 	)
 
 src_unpack() {
