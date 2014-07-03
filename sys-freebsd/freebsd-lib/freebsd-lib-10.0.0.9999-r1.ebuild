@@ -101,6 +101,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-10.0-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
 	"${FILESDIR}/${PN}-10.0-libiconv_modules.patch"
+	"${FILESDIR}/${PN}-10.0-cve-2014-3951.patch"
 	"${FILESDIR}/${PN}-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
