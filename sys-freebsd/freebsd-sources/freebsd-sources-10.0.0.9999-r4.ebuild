@@ -47,7 +47,8 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-9.1-cve-2014-1453.patch"
 	"${FILESDIR}/${PN}-9.1-tcp.patch"
 	"${FILESDIR}/${PN}-9.1-ciss.patch"
-	"${FILESDIR}/${PN}-10.0-EN-1407-pmap.patch" )
+	"${FILESDIR}/${PN}-10.0-EN-1407-pmap.patch"
+	"${FILESDIR}/${PN}-10.0-SA-1417-kmem.patch" )
 
 pkg_setup() {
 	# Force set CC=clang. when using gcc, aesni fails to build.
