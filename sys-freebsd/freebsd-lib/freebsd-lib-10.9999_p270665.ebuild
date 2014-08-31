@@ -41,7 +41,8 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
-		=sys-freebsd/freebsd-sources-${RV}*"
+		=sys-freebsd/freebsd-sources-${RV}*
+		=sys-freebsd/freebsd-libexec-${RV}*"
 	RDEPEND="${RDEPEND}
 		=sys-freebsd/freebsd-share-${RV}*
 		>=virtual/libiconv-0-r2"
