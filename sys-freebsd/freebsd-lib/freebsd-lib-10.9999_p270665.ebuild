@@ -79,13 +79,13 @@ pkg_setup() {
 	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "
 	use hesiod || mymakeopts="${mymakeopts} WITHOUT_HESIOD= "
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6_SUPPORT= "
-	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= "
+	use kerberos || mymakeopts="${mymakeopts} WITHOUT_KERBEROS_SUPPORT= WITHOUT_GSSAPI= "
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= WITHOUT_IPX_SUPPORT= WITHOUT_NCP= "
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
-	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_GSSAPI= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= "
+	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= WITHOUT_LIBCPLUSPLUS= WITHOUT_LDNS= WITHOUT_UNBOUND= "
 
 	if [ "${CTARGET}" != "${CHOST}" ]; then
 		mymakeopts="${mymakeopts} MACHINE=$(tc-arch-kernel ${CTARGET})"
@@ -614,7 +614,8 @@ install_includes()
 		MACHINE=${MACHINE} MACHINE_ARCH=${MACHINE} \
 		DESTDIR="${DESTDIR}" \
 		INCLUDEDIR="${INCLUDEDIR}" BINOWN="${BINOWN}" \
-		BINGRP="${BINGRP}" || die "install_includes() failed"
+		BINGRP="${BINGRP}" \
+		WITHOUT_GSSAPI= || die "install_includes() failed"
 	einfo "includes installed ok."
 	EXTRA_INCLUDES="lib/librtld_db lib/libutil lib/msun gnu/lib/libregex"
 	for i in $EXTRA_INCLUDES; do
