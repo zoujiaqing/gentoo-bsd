@@ -24,11 +24,12 @@ DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 
 S="${WORKDIR}/sys/boot"
 
-PATCHES=( "${FILESDIR}/${PN}-9.2-gcc46.patch"
+PATCHES=( "${FILESDIR}/${PN}-9.3-gcc46.patch"
 	"${FILESDIR}/${PN}-add-nossp-cflags.patch" )
 
 boot0_use_enable() {
 	use ${1} && mymakeopts="${mymakeopts} LOADER_${2}_SUPPORT=\"yes\""
+	use ${1} || mymakeopts="${mymakeopts} WITHOUT_${2}= "
 }
 
 pkg_setup() {
