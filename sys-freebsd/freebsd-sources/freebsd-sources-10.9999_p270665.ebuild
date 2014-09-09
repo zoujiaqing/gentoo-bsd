@@ -101,7 +101,6 @@ src_compile() {
 			fi
 			export BMAKE="${WORKDIR}/usr.bin/bmake/make"
 		fi
-		echo ${CC}
 		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
 		freebsd_src_compile depend
 		freebsd_src_compile
