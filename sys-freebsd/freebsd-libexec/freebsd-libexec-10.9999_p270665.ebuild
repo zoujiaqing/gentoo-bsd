@@ -53,6 +53,15 @@ src_prepare() {
 	if [[ ! -e "${WORKDIR}/include" ]]; then
 		ln -s /usr/include "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi
+	# allow upgrade directly from 9.x to 10.1.
+	if has_version "<sys-freebsd/freebsd-lib-10.0"; then
+		# taken from sys/sys/elf_common.h
+		echo "#define DF_1_INTERPOSE 0x00000400" >> "${S}"/rtld-elf/rtld.h
+		# taken from sys/sys/fcntl.h
+		echo "#define F_DUPFD_CLOEXEC 17" >> "${S}"/rtld-elf/rtld.h
+		# taken from sys/sys/cdefs.h
+		echo '#define __compiler_membar()  __asm __volatile(" " : : : "memory")' >> "${S}"/rtld-elf/rtld.h
+	fi
 }
 
 setup_multilib_vars() {
