@@ -13,7 +13,8 @@ IUSE="+build-kernel debug dtrace profile zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	SRC_URI="mirror://gentoo/${SYS}.tar.xz"
+	SRC_URI="mirror://gentoo/${SYS}.tar.xz
+		mirror://gentoo/${UBIN}.tar.xz"
 fi
 
 RDEPEND="dtrace? ( >=sys-freebsd/freebsd-cddl-9.2_rc1 )
@@ -89,6 +90,18 @@ src_configure() {
 
 src_compile() {
 	if use build-kernel ; then
+		if has_version "<sys-freebsd/freebsd-ubin-10.0"; then
+			cd "${WORKDIR}"/usr.bin/bmake || die
+			if [[ -e /usr/lib/libgcc.a ]] ; then
+				freebsd_src_compile
+			else
+				local CC_SAVE="${CC}"
+				CC=gcc freebsd_src_compile
+				export CC="${CC_SAVE}"
+			fi
+			export BMAKE="${WORKDIR}/usr.bin/bmake/make"
+		fi
+		echo ${CC}
 		cd "${S}/$(tc-arch-kernel)/compile/${KERN_BUILD}" || die
 		freebsd_src_compile depend
 		freebsd_src_compile
