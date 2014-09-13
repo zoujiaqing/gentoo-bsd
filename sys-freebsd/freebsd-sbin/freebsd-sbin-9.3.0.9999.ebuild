@@ -26,7 +26,10 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[ipv6?,atm?,netware?]
 	ssl? ( dev-libs/openssl )
 	>=dev-libs/libedit-20120311.3.0-r1
 	sys-libs/readline
-	sys-process/vixie-cron
+	|| (
+		sys-process/cronie
+		sys-process/vixie-cron
+	)
 	atm? ( net-analyzer/bsnmp )"
 DEPEND="${RDEPEND}
 	!build? ( =sys-freebsd/freebsd-sources-${RV}* )
