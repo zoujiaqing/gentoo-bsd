@@ -6,7 +6,7 @@ EAPI=3
 
 inherit bsdmk freebsd flag-o-matic multilib
 
-DESCRIPTION="Contributed sources for FreeBSD."
+DESCRIPTION="Contributed sources for FreeBSD"
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 	SRC_URI="mirror://gentoo/${GNU}.tar.bz2
