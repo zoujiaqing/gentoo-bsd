@@ -20,11 +20,13 @@ fi
 
 RDEPEND=""
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
-	=sys-freebsd/freebsd-lib-${RV}*"
+	=sys-freebsd/freebsd-lib-${RV}*
+	!sparc-fbsd? ( sys-devel/clang )"
 
 S="${WORKDIR}/sys/boot"
 
 PATCHES=( "${FILESDIR}/${PN}-9.3-gcc46.patch"
+	"${FILESDIR}/${PN}-10.1-drop-unsupport-cflags.patch"
 	"${FILESDIR}/${PN}-add-nossp-cflags.patch" )
 
 boot0_use_enable() {
@@ -40,7 +42,8 @@ pkg_setup() {
 }
 
 src_prepare() {
-	sed -e '/-fomit-frame-pointer/d' -e '/-mno-align-long-strings/d' \
+	use sparc-fbsd || export CC=clang
+	sed -e '/-mno-align-long-strings/d' \
 		-i "${S}"/i386/boot2/Makefile \
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
@@ -53,6 +56,10 @@ src_compile() {
 
 	if use amd64-fbsd; then
 		cd "${S}/userboot/libstand" || die
+		freebsd_src_compile
+		cd "${S}/userboot/zfs" || die
+		freebsd_src_compile
+		cd "${S}/libstand32" || die
 		freebsd_src_compile
 	fi
 	cd "${WORKDIR}/lib/libstand" || die
