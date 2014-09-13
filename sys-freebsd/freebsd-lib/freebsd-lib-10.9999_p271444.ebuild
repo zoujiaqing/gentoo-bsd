@@ -34,6 +34,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		usb? ( !dev-libs/libusb )
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
+		=sys-freebsd/freebsd-libexec-${RV}*
 		!sys-libs/libutempter
 		!dev-libs/libelf
 		!dev-libs/libexecinfo
@@ -41,8 +42,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		!sys-freebsd/freebsd-headers"
 	DEPEND="${RDEPEND}
 		>=sys-devel/flex-2.5.31-r2
-		=sys-freebsd/freebsd-sources-${RV}*
-		=sys-freebsd/freebsd-libexec-${RV}*"
+		=sys-freebsd/freebsd-sources-${RV}*"
 	RDEPEND="${RDEPEND}
 		=sys-freebsd/freebsd-share-${RV}*
 		>=virtual/libiconv-0-r2"
