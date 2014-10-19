@@ -47,7 +47,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		>=virtual/libiconv-0-r2"
 else
 	SRC_URI="${SRC_URI}
-			mirror://gentoo/${SYS}.tar.bz2"
+			mirror://gentoo/${SYS}.tar.xz"
 fi
 
 DEPEND="${DEPEND}
