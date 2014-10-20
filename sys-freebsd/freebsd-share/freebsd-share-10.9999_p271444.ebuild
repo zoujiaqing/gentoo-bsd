@@ -36,6 +36,7 @@ S="${WORKDIR}/share"
 pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
+	[[ ! -e /usr/bin/vtfontcvt ]] && mymakeopts="${mymakeopts} WITHOUT_VT= "
 
 	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
