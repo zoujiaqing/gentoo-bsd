@@ -76,9 +76,12 @@ prepare(){
 
 	if [ ! -e /usr/portage/profiles/releases/freebsd-${TARGETVER} ] ; then
 		echo "prepare new ${TARGETVER} profiles"
+		cp -a ${WORKDIR}/portage.bsd-overlay/profiles/arch/amd64-fbsd/clang /usr/portage/profiles/arch/amd64-fbsd/
 		cp -a ${WORKDIR}/portage.bsd-overlay/profiles/default/bsd/fbsd/amd64/${TARGETVER} /usr/portage/profiles/default/bsd/fbsd/amd64/
 		cp -a ${WORKDIR}/portage.bsd-overlay/profiles/default/bsd/fbsd/x86/${TARGETVER} /usr/portage/profiles/default/bsd/fbsd/x86/
 		cp -a ${WORKDIR}/portage.bsd-overlay/profiles/releases/freebsd-${TARGETVER} /usr/portage/profiles/releases/
+		echo "amd64-fbsd default/bsd/fbsd/amd64/${TARGETVER} dev" >> /usr/portage/profiles/profiles.desc
+		echo "x86-fbsd default/bsd/fbsd/x86/${TARGETVER} dev" >> /usr/portage/profiles/profiles.desc
 	fi
 
 	if [ "${MKSRC}" != "NONE" ] ; then
@@ -238,6 +241,9 @@ run_catalyst() {
 	local C_APPEND_OPT=""
 
 	if [ ! -e /var/tmp/catalyst/builds/default/${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 ] ; then
+		if [ "${C_TARGET}" = "stage1" ] ; then
+			C_APPEND_OPT="${C_APPEND_OPT} update_seed=yes"
+		fi
 		if [ "${C_TARGET}" != "stage3" ] ; then
 			C_APPEND_OPT="${C_APPEND_OPT} chost=${CATALYST_CHOST}"
 		fi
