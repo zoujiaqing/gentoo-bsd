@@ -57,6 +57,10 @@ src_prepare() {
 	if has_version "<sys-freebsd/freebsd-lib-10.0"; then
 		# taken from sys/sys/elf_common.h
 		echo "#define DF_1_INTERPOSE 0x00000400" >> "${S}"/rtld-elf/rtld.h
+		echo "#define STT_GNU_IFUNC 10" >> "${S}"/rtld-elf/rtld.h
+		echo "#define R_386_IRELATIVE 42" >> "${S}"/rtld-elf/rtld.h
+		echo "#define PT_GNU_RELRO 0x6474e552" >> "${S}"/rtld-elf/rtld.h
+		echo "#define DF_1_NODEFLIB 0x00000800" >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/fcntl.h
 		echo "#define F_DUPFD_CLOEXEC 17" >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/cdefs.h
