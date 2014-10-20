@@ -1,0 +1,53 @@
+diff --git a/catalyst-2.0.15/targets/stage1/stage1-chroot.sh b/catalyst-2.0.15/targets/stage1/stage1-chroot.sh
+old mode 100644
+new mode 100755
+index ed83f38..7903fac
+--- a/catalyst-2.0.15/targets/stage1/stage1-chroot.sh
++++ b/catalyst-2.0.15/targets/stage1/stage1-chroot.sh
+@@ -27,11 +27,28 @@ clst_root_path=/ setup_pkgmgr
+ if [ -n "${clst_update_seed}" ]; then
+ 	if [ "${clst_update_seed}" == "yes" ]; then
+ 		echo "Updating seed stage..."
++		if [ $(uname) == "FreeBSD" ] ; then
++			if [ $(uname -p) == "amd64" ]  && [ ! -e /libexec/ld-elf32.so.1 ] ; then
++				[[ ! -e /etc/portage/profile ]] && mkdir -p /etc/portage/profile
++				echo "sys-freebsd/freebsd-libexec abi_x86_32" >> /etc/portage/profile/package.use.mask
++			fi
++			gcc -v &> /tmp/gccv.result
++			export CHOST=`grep Target /tmp/gccv.result | awk '{print $2}'`
++			[[ ! -e /usr/bin/cc ]] && cp /usr/bin/gcc /usr/bin/cc
++			clst_root_path=/ run_merge "-C dev-libs/libelf dev-libs/libexecinfo dev-libs/libiconv sys-freebsd/freebsd-sources"
++			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-mk-defs sys-freebsd/freebsd-sources binutils"
++			clst_root_path=/ run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-libexec"
++			clst_root_path=/ USE=build run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-lib sys-freebsd/freebsd-share"
++			[[ -e /etc/portage/profile/package.use.mask ]] && sed -i '/sys-freebsd/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
++			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n --update --newuse freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin"
++			clst_root_path=/ USE="internal-glib" run_merge "--buildpkg=n --update --newuse dev-util/pkgconfig"
++		fi
+ 		if [ -n "${clst_update_seed_command}" ]; then
+-			clst_root_path=/ run_merge "--buildpkg=n ${clst_update_seed_command}"
++			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n ${clst_update_seed_command}"
+ 		else
+-			clst_root_path=/ run_merge "--update --deep --newuse --complete-graph --rebuild-if-new-ver gcc"
++			clst_root_path=/ USE="-build-kernel" run_merge "--update --deep --newuse --complete-graph --rebuild-if-new-ver gcc"
+ 		fi
++		[[ $(uname) == "FreeBSD" ]] && unset CHOST
+ 	elif [ "${clst_update_seed}" != "no" ]; then
+ 		echo "Invalid setting for update_seed: ${clst_update_seed}"
+ 		exit 1
+diff --git a/catalyst-2.0.15/targets/support/chroot-functions.sh b/catalyst-2.0.15/targets/support/chroot-functions.sh
+index 848be40..804bf61 100644
+--- a/catalyst-2.0.15/targets/support/chroot-functions.sh
++++ b/catalyst-2.0.15/targets/support/chroot-functions.sh
+@@ -2,7 +2,10 @@
+ 
+ # Set the profile
+ eselect profile set ${clst_target_profile}
+-
++if [ $? -ne 0 ] ; then
++	rm -rf /etc/make.profile /etc/portage/make.profile
++	ln -s ../usr/portage/profiles/${clst_target_profile} /etc/make.profile
++fi
+ # Trap these signals and kill ourselves if recieved
+ # Force ourselves to die if any of these signals are recieved
+ # most likely our controlling terminal is gone
