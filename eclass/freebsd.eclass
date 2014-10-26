@@ -159,6 +159,7 @@ freebsd_src_compile() {
 	use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
 
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
+	[[ $(tc-getCC) == *gcc* ]] && mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_CLANG_FULL= WITHOUT_CLANG_IS_CC= WITH_GCC= WITH_GNUCXX= "
 
 	# Make sure to use FreeBSD definitions while crosscompiling
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
@@ -220,6 +221,7 @@ freebsd_src_install() {
 	use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
 
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
+	[[ $(tc-getCC) == *gcc* ]] && mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_CLANG_FULL= WITHOUT_CLANG_IS_CC= WITH_GCC= WITH_GNUCXX= "
 
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
