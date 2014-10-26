@@ -62,6 +62,8 @@ src_prepare() {
 	sed -i -e '/builtins\.1/d' "${S}/man/man1/Makefile"
 	# Remove rc manpages
 	sed -i -e '/rc.8/d' "${S}/man/man8/Makefile"
+	# Remove hv_kvp_daemon.8 manpage. It's provided by freebsd-usbin.
+	sed -i -e '/hv_kvp_daemon.8/d' "${S}/man/man8/Makefile"
 
 	# Don't install the arch-specific directories in subdirectories
 	sed -i -e '/MANSUBDIR/d' "${S}"/man/man4/man4.{i386,sparc64}/Makefile
