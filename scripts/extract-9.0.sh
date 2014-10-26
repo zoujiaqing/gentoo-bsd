@@ -31,8 +31,8 @@ if [[ ${MY_P} == ${P} ]]; then
 fi
 
 echo "Downloading files..."
-wget -nv -c "ftp://${MIRROR}/pub/FreeBSD/releases/i386/i386/${MY_P}/MANIFEST"
-wget -nv -c "ftp://${MIRROR}/pub/FreeBSD/releases/i386/i386/${MY_P}/src.txz"
+wget -nv -c "http://${MIRROR}/pub/FreeBSD/releases/i386/i386/${MY_P}/MANIFEST"
+wget -nv -c "http://${MIRROR}/pub/FreeBSD/releases/i386/i386/${MY_P}/src.txz"
 echo "Done downloading files."
 
 # Create tar.xz 10.0 or later version. In the case of 9.x, create tar.bz2.
