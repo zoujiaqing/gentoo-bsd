@@ -1,19 +1,24 @@
 diff --git a/catalyst-2.0.17/targets/stage1/stage1-chroot.sh b/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
 old mode 100755
 new mode 100644
-index ed83f38..0819b2e
+index ed83f38..1f7137e
 --- a/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
 +++ b/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
-@@ -21,17 +21,42 @@ then
+@@ -21,17 +21,48 @@ then
  fi
  
  ## Setup seed pkgmgr to ensure latest
 +
 +if [[ ! -e /usr/lib/python-exec ]]; then
 +	emerge -p --nodeps dev-lang/python-exec
-+	[[ $? -eq 0 ]] && clst_root_path=/ run_merge "--buildpkg=n --newuse --nodeps dev-lang/python-exec"
++	if [[ $? -eq 0 ]]; then
++		clst_root_path=/ run_merge "--buildpkg=n --newuse --nodeps dev-lang/python-exec"
++	else
++		find /usr/portage/profiles -name eapi -exec bash -c 'echo 4 > {}' \;
++	fi
 +fi
  clst_root_path=/ setup_pkgmgr
++[[ 4 -eq $(cat /usr/portage/profiles/eapi) ]] && find /usr/portage/profiles -name eapi -exec bash -c 'echo 5 > {}' \;
  
  # Update stage3
  if [ -n "${clst_update_seed}" ]; then
@@ -34,6 +39,7 @@ index ed83f38..0819b2e
 +			[[ -e /etc/portage/profile/package.use.mask ]] && sed -i '/sys-freebsd/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
 +			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n --update --newuse freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin"
 +			clst_root_path=/ USE="internal-glib" run_merge "--buildpkg=n --update --newuse dev-util/pkgconfig"
++			[[ -e /usr/lib/libc++.so ]] && clst_root_path=/ run_merge "--buildpkg=n --update --newuse sys-libs/libcxx sys-libs/libcxxrt"
 +			clst_root_path=/ run_merge "--buildpkg=n dev-libs/libxml2 dev-libs/libxslt dev-libs/glib app-arch/libarchive sys-libs/zlib"
 +			unset CHOST
 +			clst_root_path=/ run_merge "--buildpkg=n sys-devel/libtool"
