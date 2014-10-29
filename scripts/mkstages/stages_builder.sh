@@ -176,7 +176,7 @@ create_manifest(){
 check_ecompressdir() {
 	# dirty solution
 	# /dev is still mounted; performing auto-bind-umount... 
-	local PID=`ps auxw | grep portage/bin/ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
+	local PID=`ps auxw | grep ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
 	if [ -n "${PID}" ] ; then
 		echo "kill ecompressdir"
 		kill -9 ${PID}
