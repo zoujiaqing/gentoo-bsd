@@ -32,7 +32,7 @@ RDEPEND="${RDEPEND}
 S="${WORKDIR}/libexec"
 
 # Remove sendmail, tcp_wrapper and other useless stuff
-REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind lukemftpd ftpd"
+REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind ftpd"
 
 IUSE="pam ssl kerberos ipv6 nis xinetd"
 
