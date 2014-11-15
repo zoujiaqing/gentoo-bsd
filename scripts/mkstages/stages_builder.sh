@@ -61,8 +61,18 @@ prepare(){
 		[[ $? -ne 0 ]] && exit 1
 	fi
 	if [ -n "${EXTRAOVERLAY}" ] ; then
-		echo "Copy from ${EXTRAOVERLAY} to ${WORKDIR}/gentoo-bsd"
-		cp -a ${EXTRAOVERLAY}/* ${WORKDIR}/gentoo-bsd/
+		if [[ "${EXTRAOVERLAY}" =~ ^http ]]; then
+			echo "Downloading extra overlay."
+			wget -q -O ${WORKDIR}/extraoverlay.tar.bz2 "${EXTRAOVERLAY}"
+			[[ $? -ne 0 ]] && exit 1
+			echo "Copy from ${WORKDIR}/extraoverlay to ${WORKDIR}/gentoo-bsd"
+			mkdir ${WORKDIR}/extraoverlay
+			tar xjf ${WORKDIR}/extraoverlay.tar.bz2 --strip-components=1 -C ${WORKDIR}/extraoverlay
+			cp -a ${WORKDIR}/extraoverlay/* ${WORKDIR}/gentoo-bsd/
+		else
+			echo "Copy from ${EXTRAOVERLAY} to ${WORKDIR}/gentoo-bsd"
+			cp -a ${EXTRAOVERLAY}/* ${WORKDIR}/gentoo-bsd/
+		fi
 	fi
 
 	echo "emerging catalyst..."
