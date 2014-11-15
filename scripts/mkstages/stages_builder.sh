@@ -43,10 +43,21 @@ prepare(){
 		mkdir -p /var/tmp/catalyst/builds/default
 	fi
 
-	if [ ! -e "/var/tmp/catalyst/builds/default/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2" ] && [ -z "${FORCESTAGE3}" ]; then
-		echo "Downloading aballier's ${TARGETSUBARCH} stage3 file..."
-		wget -q -P /var/tmp/catalyst/builds/default http://dev.gentoo.org/~aballier/fbsd${OLDVER}/${TARGETARCH}/stage3-${TARGETSUBARCH}-freebsd-${OLDVER}.tar.bz2
-		[[ $? -ne 0 ]] && exit 1
+	if [ -z "${FORCESTAGE3}" ] ; then
+		if [ -z "${CLANG}" ] ; then
+			local oldstage3fn="stage3-${TARGETSUBARCH}-freebsd-${OLDVER}"
+			local oldstage3url="http://dev.gentoo.org/~aballier/fbsd${OLDVER}/${TARGETARCH}/${oldstage3fn}.tar.bz2"
+		else
+			local oldstage3fn="stage3-${TARGETSUBARCH}-clangfbsd-${OLDVER}"
+			local oldstage3url="http://dev.gentoo.org/~aballier/fbsd${OLDVER}/${TARGETARCH}/clang/${oldstage3fn}.tar.bz2"
+		fi
+
+		if [ ! -e "/var/tmp/catalyst/builds/default/${oldstage3fn}.tar.bz2" ] ; then
+			echo "Downloading aballier's ${TARGETSUBARCH} stage3 file..."
+			wget -q -P /var/tmp/catalyst/builds/default "${oldstage3url}"
+			[[ $? -ne 0 ]] && exit 1
+			export FORCESTAGE3="${oldstage3fn}"
+		fi
 	fi
 
 	cd ${WORKDIR}
