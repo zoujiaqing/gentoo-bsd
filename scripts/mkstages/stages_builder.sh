@@ -236,6 +236,9 @@ run_catalyst() {
 		if [ $? -ne 0 ] ; then
 			check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
 			if [ $? -ne 0 ] ; then
+				if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ]; then
+					 C_APPEND_OPT="${C_APPEND_OPT} update_seed=no"
+				fi
 				catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/gentoo-bsd ${C_APPEND_OPT} || exit 1
 			fi
 		fi
