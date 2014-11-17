@@ -76,9 +76,6 @@ src_install() {
 	insinto /etc
 	doins minfree sysctl.conf regdomain.xml || die
 
-	# initd script for idmapd
-	newinitd "${FILESDIR}/idmapd.initd" idmapd
-
 	# Install a crontab for adjkerntz
 	insinto /etc/cron.d
 	newins "${FILESDIR}/adjkerntz-crontab" adjkerntz
