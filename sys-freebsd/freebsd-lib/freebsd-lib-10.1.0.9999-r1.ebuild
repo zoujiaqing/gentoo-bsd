@@ -105,6 +105,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
 	"${FILESDIR}/${PN}-add-nossp-cflags.patch"
+	"${FILESDIR}/${PN}-10.1-cve-2014-8611.patch"
 	)
 
 # Here we disable and remove source which we don't need or want
