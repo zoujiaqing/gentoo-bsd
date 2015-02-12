@@ -56,8 +56,8 @@ prepare(){
 			echo "Downloading aballier's ${TARGETSUBARCH} stage3 file..."
 			wget -q -P /var/tmp/catalyst/builds/default "${oldstage3url}"
 			[[ $? -ne 0 ]] && exit 1
-			export FORCESTAGE3="${oldstage3fn}"
 		fi
+		export FORCESTAGE3="${oldstage3fn}"
 	fi
 
 	cd ${WORKDIR}
