@@ -99,8 +99,12 @@ prepare(){
 		cp -a ${WORKDIR}/gentoo-bsd/profiles/default/bsd/fbsd/amd64/${TARGETVER} /usr/portage/profiles/default/bsd/fbsd/amd64/
 		cp -a ${WORKDIR}/gentoo-bsd/profiles/default/bsd/fbsd/x86/${TARGETVER} /usr/portage/profiles/default/bsd/fbsd/x86/
 		cp -a ${WORKDIR}/gentoo-bsd/profiles/releases/freebsd-${TARGETVER} /usr/portage/profiles/releases/
-		echo "amd64-fbsd default/bsd/fbsd/amd64/${TARGETVER} dev" >> /usr/portage/profiles/profiles.desc
-		echo "x86-fbsd default/bsd/fbsd/x86/${TARGETVER} dev" >> /usr/portage/profiles/profiles.desc
+
+		cat <<- _EOF_ >> /usr/portage/profiles/profiles.desc
+			amd64-fbsd default/bsd/fbsd/amd64/${TARGETVER} dev
+			amd64-fbsd default/bsd/fbsd/amd64/${TARGETVER}/clang dev
+			x86-fbsd default/bsd/fbsd/x86/${TARGETVER} dev
+		_EOF_
 	fi
 
 	if [ "${MKSRC}" != "NONE" ] ; then
@@ -215,23 +219,39 @@ run_catalyst() {
 	local C_APPEND_OPT=""
 
 	if [ ! -e /var/tmp/catalyst/builds/default/${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}.tar.bz2 ] ; then
+		local specfile="${WORKDIR}/${C_TARGET}.spec"
+		[[ -e "${specfile}" ]] && rm "${specfile}"
+
 		if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ]; then
-			C_APPEND_OPT="${C_APPEND_OPT} update_seed=yes"
+			echo "update_seed: yes" >> "${specfile}"
 		fi
 		if [ "${C_TARGET}" != "stage3" ] ; then
-			C_APPEND_OPT="${C_APPEND_OPT} chost=${CATALYST_CHOST}"
+			echo "chost: ${CATALYST_CHOST}" >> "${specfile}"
 		fi
 		if [ -n "${STABLE}" ] ; then
-			C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/gentoo-bsd/scripts/mkstages/etc/portage"
+			echo "portage_confdir: ${WORKDIR}/gentoo-bsd/scripts/mkstages/etc/portage" >> "${specfile}"
 		else
 			if [ -e ${WORKDIR}/gentoo-bsd/etc/portage ] ; then
-				C_APPEND_OPT="${C_APPEND_OPT} portage_confdir=${WORKDIR}/gentoo-bsd/etc/portage"
+				echo "portage_confdir: ${WORKDIR}/gentoo-bsd/etc/portage" >> "${specfile}"
 			fi
 		fi
 		if [ -n "${CLANG}" ] ; then
 			C_APPEND_PROFILE="/clang"
+			echo 'cxxflags: -stdlib=libc++ ${CFLAGS}' >> "${specfile}"
 		fi
-		catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/gentoo-bsd ${C_APPEND_OPT}
+
+		cat <<- _EOF_ >> "${specfile}"
+			target: ${C_TARGET}
+			version_stamp: fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}
+			profile: default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE}
+			snapshot: ${WORKDATE}
+			source_subpath: default/${C_SOURCE}
+			subarch: ${TARGETSUBARCH}
+			rel_type: default
+			portage_overlay: ${WORKDIR}/gentoo-bsd
+		_EOF_
+
+		catalyst -f "${specfile}"
 
 		if [ $? -ne 0 ] ; then
 			check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
@@ -239,7 +259,7 @@ run_catalyst() {
 				if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ]; then
 					 C_APPEND_OPT="${C_APPEND_OPT} update_seed=no"
 				fi
-				catalyst -C target=${C_TARGET} version_stamp=fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION} profile=default/bsd/fbsd/${TARGETARCH}/${TARGETVER}${C_APPEND_PROFILE} snapshot=${WORKDATE} source_subpath=default/${C_SOURCE} subarch=${TARGETSUBARCH} rel_type=default portage_overlay=${WORKDIR}/gentoo-bsd ${C_APPEND_OPT} || exit 1
+				catalyst -f "${specfile}" ${C_APPEND_OPT}
 			fi
 		fi
 
