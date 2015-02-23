@@ -493,7 +493,7 @@ do_install() {
 	# Install a libusb.pc for better compat with Linux's libusb
 	if use usb ; then
 		dodir /usr/$(get_libdir)/pkgconfig
-		sed -i.bkp "s:^libdir=.*:libdir=/usr/$(get_libdir):g" ${S}/libusb/libusb-*.pc
+		sed -i.bkp "s:^libdir=.*:libdir=/usr/$(get_libdir):g" "${S}"/libusb/libusb-*.pc
 	fi
 
 	for i in $(get_subdirs) ; do
