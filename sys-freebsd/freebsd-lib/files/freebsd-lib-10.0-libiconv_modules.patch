@@ -1,0 +1,24 @@
+Should install lib/libiconv_modules to /usr/$(get_libdir)/i18n.
+
+Drop libiconv_modules from lib/Makefile. And set the following in ebuild.
+NON_NATIVE_SUBDIRS="lib/libiconv_modules"
+NATIVE_SUBDIRS="lib/libiconv_modules"
+
+Install to /usr/$(get_libdir)/i18n to force.
+mymakeopts="${mymakeopts} SHLIBDIR=/usr/$(get_libdir)/i18n LIBDIR=/usr/$(get_libdir)/i18n"
+
+
+Welcome a better solution...
+
+diff --git a/lib/Makefile b/lib/Makefile
+index 8722cc2..12a0516 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -38,7 +38,6 @@ SUBDIR_ORDERED=	${_csu} \
+ 	libcompiler_rt \
+ 	libcrypt \
+ 	libelf \
+-	${_libiconv_modules} \
+ 	libkvm \
+ 	${_libldns} \
+ 	msun \

@@ -1,0 +1,8 @@
+Tips for using this repo.
+
+* Keep its layout in a format that it can be cleanly used as a portage overlay
+* It's good to keep fixed versions of @system packages that take longer to get
+  committed into gentoo-x86
+* Try to keep category names consistent: sys-<yourbsd>
+* profiles/ and eclass/ are fine, make sure your "parent" files point to the
+  proper locations.

@@ -1,0 +1,55 @@
+diff -Nur screen-4.0.3.orig/os.h screen-4.0.3/os.h
+--- screen-4.0.3.orig/os.h	2002-01-09 00:42:33.000000000 +0900
++++ screen-4.0.3/os.h	2012-11-29 22:36:22.000000000 +0900
+@@ -260,9 +260,13 @@
+ #endif
+ 
+ #if defined(UTMPOK) || defined(BUGGYGETLOGIN)
+-# if defined(SVR4) && !defined(DGUX) && !defined(__hpux) && !defined(linux)
++# if (defined(SVR4) && !defined(DGUX) && !defined(__hpux) && !defined(linux)) || defined(__FreeBSD__)
++#  ifdef UTMPX_FILE
++#   define UTMPFILE	UTMPX_FILE
++#  else
++#   define UTMPFILE	"/nonexistent"
++#  endif
+ #  include <utmpx.h>
+-#  define UTMPFILE	UTMPX_FILE
+ #  define utmp		utmpx
+ #  define getutent	getutxent
+ #  define getutid	getutxid
+@@ -271,6 +275,10 @@
+ #  define setutent	setutxent
+ #  define endutent	endutxent
+ #  define ut_time	ut_xtime
++#  ifdef __FreeBSD__
++#   define ut_time	ut_tv.tv_sec
++#   define GETUTENT
++#  endif
+ # else /* SVR4 */
+ #  include <utmp.h>
+ # endif /* SVR4 */
+diff -Nur screen-4.0.3.orig/screen.h screen-4.0.3/screen.h
+--- screen-4.0.3.orig/screen.h	2003-08-22 21:28:43.000000000 +0900
++++ screen-4.0.3/screen.h	2012-11-29 22:38:16.000000000 +0900
+@@ -22,6 +22,9 @@
+  * $Id: screen.h,v 1.12 1994/05/31 12:32:54 mlschroe Exp $ FAU
+  */
+ 
++#if defined(__FreeBSD__)
++# include <string.h>
++#endif
+ #include "os.h"
+ 
+ #if defined(__STDC__)
+diff -Nur screen-4.0.3.orig/utmp.c screen-4.0.3/utmp.c
+--- screen-4.0.3.orig/utmp.c	2003-09-08 23:27:17.000000000 +0900
++++ screen-4.0.3/utmp.c	2012-11-29 22:36:22.000000000 +0900
+@@ -589,7 +589,7 @@
+ struct utmp *u;
+ {
+   u->ut_type = DEAD_PROCESS;
+-#if !defined(linux) || defined(EMPTY)
++#if (!defined(__FreeBSD__) && (!defined(linux) || defined(EMPTY)))
+   u->ut_exit.e_termination = 0;
+   u->ut_exit.e_exit = 0;
+ #endif

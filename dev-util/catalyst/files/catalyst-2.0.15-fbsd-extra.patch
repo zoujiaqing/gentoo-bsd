@@ -1,0 +1,106 @@
+diff --git a/catalyst-2.0.17/targets/stage1/stage1-chroot.sh b/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
+index ed83f38..09bfee6 100644
+--- a/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
++++ b/catalyst-2.0.17/targets/stage1/stage1-chroot.sh
+@@ -1,5 +1,9 @@
+ #!/bin/bash
+-
++if [[ -e /usr/lib/portage/pym/portage/const.py ]] ; then
++	if [[ $(grep EAPI /usr/lib/portage/pym/portage/const.py | awk '{print $3}') -eq 4 ]] ; then
++		find /usr/portage/profiles -name eapi -exec bash -c 'echo 4 > {}' \;
++	fi
++fi
+ source /tmp/chroot-functions.sh
+ 
+ # We do this first, so we know our package list for --debug
+@@ -21,17 +25,53 @@ then
+ fi
+ 
+ ## Setup seed pkgmgr to ensure latest
++
++if [[ ! -e /usr/lib/python-exec ]]; then
++	emerge -p --nodeps dev-lang/python-exec
++	if [[ $? -eq 0 ]]; then
++		clst_root_path=/ run_merge "--buildpkg=n --newuse --nodeps dev-lang/python-exec"
++	fi
++fi
+ clst_root_path=/ setup_pkgmgr
++[[ 4 -eq $(cat /usr/portage/profiles/eapi) ]] && find /usr/portage/profiles -name eapi -exec bash -c 'echo 5 > {}' \;
+ 
+ # Update stage3
+ if [ -n "${clst_update_seed}" ]; then
+ 	if [ "${clst_update_seed}" == "yes" ]; then
+ 		echo "Updating seed stage..."
++		if [ $(uname) == "FreeBSD" ] ; then
++			if [ $(uname -p) == "amd64" ] && [ ! -e /libexec/ld-elf32.so.1 ] ; then
++				[[ ! -e /etc/portage/profile ]] && mkdir -p /etc/portage/profile
++				echo "sys-freebsd/freebsd-libexec abi_x86_32" >> /etc/portage/profile/package.use.mask
++			fi
++			if [ $(uname -p) == "i386" ] ; then
++				if [ ! -d /etc/portage/package.mask ] ; then
++					echo ">app-misc/pax-utils-0.8" >> /etc/portage/package.mask
++				else
++					echo ">app-misc/pax-utils-0.8" >> /etc/portage/package.mask/pax-utils
++				fi
++			fi
++			gcc -v &> /tmp/gccv.result
++			export CHOST=`grep Target /tmp/gccv.result | awk '{print $2}'`
++			[[ ! -e /usr/bin/cc ]] && cp /usr/bin/gcc /usr/bin/cc
++			clst_root_path=/ run_merge "-C dev-libs/libelf dev-libs/libexecinfo dev-libs/libiconv sys-freebsd/freebsd-sources"
++			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-mk-defs sys-freebsd/freebsd-sources binutils"
++			clst_root_path=/ run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-libexec"
++			clst_root_path=/ USE=build run_merge "--buildpkg=n --update --newuse --nodeps sys-freebsd/freebsd-lib sys-freebsd/freebsd-share"
++			[[ -e /etc/portage/profile/package.use.mask ]] && sed -i '/sys-freebsd/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
++			clst_root_path=/ USE="-build-kernel" run_merge "--buildpkg=n --update --newuse freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin"
++			clst_root_path=/ USE="internal-glib" run_merge "--buildpkg=n --update --newuse dev-util/pkgconfig"
++			[[ -e /usr/lib/libc++.so ]] && clst_root_path=/ run_merge "--buildpkg=n --update --newuse sys-libs/libcxx sys-libs/libcxxrt"
++			clst_root_path=/ run_merge "--buildpkg=n dev-libs/libxml2 dev-libs/libxslt dev-libs/glib app-arch/libarchive sys-libs/zlib"
++			unset CHOST
++			clst_root_path=/ run_merge "--buildpkg=n sys-devel/libtool"
++		fi
+ 		if [ -n "${clst_update_seed_command}" ]; then
+-			clst_root_path=/ run_merge "--buildpkg=n ${clst_update_seed_command}"
++			clst_root_path=/ USE="-build-kernel -fortran" run_merge "--buildpkg=n ${clst_update_seed_command}"
+ 		else
+-			clst_root_path=/ run_merge "--update --deep --newuse --complete-graph --rebuild-if-new-ver gcc"
++			clst_root_path=/ USE="-build-kernel -fortran" run_merge "--update --deep --newuse --complete-graph --rebuild-if-new-ver gcc"
+ 		fi
++		[[ $(uname) == "FreeBSD" ]] && clst_root_path=/ run_merge "--buildpkg=n sys-devel/libtool"
+ 	elif [ "${clst_update_seed}" != "no" ]; then
+ 		echo "Invalid setting for update_seed: ${clst_update_seed}"
+ 		exit 1
+@@ -57,6 +97,19 @@ sed -i '/USE="${USE} -build"/d' /etc/portage/make.conf
+ [ -e /etc/portage/make.conf ] && \
+ 	echo "USE=\"-* build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"" \
+ 	>> /etc/portage/make.conf
++[[ $(uname) == "FreeBSD" ]] && run_merge "--oneshot sys-auth/openpam"
+ run_merge "--oneshot ${clst_buildpkgs}"
+ sed -i "/USE=\"-* build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
+ 	/etc/portage/make.conf
++
++if [ $(uname) == "FreeBSD" ] ; then
++	if [ -n "${clst_update_seed}" ]; then
++		if [ $(uname -p) == "i386" ] ; then
++			if [ ! -d /etc/portage/package.mask ] ; then
++				sed -i "/pax-utils/d" /etc/portage/package.mask
++			else
++				rm /etc/portage/package.mask/pax-utils
++			fi
++		fi
++	fi
++fi
+diff --git a/catalyst-2.0.17/targets/support/chroot-functions.sh b/catalyst-2.0.17/targets/support/chroot-functions.sh
+index 848be40..d0212c5 100644
+--- a/catalyst-2.0.17/targets/support/chroot-functions.sh
++++ b/catalyst-2.0.17/targets/support/chroot-functions.sh
+@@ -2,6 +2,10 @@
+ 
+ # Set the profile
+ eselect profile set ${clst_target_profile}
++if [ $? -ne 0 ] ; then
++	rm -rf /etc/make.profile /etc/portage/make.profile
++	ln -s ../usr/portage/profiles/${clst_target_profile} /etc/make.profile
++fi
+ 
+ # Trap these signals and kill ourselves if recieved
+ # Force ourselves to die if any of these signals are recieved

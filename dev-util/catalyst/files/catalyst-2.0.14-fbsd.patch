@@ -1,0 +1,236 @@
+diff --git a/catalyst-2.0.14/arch/x86.py b/catalyst-2.0.14/arch/x86.py
+index 0391b79..2b67dba 100644
+--- a/catalyst-2.0.14/arch/x86.py
++++ b/catalyst-2.0.14/arch/x86.py
+@@ -7,9 +7,12 @@ class generic_x86(builder.generic):
+ 	def __init__(self,myspec):
+ 		builder.generic.__init__(self,myspec)
+ 		if self.settings["buildarch"]=="amd64":
+-			if not os.path.exists("/bin/linux32") and not os.path.exists("/usr/bin/linux32"):
+-					raise CatalystError,"required executable linux32 not found (\"emerge setarch\" to fix.)"
+-			self.settings["CHROOT"]="linux32 chroot"
++			if os.uname()[0] == "Linux":
++				if not os.path.exists("/bin/linux32") and not os.path.exists("/usr/bin/linux32"):
++						raise CatalystError,"required executable linux32 not found (\"emerge setarch\" to fix.)"
++				self.settings["CHROOT"]="linux32 chroot"
++			else:
++				self.settings["CHROOT"]="chroot"
+ 			self.settings["crosscompile"] = False;
+ 		else:
+ 			self.settings["CHROOT"]="chroot"
+diff --git a/catalyst-2.0.14/modules/catalyst_support.py b/catalyst-2.0.14/modules/catalyst_support.py
+index 316dfa3..a5ae52f 100644
+--- a/catalyst-2.0.14/modules/catalyst_support.py
++++ b/catalyst-2.0.14/modules/catalyst_support.py
+@@ -108,7 +108,7 @@ contents_map={
+ 	#"find"		:[calc_contents,"find %(path)s"],
+ 	"tar-tv":[calc_contents,"tar tvf %(file)s"],
+ 	"tar-tvz":[calc_contents,"tar tvzf %(file)s"],
+-	"tar-tvj":[calc_contents,"tar -I lbzip2 -tvf %(file)s"],
++	"tar-tvj":[calc_contents,"tar tvjf %(file)s"],
+ 	"isoinfo-l":[calc_contents,"isoinfo -l -i %(file)s"],
+ 	# isoinfo-f should be a last resort only
+ 	"isoinfo-f":[calc_contents,"isoinfo -f -i %(file)s"],
+diff --git a/catalyst-2.0.14/modules/generic_stage_target.py b/catalyst-2.0.14/modules/generic_stage_target.py
+index 848aca2..b81ccfc 100644
+--- a/catalyst-2.0.14/modules/generic_stage_target.py
++++ b/catalyst-2.0.14/modules/generic_stage_target.py
+@@ -98,6 +98,14 @@ class generic_stage_target(generic_target):
+ 		self.settings["crosscompile"]=(self.settings["hostarch"]!=\
+ 			self.settings["buildarch"])
+ 
++		""" FreeBSD's tar doesn't support -I lbzip2 option. """
++		if os.uname()[0] == "Linux":
++			self.settings["tar-cjpf"]="tar -I lbzip2 -cpf"
++			self.settings["tar-xjpf"]="tar -I lbzip2 -xpf"
++		else:
++			self.settings["tar-cjpf"]="tar cjpf"
++			self.settings["tar-xjpf"]="tar xjpf"
++
+ 		""" Call arch constructor, pass our settings """
+ 		try:
+ 			self.arch=self.subarchmap[self.settings["subarch"]](self.settings)
+@@ -654,10 +662,10 @@ class generic_stage_target(generic_target):
+ 					self.settings["chroot_path"]+\
+ 						" (This may take some time) ...\n"
+ 				if "bz2" == self.settings["chroot_path"][-3:]:
+-					unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
++					unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["source_path"]+" -C "+\
+ 						self.settings["chroot_path"]
+ 				else:
+-					unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
++					unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["source_path"]+" -C "+\
+ 						self.settings["chroot_path"]
+ 				error_msg="Tarball extraction of "+\
+ 					self.settings["source_path"]+" to "+\
+@@ -669,10 +677,10 @@ class generic_stage_target(generic_target):
+ 				self.settings["chroot_path"]+\
+ 				" (This may take some time) ...\n"
+ 			if "bz2" == self.settings["chroot_path"][-3:]:
+-				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
++				unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["source_path"]+" -C "+\
+ 					self.settings["chroot_path"]
+ 			else:
+-				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["source_path"]+" -C "+\
++				unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["source_path"]+" -C "+\
+ 					self.settings["chroot_path"]
+ 			error_msg="Tarball extraction of "+self.settings["source_path"]+\
+ 				" to "+self.settings["chroot_path"]+" failed."
+@@ -771,7 +779,7 @@ class generic_stage_target(generic_target):
+ 				"catalyst-hash")
+ 			destdir=self.settings["snapshot_cache_path"]
+ 			if "bz2" == self.settings["chroot_path"][-3:]:
+-				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["snapshot_path"]+" -C "+destdir
++				unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["snapshot_path"]+" -C "+destdir
+ 			else:
+ 				unpack_cmd="tar xpf "+self.settings["snapshot_path"]+" -C "+destdir
+ 			unpack_errmsg="Error unpacking snapshot"
+@@ -790,7 +798,7 @@ class generic_stage_target(generic_target):
+ 			cleanup_msg=\
+ 				"Cleaning up existing portage tree (This can take a long time)..."
+ 			if "bz2" == self.settings["chroot_path"][-3:]:
+-				unpack_cmd="tar -I lbzip2 -xpf "+self.settings["snapshot_path"]+" -C "+\
++				unpack_cmd=self.settings["tar-xjpf"]+" "+self.settings["snapshot_path"]+" -C "+\
+ 					self.settings["chroot_path"]+"/usr"
+ 			else:
+ 				unpack_cmd="tar xpf "+self.settings["snapshot_path"]+" -C "+\
+@@ -905,18 +913,18 @@ class generic_stage_target(generic_target):
+ 			src=self.mountmap[x]
+ 			if "SNAPCACHE" in self.settings and x == "/usr/portage":
+ 				self.snapshot_lock_object.read_lock()
+-			if os.uname()[0] == "FreeBSD":
+-				if src == "/dev":
+-					retval=os.system("mount -t devfs none "+\
+-						self.settings["chroot_path"]+x)
+-				else:
+-					retval=os.system("mount_nullfs "+src+" "+\
++			if src == "tmpfs":
++				if "var_tmpfs_portage" in self.settings:
++					retval=os.system("mount -t tmpfs -o size="+\
++						self.settings["var_tmpfs_portage"]+"G "+src+" "+\
+ 						self.settings["chroot_path"]+x)
+ 			else:
+-				if src == "tmpfs":
+-					if "var_tmpfs_portage" in self.settings:
+-						retval=os.system("mount -t tmpfs -o size="+\
+-							self.settings["var_tmpfs_portage"]+"G "+src+" "+\
++				if os.uname()[0] == "FreeBSD":
++					if src == "/dev":
++						retval=os.system("mount -t devfs none "+\
++							self.settings["chroot_path"]+x)
++					else:
++						retval=os.system("mount_nullfs "+src+" "+\
+ 							self.settings["chroot_path"]+x)
+ 				else:
+ 					retval=os.system("mount --bind "+src+" "+\
+@@ -1119,9 +1127,15 @@ class generic_stage_target(generic_target):
+ 		if os.path.exists(self.settings["chroot_path"]+"/usr/local/portage"):
+ 			cmd("rm -rf "+self.settings["chroot_path"]+"/usr/local/portage",\
+ 				"Could not remove /usr/local/portage",env=self.env)
+-			cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
+-				"/etc/portage/make.conf",\
+-				"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++			if os.path.exists(self.settings["chroot_path"]+"/etc/portage/make.conf"):
++				if os.path.exists("/usr/bin/gsed"):
++					cmd("gsed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
++				else:
++					cmd("sed -i '/^PORTDIR_OVERLAY/d' "+self.settings["chroot_path"]+\
++						"/etc/portage/make.conf",\
++						"Could not remove PORTDIR_OVERLAY from make.conf",env=self.env)
+ 
+ 		""" Clean up old and obsoleted files in /etc """
+ 		if os.path.exists(self.settings["stage_path"]+"/etc"):
+@@ -1215,7 +1229,7 @@ class generic_stage_target(generic_target):
+ 
+ 			print "Creating stage tarball..."
+ 
+-			cmd("tar -I lbzip2 -cpf "+self.settings["target_path"]+" -C "+\
++			cmd(self.settings["tar-cjpf"]+" "+self.settings["target_path"]+" -C "+\
+ 				self.settings["stage_path"]+" .",\
+ 				"Couldn't create stage tarball",env=self.env)
+ 
+diff --git a/catalyst-2.0.14/modules/snapshot_target.py b/catalyst-2.0.14/modules/snapshot_target.py
+index e93a86a..a665b94 100644
+--- a/catalyst-2.0.14/modules/snapshot_target.py
++++ b/catalyst-2.0.14/modules/snapshot_target.py
+@@ -50,8 +50,12 @@ class snapshot_target(generic_stage_target):
+ 			self.settings["portdir"]+"/ "+mytmp+"/portage/","Snapshot failure",env=self.env)
+ 
+ 		print "Compressing Portage snapshot tarball..."
+-		cmd("tar -I lbzip2 -cf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
+-			"Snapshot creation failure",env=self.env)
++		if os.uname()[0] == "Linux":
++			cmd("tar -I lbzip2 -cf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
++				"Snapshot creation failure",env=self.env)
++		else:
++			cmd("tar cjf "+self.settings["snapshot_path"]+" -C "+mytmp+" portage",\
++				"Snapshot creation failure",env=self.env)
+ 
+ 		self.gen_contents_file(self.settings["snapshot_path"])
+ 		self.gen_digest_file(self.settings["snapshot_path"])
+diff --git a/catalyst-2.0.14/modules/stage1_target.py b/catalyst-2.0.14/modules/stage1_target.py
+index aa43926..3675bd5 100644
+--- a/catalyst-2.0.14/modules/stage1_target.py
++++ b/catalyst-2.0.14/modules/stage1_target.py
+@@ -86,10 +86,15 @@ class stage1_target(generic_stage_target):
+ 		# stage_path/proc probably doesn't exist yet, so create it
+ 		if not os.path.exists(self.settings["stage_path"]+"/proc"):
+ 			os.makedirs(self.settings["stage_path"]+"/proc")
++		if not os.path.exists(self.settings["stage_path"]+"/dev"):
++			os.makedirs(self.settings["stage_path"]+"/dev")
+ 
+ 		# alter the mount mappings to bind mount proc onto it
+ 		self.mounts.append("/tmp/stage1root/proc")
+ 		self.mountmap["/tmp/stage1root/proc"]="/proc"
++		if os.uname()[0] == "FreeBSD":
++			self.mounts.append("/tmp/stage1root/dev")
++			self.mountmap["/tmp/stage1root/dev"]="/dev"
+ 
+ def register(foo):
+ 	foo.update({"stage1":stage1_target})
+diff --git a/catalyst-2.0.14/targets/stage3/stage3-chroot.sh b/catalyst-2.0.14/targets/stage3/stage3-chroot.sh
+index 6cf9106..e96c7fd 100644
+--- a/catalyst-2.0.14/targets/stage3/stage3-chroot.sh
++++ b/catalyst-2.0.14/targets/stage3/stage3-chroot.sh
+@@ -5,4 +5,11 @@ source /tmp/chroot-functions.sh
+ ## START BUILD
+ setup_pkgmgr
+ 
+-run_merge "-e @system"
++if [[ $(uname) == "FreeBSD" ]] ; then
++	# workaround fix bug 425530, 438112, 448256
++	run_merge "-e @world --exclude=sys-apps/portage"
++	run_merge "sys-apps/portage"
++else
++	run_merge "-e system"
++fi
++
+diff --git a/catalyst-2.0.14/targets/support/chroot-functions.sh b/catalyst-2.0.14/targets/support/chroot-functions.sh
+index 5c30537..848be40 100644
+--- a/catalyst-2.0.14/targets/support/chroot-functions.sh
++++ b/catalyst-2.0.14/targets/support/chroot-functions.sh
+@@ -414,5 +414,22 @@ Comment=This is a link to the local copy of the Gentoo Linux Handbook.
+ Icon=text-editor" > /usr/share/applications/gentoo-handbook.desktop
+ }
+ 
++# GNU sed wrapper
++sed(){
++	if [ -e /usr/bin/gsed ]
++	then
++		/usr/bin/gsed "$@"
++	elif [ -e /bin/sed ]
++	then
++		/bin/sed "$@"
++	elif [ -e /usr/bin/sed ]
++	then
++		/usr/bin/sed "$@"
++	else
++		echo "ERROR: failed the selection of sed."
++		exit 1
++	fi
++}
++
+ # We do this everywhere, so why not put it in this script
+ run_default_funcs

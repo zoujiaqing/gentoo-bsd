@@ -1,0 +1,25 @@
+--- Makefile.orig	2009-08-11 18:54:47.000000000 +0200
++++ Makefile	2009-08-11 19:00:18.000000000 +0200
+@@ -3,7 +3,7 @@
+ # for OBJECT_FMT
+ .include <bsd.own.mk>
+ 
+-SUBDIR+=	bc
++#SUBDIR+=	bc
+ .if ${MKBINUTILS} != "no"
+ SUBDIR+=	binutils
+ .endif
+@@ -11,10 +11,9 @@
+ .if ${MKCVS} != "no"
+ SUBDIR+=	xcvs
+ .endif
+-SUBDIR+=	dc diffutils gkermit grep
+-SUBDIR+=	groff rcs send-pr texinfo
+-
+-SUBDIR+=	gettext
++#SUBDIR+=	dc diffutils grep
++#SUBDIR+=	groff rcs texinfo gettext
++SUBDIR+= gkermit send-pr
+ 
+ .if ${MKGDB} != "no"
+ .if ${HAVE_GDB} == "6"
