@@ -36,15 +36,16 @@ DEPEND="${RDEPEND}
 src_configure() {
 	local myeconfargs=(
 		--disable-werror
+		--disable-nls
 		--with-platform=emu
 		--enable-grub-mount=no
 		--enable-grub-mkfont=no
 		--enable-grub-emu-sdl=no
+		$(use_enable zfs libzfs)
 	)
 	autotools-utils_src_configure
 }
 
 src_install() {
-	newbin ${BUILD_DIR}/grub-core/grub-emu grub-bhyve
+	newbin "${BUILD_DIR}"/grub-core/grub-emu grub-bhyve
 }
-
