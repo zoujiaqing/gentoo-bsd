@@ -25,9 +25,9 @@ RESTRICT="strip"
 S="${WORKDIR}/share/mk"
 
 src_prepare() {
-	epatch "${FILESDIR}/${PN}-10.0-gentoo.patch"
+	epatch "${FILESDIR}/${PN}-10.2-gentoo.patch"
 	epatch "${FILESDIR}/${PN}-add-nossp-cflags.patch"
-	use userland_GNU && epatch "${FILESDIR}/${PN}-10.1-gnu.patch"
+	use userland_GNU && epatch "${FILESDIR}/${PN}-10.2-gnu.patch"
 }
 
 src_compile() { :; }

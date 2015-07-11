@@ -60,6 +60,9 @@ src_compile() {
 		freebsd_src_compile
 		cd "${S}/userboot/zfs" || die
 		freebsd_src_compile
+	fi
+
+	if ! use sparc-fbsd; then
 		cd "${S}/libstand32" || die
 		freebsd_src_compile
 	fi

@@ -9,11 +9,6 @@ inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild mu
 DESCRIPTION="FreeBSD's base system libraries"
 SLOT="0"
 
-# Security Advisory and Errata patches.
-UPSTREAM_PATCHES=( "SA-14:27/stdio.patch"
-	"EN-15:09/xlocale.patch"
-	"EN-15:10/iconv.patch" )
-
 # Crypto is needed to have an internal OpenSSL header
 # sys is needed for libalias, probably we can just extract that instead of
 # extracting the whole tarball
@@ -44,6 +39,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		usb? ( !dev-libs/libusb )
 		zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 		>=dev-libs/expat-2.0.1
+		>=dev-util/dialog-1.2.20150225
 		=sys-freebsd/freebsd-libexec-${RV}*
 		!sys-libs/libutempter
 		!dev-libs/libelf
@@ -107,15 +103,15 @@ PATCHES=(
 	"${FILESDIR}/${PN}-6.0-pmc.patch"
 	"${FILESDIR}/${PN}-6.1-csu.patch"
 	"${FILESDIR}/${PN}-10.0-liblink.patch"
+	"${FILESDIR}/${PN}-10.2-liblink.patch"
 	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
 	"${FILESDIR}/${PN}-10.0-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
-	"${FILESDIR}/${PN}-bsdxml2expat.patch"
+	"${FILESDIR}/${PN}-10.2-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"
 	"${FILESDIR}/${PN}-9.1-.eh_frame_hdr-fix.patch"
 	"${FILESDIR}/${PN}-add-nossp-cflags.patch"
 	)
-
 # Here we disable and remove source which we don't need or want
 # In order:
 # - ncurses stuff

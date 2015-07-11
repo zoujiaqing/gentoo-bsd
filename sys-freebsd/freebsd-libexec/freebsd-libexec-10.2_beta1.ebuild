@@ -40,7 +40,7 @@ REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind ftpd"
 IUSE="pam ssl kerberos ipv6 nis xinetd"
 
 PATCHES=( "${FILESDIR}/${PN}-9.2-no_ld32.patch"
-	"${FILESDIR}/${PN}-10.0-atf-check.patch" )
+	"${FILESDIR}/${PN}-10.2-atf-check.patch" )
 
 pkg_setup() {
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
@@ -56,8 +56,8 @@ src_prepare() {
 	if [[ ! -e "${WORKDIR}/include" ]]; then
 		ln -s /usr/include "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi
-	# allow upgrade directly from 9.x to 10.1.
-	if has_version "<sys-freebsd/freebsd-lib-10.0"; then
+	# allow upgrade directly from 9.x to 10.2.
+	if has_version "<sys-freebsd/freebsd-lib-${RV}"; then
 		# taken from sys/sys/elf_common.h
 		echo "#define DF_1_INTERPOSE 0x00000400" >> "${S}"/rtld-elf/rtld.h
 		echo "#define STT_GNU_IFUNC 10" >> "${S}"/rtld-elf/rtld.h
@@ -68,6 +68,8 @@ src_prepare() {
 		echo "#define F_DUPFD_CLOEXEC 17" >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/cdefs.h
 		echo '#define __compiler_membar()  __asm __volatile(" " : : : "memory")' >> "${S}"/rtld-elf/rtld.h
+		# taken from sys/sys/mman.h
+		echo '#define MAP_ALIGNED_SUPER MAP_ALIGNED(1)' >> "${S}"/rtld-elf/rtld.h
 	fi
 }
 

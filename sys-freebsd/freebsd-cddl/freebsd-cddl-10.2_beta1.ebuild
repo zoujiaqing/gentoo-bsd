@@ -38,8 +38,8 @@ DEPEND="${RDEPEND}
 S="${WORKDIR}/cddl"
 
 PATCHES=(
-	"${FILESDIR}/${PN}-9.2-libpaths.patch"
-	"${FILESDIR}/${PN}-10.1-underlink.patch"
+	"${FILESDIR}/${PN}-10.2-libpaths.patch"
+	"${FILESDIR}/${PN}-10.2-underlink.patch"
 	)
 
 src_prepare() {

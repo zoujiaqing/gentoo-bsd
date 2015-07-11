@@ -41,6 +41,7 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
 DEPEND="${RDEPEND}
 	sys-devel/flex
 	!build? ( =sys-freebsd/freebsd-sources-${RV}* )
+	=sys-freebsd/freebsd-sbin-${RV}*
 	=sys-freebsd/freebsd-mk-defs-${RV}*"
 
 RDEPEND="${RDEPEND}
@@ -60,7 +61,9 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
 	"${FILESDIR}/${PN}-10.0-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-10.0-mandoc.patch"
-	"${FILESDIR}/${PN}-10.1-kdump-workaround.patch" )
+	"${FILESDIR}/${PN}-10.1-kdump-workaround.patch"
+	"${FILESDIR}/${PN}-10.2-bsdxml.patch"
+	"${FILESDIR}/${PN}-10.2-talk-workaround.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -143,11 +146,11 @@ setup_multilib_vars() {
 src_compile() {
 	# Preparing to build mandoc
 	cd "${WORKDIR}/lib/libmandoc"
-	freebsd_src_compile
+	freebsd_src_compile -j1
 
 	cd "${S}"
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
-	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile
+	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile -j1
 }
 
 src_install() {

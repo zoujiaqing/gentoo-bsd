@@ -61,6 +61,7 @@ src_prepare() {
 	cd "${WORKDIR}"
 	epatch "${FILESDIR}/${PN}"-10.0-zlib.patch
 	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
+	epatch "${FILESDIR}/freebsd-ubin-10.2-bsdxml.patch"
 }
 
 src_compile() {

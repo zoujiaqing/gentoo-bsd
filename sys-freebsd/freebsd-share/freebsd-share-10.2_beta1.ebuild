@@ -9,7 +9,7 @@ inherit bsdmk freebsd
 DESCRIPTION="FreeBSD shared tools/files"
 SLOT="0"
 
-IUSE="doc zfs"
+IUSE="doc usb zfs"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -38,6 +38,7 @@ S="${WORKDIR}/share"
 
 pkg_setup() {
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
+	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 	[[ ! -e /usr/bin/vtfontcvt ]] && mymakeopts="${mymakeopts} WITHOUT_VT= "
 
@@ -48,8 +49,8 @@ REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
 
 PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
 	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
-	"${FILESDIR}/${PN}-9.2-gnu-miscfiles.patch"
-	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch" )
+	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch"
+	"${FILESDIR}/${PN}-10.2-gnu-miscfiles.patch" )
 
 src_prepare() {
 	# Remove make.conf manpage as it describes bsdmk's make.conf.
