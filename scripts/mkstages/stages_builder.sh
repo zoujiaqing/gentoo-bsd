@@ -6,7 +6,7 @@ export WORKARCH="${WORKARCH:-$(uname -m)}"
 export FORCESTAGE3="${FORCESTAGE3:-}"
 export EXTRAOVERLAY="${EXTRAOVERLAY:-}"
 OLDVER="${OLDVER:-9.0}"
-OVERLAY_SNAPSHOT="http://git.overlays.gentoo.org/gitweb/?p=proj/gentoo-bsd.git;a=snapshot;h=HEAD;sf=tgz"
+OVERLAY_SNAPSHOT="https://gitweb.gentoo.org/proj/gentoo-bsd.git/snapshot/gentoo-bsd-master.tar.gz"
 
 prepare(){
 	local MAJORVER=`echo ${TARGETVER} | awk -F \. '{ print $1 }'`
@@ -68,7 +68,7 @@ prepare(){
 		echo "Clone gentoo-bsd overlay snapshot..."
 		type -P git
 		[[ $? -ne 0 ]] && emerge git
-		git clone git://git.overlays.gentoo.org/proj/gentoo-bsd.git
+		git clone git://anongit.gentoo.org/proj/gentoo-bsd.git
 		[[ $? -ne 0 ]] && exit 1
 	fi
 	if [ -n "${EXTRAOVERLAY}" ] ; then
@@ -87,11 +87,8 @@ prepare(){
 	fi
 
 	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools app-text/build-docbook-catalog dev-util/catalyst::gentoo-bsd || exit 1
-	grep "^export MAKEOPTS" /etc/catalyst/catalystrc > /dev/null 2>&1
-	if [ $? -ne 0 ] ; then
-		echo "export MAKEOPTS=\"-j`sysctl hw.ncpu | awk '{ print $2 + 1 }'`"\" >> /etc/catalyst/catalystrc
-	fi
+	PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools app-text/build-docbook-catalog || exit 1
+	PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -q dev-util/catalyst::gentoo-bsd || exit 1
 
 	if [ ! -e /usr/portage/profiles/releases/freebsd-${TARGETVER} ] ; then
 		echo "prepare new ${TARGETVER} profiles"
@@ -105,35 +102,6 @@ prepare(){
 			amd64-fbsd default/bsd/fbsd/amd64/${TARGETVER}/clang dev
 			x86-fbsd default/bsd/fbsd/x86/${TARGETVER} dev
 		_EOF_
-	fi
-
-	if [ "${MKSRC}" != "NONE" ] ; then
-		if [ "${MKSRC}" = "release" ] ; then
-			MY_MKSRC=""
-		else
-			MY_MKSRC="_${MKSRC}"
-		fi
-		local DISTDIR="`emerge --info | grep DISTDIR | awk -F= '{print $2}' | sed 's:\"::g'`"
-		if [[ ${MAJORVER} -ge 10 ]]; then
-			local TAREXT=xz
-		else
-			local TAREXT=bz2
-		fi
-		if [ ! -e "${DISTDIR}/freebsd-lib-${TARGETVER}${MY_MKSRC}.tar.${TAREXT}" ] ; then
-			echo "create src tarball"
-			mkdir ${WORKDIR}/${TARGETVER}${MY_MKSRC}_src
-			cd ${WORKDIR}/${TARGETVER}${MY_MKSRC}_src
-			${WORKDIR}/gentoo-bsd/scripts/extract-9.0.sh ${TARGETVER}${MY_MKSRC}
-			mkdir -p "${DISTDIR}"
-			mv *${TARGETVER}${MY_MKSRC}*${TAREXT} "${DISTDIR}/"
-		fi
-
-		ls -1 /usr/portage/sys-freebsd/freebsd-lib/freebsd-lib-${TARGETVER}*.ebuild > /dev/null 2>&1
-		if [ $? -eq 0 ] ; then
-			create_manifest /usr/portage/sys-freebsd
-			export WORKDATE="local"
-		fi
-		create_manifest ${WORKDIR}/gentoo-bsd/sys-freebsd
 	fi
 
 	if [ "${WORKDATE}" = "remote" ] ; then
@@ -153,8 +121,10 @@ prepare(){
 		else
 			export WORKDATE="`date +%Y%m%d`"
 		fi
-	else
+	elif [ "${WORKDATE}" = "local" ] ; then
 		export WORKDATE="`date +%Y%m%d`"
+	else
+		export WORKDATE="${WORKDATE}"
 	fi
 
 	if [ -n "${STABLE}" ] ; then
@@ -167,34 +137,6 @@ prepare(){
 		echo 'CHOST_amd64_fbsd="${CHOST}"' >> ${WORKDIR}/gentoo-bsd/scripts/mkstages/etc/portage/profile/make.defaults
 		echo "CHOST_x86_fbsd=\"i686-gentoo-freebsd${CHOSTVER}\"" >> ${WORKDIR}/gentoo-bsd/scripts/mkstages/etc/portage/profile/make.defaults
 		echo "FEATURES=\"preserve-libs\"" >> ${WORKDIR}/gentoo-bsd/scripts/mkstages/etc/portage/profile/make.defaults
-	fi
-}
-
-create_manifest(){
-	local rootdir=$1
-
-	if [ -d ${rootdir} ] ; then
-		cd ${rootdir}
-		echo "re-create Manifest"
-		for dir in `ls -1 | grep freebsd-` boot0;
-		do
-			cd ${dir}
-			ls -1 *${TARGETVER}*.ebuild > /dev/null 2>&1
-			if [ $? -eq 0 ] ; then
-				EBUILDFILE=`ls -1 *${TARGETVER}*.ebuild | tail -n 1`
-				echo "copy ${EBUILDFILE} to ${TARGETVER}${MY_MKSRC}.ebuild"
-				cp ${EBUILDFILE} ${dir}-${TARGETVER}${MY_MKSRC}.ebuild
-
-				ls -1 *.ebuild > /dev/null 2>&1
-
-				if [ $? -eq 0 ] ; then
-					EBUILDFILE=`ls -1 *.ebuild | tail -n 1`
-					echo ${EBUILDFILE}
-					ebuild ${EBUILDFILE} digest
-				fi
-			fi
-			cd ..
-		done
 	fi
 }
 
@@ -295,6 +237,10 @@ prepare $1
 
 if [ ! -e "/var/tmp/catalyst/snapshots/portage-${WORKDATE}.tar.bz2" ] ; then
 	catalyst -C target=snapshot version_stamp=${WORKDATE} || exit 1
+fi
+
+if [ -e /var/tmp/catalyst/snapshot_cache/${WORKDATE}/portage/eclass/toolchain.eclass ] ; then
+	gsed -i 's:SLOT="${GCC_CONFIG_VER}":SLOT="${GCC_BRANCH_VER}":g' /var/tmp/catalyst/snapshot_cache/${WORKDATE}/portage/eclass/toolchain.eclass
 fi
 
 mk_stages
