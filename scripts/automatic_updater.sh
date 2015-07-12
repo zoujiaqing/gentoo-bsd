@@ -102,6 +102,8 @@ post_freebsd_userland(){
 
 emerge_world(){
 	emerge sys-devel/libtool
+	emerge -u dev-libs/libxml2
+	emerge -u dev-libs/libxslt app-arch/libarchive dev-libs/glib
 	emerge -e @world --exclude sys-apps/portage
 	emerge sys-apps/portage
 }
