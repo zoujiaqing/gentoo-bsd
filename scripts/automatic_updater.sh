@@ -120,6 +120,7 @@ case "$TARGETMODE" in
 		update_gcc
 		update_kernel
 	;;
+	"kernelonly" ) update_kernel ;;
 	"freebsd_userland" )
 		update_freebsd_userland
 		post_freebsd_userland
