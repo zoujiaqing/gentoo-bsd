@@ -70,6 +70,7 @@ update_gcc(){
 	env-update
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
+	emerge sys-devel/binutils --exclude sys-freebsd/*
 }
 
 update_kernel(){
