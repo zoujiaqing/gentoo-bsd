@@ -102,7 +102,7 @@ post_freebsd_userland(){
 }
 
 emerge_world(){
-	emerge -u dev-lang/perl
+	emerge -uD dev-lang/perl
 	perl-cleaner --all
 	emerge sys-devel/libtool
 	emerge -u dev-libs/libxml2
