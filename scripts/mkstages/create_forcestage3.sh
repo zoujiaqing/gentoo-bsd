@@ -53,16 +53,16 @@ chroot_update(){
 	echo "MAKEOPTS=\"-j$(sysctl hw.ncpu | awk '{ print $2 + 1 }')"\" >> "${makeconf}"
 	echo 'USE="${USE} -fortran -build-kernel"' >> "${makeconf}"
 
-	export EMERGE_DEFAULT_OPTS="-q" 
+	export EMERGE_DEFAULT_OPTS="-q"
 	chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} kernel
 	chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} freebsd_userland
-	chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} world
+	REMOVEPERL=1 chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} world
 	unset EMERGE_DEFAULT_OPTS
 }
 
 check_ecompressdir() {
 	# dirty solution
-	# /dev is still mounted; performing auto-bind-umount... 
+	# /dev is still mounted; performing auto-bind-umount...
 	local PID=$(ps auxw | grep ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs)
 	if [[ -n "${PID}" ]] ; then
 		echo "kill ecompressdir"
