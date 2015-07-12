@@ -136,7 +136,7 @@ case "$TARGETMODE" in
 		post_freebsd_userland
 	;;
 	"world" )
-		[[ ${REMOVEPERL} -ne 0 ]] && removeperl
+		[[ ${REMOVEPERL} -ne 0 ]] && remove_perl
 		emerge_world
 		cleanup
 	;;
