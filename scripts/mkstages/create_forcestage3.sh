@@ -17,7 +17,7 @@ prepare(){
 	fi
 
 	if [[ "${OLDSTAGE3}" =~ ^http ]]; then
-		if [[ ! -e $(basename ${OLDSTAGE3}) ]]; then
+		if [[ ! -e /tmp/$(basename ${OLDSTAGE3}) ]]; then
 			wget -P /tmp "${OLDSTAGE3}"
 		fi
 	else
