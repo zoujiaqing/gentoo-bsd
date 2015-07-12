@@ -66,10 +66,10 @@ prepare(){
 		cp -a "${HOME}/gentoo-bsd" ${WORKDIR}/
 	else
 		echo "Clone gentoo-bsd overlay snapshot..."
-		type -P git
-		[[ $? -ne 0 ]] && emerge git
-		git clone git://anongit.gentoo.org/proj/gentoo-bsd.git
+		wget -q -O "${WORKDIR}"/gentoo-bsd.tar.gz "${OVERLAY_SNAPSHOT}"
 		[[ $? -ne 0 ]] && exit 1
+		mkdir -p ${WORKDIR}/gentoo-bsd
+		tar xzf "${WORKDIR}"/gentoo-bsd.tar.gz --strip-components=1 -C "${WORKDIR}/gentoo-bsd"
 	fi
 	if [ -n "${EXTRAOVERLAY}" ] ; then
 		if [[ "${EXTRAOVERLAY}" =~ ^http ]]; then
@@ -142,7 +142,7 @@ prepare(){
 
 check_ecompressdir() {
 	# dirty solution
-	# /dev is still mounted; performing auto-bind-umount... 
+	# /dev is still mounted; performing auto-bind-umount...
 	local PID=`ps auxw | grep ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs`
 	if [ -n "${PID}" ] ; then
 		echo "kill ecompressdir"
@@ -164,7 +164,7 @@ run_catalyst() {
 		local specfile="${WORKDIR}/${C_TARGET}.spec"
 		[[ -e "${specfile}" ]] && rm "${specfile}"
 
-		if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ]; then
+		if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ] && [[ ! "${C_SOURCE}" =~ .*forcestage3.* ]]; then
 			echo "update_seed: yes" >> "${specfile}"
 		fi
 		if [ "${C_TARGET}" != "stage3" ] ; then
@@ -190,8 +190,11 @@ run_catalyst() {
 			source_subpath: default/${C_SOURCE}
 			subarch: ${TARGETSUBARCH}
 			rel_type: default
-			portage_overlay: ${WORKDIR}/gentoo-bsd
 		_EOF_
+
+		if [ ! -n "${NOOVERLAY}" ] ; then
+			echo "portage_overlay: ${WORKDIR}/gentoo-bsd" >> "${specfile}"
+		fi
 
 		catalyst -f "${specfile}"
 
