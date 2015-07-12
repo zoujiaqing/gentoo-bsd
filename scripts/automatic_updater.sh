@@ -1,5 +1,6 @@
 #/bin/bash
 set -eu
+REMOVEPERL=${REMOVEPERL:-0}
 
 if [[ $# -ne 2 ]] ; then
 	echo "need 2 argument"
@@ -101,10 +102,13 @@ post_freebsd_userland(){
 	emerge sys-apps/portage
 }
 
-emerge_world(){
+remove_perl(){
 	emerge -C dev-lang/perl
 	emerge -C perl-core/* virtual/perl*
 	emerge dev-lang/perl
+}
+
+emerge_world(){
 	emerge sys-devel/libtool
 	emerge -u dev-libs/libxml2
 	emerge -u dev-libs/libxslt app-arch/libarchive dev-libs/glib
@@ -132,6 +136,7 @@ case "$TARGETMODE" in
 		post_freebsd_userland
 	;;
 	"world" )
+		[[ ${REMOVEPERL} -ne 0 ]] && removeperl
 		emerge_world
 		cleanup
 	;;
