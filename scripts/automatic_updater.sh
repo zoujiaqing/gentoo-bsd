@@ -57,7 +57,7 @@ update_minimal(){
 			echo "sys-libs/libcxx abi_x86_32" >> /etc/portage/profile/package.use.mask
 			echo "sys-libs/libcxxrt abi_x86_32" >> /etc/portage/profile/package.use.mask
 			emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
-			[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-libs\/libcxxrt abi_x86_32/d' /etc/portage/profile/package.use.mask
+			[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-libs\/libcxx abi_x86_32/d' /etc/portage/profile/package.use.mask
 			[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-libs\/libcxxrt abi_x86_32/d' /etc/portage/profile/package.use.mask
 		fi
 	fi
