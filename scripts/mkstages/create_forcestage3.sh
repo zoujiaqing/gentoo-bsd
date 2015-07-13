@@ -14,6 +14,15 @@ prepare(){
 	local distdir="$(emerge --info | grep DISTDIR | sed s:DISTDIR=::g | sed 's:"::g')"
 	if [[ ! -d "${WORKDIR}" ]]; then
 		mkdir -p "${WORKDIR}"
+	else
+		echo "${WORKDIR} exists."
+		echo "Please remove the following steps."
+		echo ""
+		echo "kill -9 $(ps auxw | grep ebuild-helpers/ecompressdir | grep -v grep | awk '{ print $2 }' | xargs)"
+		echo "umount $(mount | grep ${WORKDIR} | awk '{print $3}' | xargs)"
+		echo "umount $(mount | grep ${WORKDIR} | awk '{print $3}' | xargs)"
+		echo "chflags -R noschg \"${WORKDIR}\" && rm -rf \"${WORKDIR}\""
+		exit 1
 	fi
 
 	if [[ "${OLDSTAGE3}" =~ ^http ]]; then
@@ -56,6 +65,9 @@ chroot_update(){
 	export EMERGE_DEFAULT_OPTS="-q"
 	chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} kernel
 	chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} freebsd_userland
+	if [[ -e "${WORKDIR}"/usr/bin/git ]]; then
+		chroot "${WORKDIR}" emerge -C dev-vcs/git
+	fi
 	REMOVEPERL=1 chroot "${WORKDIR}" bash /automatic_updater.sh ${TARGETVER} world
 	unset EMERGE_DEFAULT_OPTS
 }
@@ -74,8 +86,13 @@ check_ecompressdir() {
 }
 
 cleanup(){
+	local distdir="$(emerge --info | grep DISTDIR | sed s:DISTDIR=::g | sed 's:"::g')"
+
 	check_ecompressdir
-	umount "${WORKDIR}"/usr/portage/distfiles
+	if [[ ! "${distdir}" =~ ${PORTDIR}.* ]]; then
+		echo "unmount DISTDIR"
+		umount "${WORKDIR}"/usr/portage/distfiles
+	fi
 	umount "${WORKDIR}"/usr/portage
 	if [[ "${TMPFS}" -ne 0 ]] ; then
 		umount "${WORKDIR}"/var/tmp/portage
@@ -91,12 +108,13 @@ create_stage3(){
 		mkdir -p /var/tmp/catalyst/builds/default
 	fi
 	if [[ ${CLANG} -ne 0 ]]; then
-		tarfile="stage3-${TARGETARCH}-fbsd-${TAGETVER}-forcestage3-cl"
+		tarfile="stage3-${TARGETARCH}-fbsd-${TARGETVER}-forcestage3-cl"
 	else
-		tarfile="stage3-${TARGETARCH}-fbsd-${TAGETVER}-forcestage3"
+		tarfile="stage3-${TARGETARCH}-fbsd-${TARGETVER}-forcestage3"
 	fi
 
-	tar cjpf /var/tmp/catalyst/builds/default/"${tarfile}".tar.bz2 .
+	echo "Compress with tar."
+	LANG="en_US.UTF-8" tar cjpf /var/tmp/catalyst/builds/default/"${tarfile}".tar.bz2 .
 
 	echo "Complete !"
 	echo "Set FORCESTAGE3=${tarfile}"

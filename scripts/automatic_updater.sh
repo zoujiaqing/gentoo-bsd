@@ -40,7 +40,6 @@ update_portage(){
 		tar xjf portage-2.2.20.tar.bz2
 		PYTHON_TARGETS="python2_7" portage-2.2.20/bin/emerge --nodeps dev-lang/python-exec
 		PYTHON_TARGETS="python2_7" portage-2.2.20/bin/emerge --nodeps sys-apps/portage
-		emerge -u sys-apps/portage --exclude sys-freebsd/*
 	else
 		emerge -u sys-apps/portage --exclude sys-freebsd/*
 	fi
@@ -53,7 +52,14 @@ update_minimal(){
 	emerge -u sys-devel/flex sys-devel/patch sys-devel/m4 net-libs/libpcap sys-devel/gettext app-arch/libarchive sys-libs/zlib dev-util/dialog --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	if [[ -e /usr/lib/libc++.so ]] ; then
-		emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
+		if [[ $(uname -p) == "amd64" ]] && [[ ! -e /usr/lib32/librt.so ]] ; then
+			[[ ! -e /etc/portage/profile ]] && mkdir -p /etc/portage/profile
+			echo "sys-libs/libcxx abi_x86_32" >> /etc/portage/profile/package.use.mask
+			echo "sys-libs/libcxxrt abi_x86_32" >> /etc/portage/profile/package.use.mask
+			emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
+			[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-libs\/libcxx abi_x86_32/d' /etc/portage/profile/package.use.mask
+			[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-libs\/libcxxrt abi_x86_32/d' /etc/portage/profile/package.use.mask
+		fi
 	fi
 }
 
@@ -90,6 +96,9 @@ update_freebsd_userland(){
 	emerge -C dev-libs/libelf dev-libs/libexecinfo dev-libs/libiconv sys-process/fuser-bsd && :
 	emerge --nodeps sys-freebsd/freebsd-libexec
 	USE=build emerge --nodeps sys-freebsd/freebsd-lib
+	if [[ -e /usr/lib/libc++.so ]] ; then
+		emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
+	fi
 	USE=build emerge --nodeps sys-freebsd/freebsd-share
 	[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-freebsd\/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
 
@@ -104,12 +113,14 @@ post_freebsd_userland(){
 
 remove_perl(){
 	emerge -C dev-lang/perl
-	emerge -C perl-core/* virtual/perl*
+	emerge -C dev-perl/* perl-core/* virtual/perl*
 	emerge dev-lang/perl
+	emerge dev-perl/Text-Unidecode dev-perl/Unicode-EastAsianWidth dev-perl/XML-Parser dev-perl/libintl-perl
 }
 
 emerge_world(){
 	emerge sys-devel/libtool
+	emerge -C dev-lang/python:3.2 && :
 	emerge -u dev-libs/libxml2
 	emerge -u dev-libs/libxslt app-arch/libarchive dev-libs/glib
 	emerge -e @world --exclude sys-apps/portage
