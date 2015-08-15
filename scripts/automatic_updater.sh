@@ -46,7 +46,7 @@ update_portage(){
 }
 
 update_minimal(){
-	emerge sys-freebsd/freebsd-mk-defs
+	emerge --nodeps sys-freebsd/freebsd-mk-defs
 	emerge -u sys-apps/findutils --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge -u sys-devel/flex sys-devel/patch sys-devel/m4 net-libs/libpcap sys-devel/gettext app-arch/libarchive sys-libs/zlib dev-util/dialog --exclude sys-freebsd/*
