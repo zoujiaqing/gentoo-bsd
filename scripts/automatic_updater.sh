@@ -94,8 +94,8 @@ update_freebsd_userland(){
 	fi
 
 	emerge -C dev-libs/libelf dev-libs/libexecinfo dev-libs/libiconv sys-process/fuser-bsd && :
-	emerge --nodeps sys-freebsd/freebsd-libexec
-	USE=build emerge --nodeps sys-freebsd/freebsd-lib
+	CC=gcc CXX=g++ emerge --nodeps sys-freebsd/freebsd-libexec
+	CC=gcc CXX=g++ USE=build MAKEOPTS=-j1 emerge --nodeps sys-freebsd/freebsd-lib
 	if [[ -e /usr/lib/libc++.so ]] ; then
 		emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
 	fi
