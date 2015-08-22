@@ -15,9 +15,9 @@ fi
 set_profile(){
 	emerge --info | head -n 1 | grep clang && :
 	if [[ $? -eq 0 ]] ; then
-		eselect profile set $(eselect profile list | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
+		eselect profile set $(eselect profile list | grep "${TARGETVER}" | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
 	else
-		eselect profile set $(eselect profile list | grep -v clang | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
+		eselect profile set $(eselect profile list | grep "${TARGETVER}" | grep -v clang | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
 	fi
 }
 
