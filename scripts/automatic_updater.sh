@@ -94,15 +94,15 @@ update_freebsd_userland(){
 	fi
 
 	emerge -C dev-libs/libelf dev-libs/libexecinfo dev-libs/libiconv sys-process/fuser-bsd && :
-	CC=gcc CXX=g++ emerge --nodeps sys-freebsd/freebsd-libexec
-	CC=gcc CXX=g++ USE=build MAKEOPTS=-j1 emerge --nodeps sys-freebsd/freebsd-lib
+	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge --nodeps sys-freebsd/freebsd-libexec
+	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" USE=build MAKEOPTS=-j1 emerge --nodeps sys-freebsd/freebsd-lib
+	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" USE=build emerge --nodeps sys-freebsd/freebsd-share
+	[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-freebsd\/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
+
+	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge boot0 freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
 	if [[ -e /usr/lib/libc++.so ]] ; then
 		emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
 	fi
-	USE=build emerge --nodeps sys-freebsd/freebsd-share
-	[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-freebsd\/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
-
-	emerge boot0 freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
 	emerge boot0 freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
 }
 
