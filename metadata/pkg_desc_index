@@ -1,5 +1,5 @@
 app-misc/screen 4.0.3-r7: Full-screen window manager that multiplexes physical terminals between several processes
-dev-util/catalyst 2.0.12.2 2.0.15 2.0.17: Release metatool used for creating releases based on Gentoo Linux
+dev-util/catalyst 2.0.12.2 2.0.15: release metatool used for creating releases based on Gentoo Linux
 sys-freebsd/boot0 10.2_beta1: FreeBSD's bootloader
 sys-freebsd/freebsd-bin 10.2_beta1: FreeBSD /bin tools
 sys-freebsd/freebsd-cddl 10.2_beta1: FreeBSD CDDL (opensolaris/zfs) extra software
