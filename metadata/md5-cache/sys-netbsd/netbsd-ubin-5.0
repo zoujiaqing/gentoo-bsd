@@ -7,5 +7,5 @@ KEYWORDS=~x86-nbsd
 RDEPEND=>=sys-netbsd/netbsd-src-5.0 >=sys-netbsd/netbsd-cctools-5.0 >=sys-netbsd/netbsd-libs-5.0
 SLOT=0
 _eclass_exported_funcs=src_unpack:- src_compile:- src_install:-
-_eclasses_=bsdmk	2d20496ff432a0ca089345cf400e5c87	eutils	d9bd2ddd85a58e470b49ca997e255a4c	flag-o-matic	85dc1eac3c64d8141374490ed64122e5	multilib	3972ca401cf7dbb430df9995f5d8d580	netbsd	205e48720909f42ff53c4a95cb46f5f8	portability	3a50b3ec310b86914f98babecc8f89c6	toolchain-funcs	7a212e5e01adfa4805c9978366e6ee85
+_eclasses_=bsdmk	2d20496ff432a0ca089345cf400e5c87	eutils	7332d4dd366dcd51c0014dde21f21897	flag-o-matic	85dc1eac3c64d8141374490ed64122e5	multilib	3972ca401cf7dbb430df9995f5d8d580	netbsd	205e48720909f42ff53c4a95cb46f5f8	portability	3a50b3ec310b86914f98babecc8f89c6	toolchain-funcs	7a212e5e01adfa4805c9978366e6ee85
 _md5_=7fcf15147499525b58ad407ed4e285ee
