@@ -121,8 +121,8 @@ remove_perl(){
 emerge_world(){
 	emerge sys-devel/libtool
 	emerge -C dev-lang/python:3.2 && :
-	emerge -u dev-libs/libxml2
-	emerge -u dev-libs/libxslt app-arch/libarchive dev-libs/glib
+	emerge dev-libs/libxml2
+	emerge dev-libs/libxslt app-arch/libarchive dev-libs/glib
 	emerge -e @world --exclude sys-apps/portage
 	emerge sys-apps/portage
 }

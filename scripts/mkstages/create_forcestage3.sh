@@ -42,7 +42,10 @@ prepare(){
 	mount -t nullfs "${PORTDIR}" "${WORKDIR}"/usr/portage
 	if [[ ! "${distdir}" =~ ${PORTDIR}.* ]]; then
 		echo "mount DISTDIR"
-		mount -t nullfs "${WORKDIR}"/usr/portage/distfiles
+		if [[ ! -e "${WORKDIR}"/usr/portage/distfiles ]]; then
+			mkdir "${WORKDIR}"/usr/portage/distfiles
+		fi
+		mount -t nullfs "${distdir}" "${WORKDIR}"/usr/portage/distfiles
 	fi
 	if [[ "${TMPFS}" -ne 0 ]] ; then
 		echo "mount TMPFS"
