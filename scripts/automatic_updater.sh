@@ -30,19 +30,16 @@ move_makeconf(){
 }
 
 update_portage(){
+	local dl_portage_ver="2.2.27"
 	emerge -p --nodeps dev-lang/python-exec && :
 	if [[ $? -eq 0 ]] ; then
 		emerge --nodeps dev-lang/python-exec
 	fi
-	if [[ ! -e /usr/lib/python-exec ]] ; then
-		cd /tmp
-		wget http://dev.gentoo.org/~dolsen/releases/portage/portage-2.2.20.tar.bz2
-		tar xjf portage-2.2.20.tar.bz2
-		PYTHON_TARGETS="python2_7" portage-2.2.20/bin/emerge --nodeps dev-lang/python-exec
-		PYTHON_TARGETS="python2_7" portage-2.2.20/bin/emerge --nodeps sys-apps/portage
-	else
-		emerge -u sys-apps/portage --exclude sys-freebsd/*
-	fi
+	cd /tmp
+	wget http://dev.gentoo.org/~dolsen/releases/portage/portage-${dl_portage_ver}.tar.bz2
+	tar xjf portage-${dl_portage_ver}.tar.bz2
+	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps dev-lang/python-exec
+	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps sys-apps/portage
 }
 
 update_minimal(){
