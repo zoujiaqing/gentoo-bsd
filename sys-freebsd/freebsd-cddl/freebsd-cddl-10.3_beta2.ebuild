@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -25,7 +25,6 @@ EXTRACTONLY="
 	sbin/
 	sys/
 "
-use build && EXTRACTONLY+="include/"
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
 	=sys-freebsd/freebsd-libexec-${RV}*
@@ -39,14 +38,24 @@ S="${WORKDIR}/cddl"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-10.2-libpaths.patch"
-	"${FILESDIR}/${PN}-10.2-underlink.patch"
+	"${FILESDIR}/${PN}-10.3-underlink.patch"
 	)
+
+pkg_setup() {
+	# Add the required source files.
+	use build && EXTRACTONLY+="include/ "
+}
 
 src_prepare() {
 	if [[ ! -e "${WORKDIR}/include" ]]; then
 		# Link in include headers.
 		ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi
+}
+
+src_compile() {
+	# Disable parallel make.
+	freebsd_src_compile -j1
 }
 
 src_install() {

@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -29,8 +29,6 @@ EXTRACTONLY="
 	gnu/
 	secure/
 "
-use build && EXTRACTONLY+="sys/"
-use zfs && EXTRACTONLY+="cddl/"
 
 if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 	RDEPEND="ssl? ( dev-libs/openssl )
@@ -53,7 +51,7 @@ if [ "${CATEGORY#*cross-}" = "${CATEGORY}" ]; then
 		=sys-freebsd/freebsd-share-${RV}*
 		>=virtual/libiconv-0-r2"
 else
-	EXTRACTONLY+="sys/"
+	EXTRACTONLY+="sys/ "
 fi
 
 DEPEND="${DEPEND}
@@ -74,6 +72,10 @@ IUSE="atm bluetooth ssl hesiod ipv6 kerberos usb netware
 QA_DT_NEEDED="lib/libc.so.7 usr/lib32/libc.so.7"
 
 pkg_setup() {
+	# Add the required source files.
+	use build && EXTRACTONLY+="sys/ "
+	use zfs && EXTRACTONLY+="cddl/ "
+
 	[ -c /dev/zero ] || \
 		die "You forgot to mount /dev; the compiled libc would break."
 
@@ -105,7 +107,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-10.0-liblink.patch"
 	"${FILESDIR}/${PN}-10.2-liblink.patch"
 	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
-	"${FILESDIR}/${PN}-10.0-libusb.patch"
+	"${FILESDIR}/${PN}-10.3-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
 	"${FILESDIR}/${PN}-10.2-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"

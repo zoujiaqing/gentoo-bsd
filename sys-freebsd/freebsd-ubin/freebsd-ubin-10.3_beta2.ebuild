@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -13,6 +13,8 @@ LICENSE="BSD zfs? ( CDDL )"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
+	SRC_URI="${SRC_URI}
+		$(freebsd_upstream_patches)"
 fi
 
 EXTRACTONLY="
@@ -23,8 +25,6 @@ EXTRACTONLY="
 	bin/
 	include/
 "
-use zfs && EXTRACTONLY+="cddl/"
-use build && EXTRACTONLY+="sys/"
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
 	ssl? ( dev-libs/openssl )
@@ -61,9 +61,9 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
 	"${FILESDIR}/${PN}-10.0-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-10.0-mandoc.patch"
-	"${FILESDIR}/${PN}-10.1-kdump-workaround.patch"
 	"${FILESDIR}/${PN}-10.2-bsdxml.patch"
-	"${FILESDIR}/${PN}-10.2-talk-workaround.patch" )
+	"${FILESDIR}/${PN}-10.2-talk-workaround.patch"
+	"${FILESDIR}/${PN}-10.3-bmake-workaround.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -89,6 +89,10 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	whois tftp man"
 
 pkg_setup() {
+	# Add the required source files.
+	use zfs && EXTRACTONLY+="cddl/ "
+	use build && EXTRACTONLY+="sys/ "
+
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
 	use audit || mymakeopts="${mymakeopts} WITHOUT_AUDIT= "
 	use bluetooth || mymakeopts="${mymakeopts} WITHOUT_BLUETOOTH= "

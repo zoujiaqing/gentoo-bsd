@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -21,7 +21,6 @@ EXTRACTONLY="
 	usr.sbin/
 	etc/
 "
-use build && EXTRACTONLY+="sys/"
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[ipv6?,atm?,netware?]
 	=sys-freebsd/freebsd-libexec-${RV}*
@@ -43,6 +42,9 @@ S="${WORKDIR}/sbin"
 IUSE="atm ipfilter +pf ipv6 build ssl +cxx netware"
 
 pkg_setup() {
+	# Add the required source files.
+	use build && EXTRACTONLY+="sys/ "
+
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
 	use cxx || mymakeopts="${mymakeopts} WITHOUT_CXX="
 	use ipfilter || mymakeopts="${mymakeopts} WITHOUT_IPFILTER= "

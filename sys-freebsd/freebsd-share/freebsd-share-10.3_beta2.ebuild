@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -26,7 +26,6 @@ EXTRACTONLY="
 	lib/
 	etc/
 "
-use zfs && EXTRACTONLY+="cddl/"
 
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 		=sys-freebsd/freebsd-sources-${RV}*"
@@ -37,6 +36,9 @@ RESTRICT="strip"
 S="${WORKDIR}/share"
 
 pkg_setup() {
+	# Add the required source files.
+	use zfs && EXTRACTONLY+="cddl/ "
+
 	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
@@ -47,8 +49,7 @@ pkg_setup() {
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
 
-PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
-	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
+PATCHES=( "${FILESDIR}/${PN}-10.3-gentoo-skel.patch"
 	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch"
 	"${FILESDIR}/${PN}-10.2-gnu-miscfiles.patch" )
 

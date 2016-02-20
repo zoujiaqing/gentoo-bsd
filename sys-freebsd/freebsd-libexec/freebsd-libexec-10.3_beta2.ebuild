@@ -1,10 +1,10 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
 
-inherit bsdmk freebsd pam multilib multibuild multilib-build
+inherit bsdmk freebsd pam multilib multibuild multilib-build toolchain-funcs
 
 DESCRIPTION="FreeBSD libexec things"
 SLOT="0"
@@ -53,6 +53,9 @@ pkg_setup() {
 }
 
 src_prepare() {
+	# gcc-5.0 or later, Workaround for critical issue. bug 573358.
+	[[ "$(gcc-major-version)" -ge 5 ]] && replace-flags -O[2-9] -O1
+
 	if [[ ! -e "${WORKDIR}/include" ]]; then
 		ln -s /usr/include "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi

@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -28,7 +28,6 @@ EXTRACTONLY="
 	libexec/
 	rescue/
 "
-use zfs && EXTRACTONLY+="cddl/"
 
 RDEPEND=""
 DEPEND="sys-devel/flex
@@ -49,6 +48,9 @@ DEPEND="sys-devel/flex
 S="${WORKDIR}/rescue"
 
 pkg_setup() {
+	# Add the required source files.
+	use zfs && EXTRACTONLY+="cddl/ "
+
 	use atm || mymakeopts="${mymakeopts} WITHOUT_ATM= "
 	use netware || mymakeopts="${mymakeopts} WITHOUT_IPX= "
 	use nis || mymakeopts="${mymakeopts} WITHOUT_NIS= "
