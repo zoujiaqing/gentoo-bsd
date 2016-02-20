@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -28,7 +28,9 @@ DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
 S="${WORKDIR}/sys/boot"
 
 PATCHES=( "${FILESDIR}/${PN}-10.1-gcc46.patch"
-	"${FILESDIR}/${PN}-10.1-drop-unsupport-cflags.patch"
+	"${FILESDIR}/${PN}-10.3-clang.patch"
+	"${FILESDIR}/${PN}-10.3-drop-unsupport-cflags.patch"
+	"${FILESDIR}/${PN}-10.3-uefi-support.patch"
 	"${FILESDIR}/${PN}-add-nossp-cflags.patch" )
 
 boot0_use_enable() {
@@ -49,37 +51,22 @@ src_prepare() {
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
+
+	export MAKEOBJDIRPREFIX="${WORKDIR}/build"
 }
 
 src_compile() {
 	strip-flags
 	append-flags "-fno-strict-aliasing"
 
-	if use amd64-fbsd; then
-		cd "${S}/userboot/libstand" || die
-		freebsd_src_compile
-		cd "${S}/userboot/zfs" || die
-		freebsd_src_compile
-	fi
-
-	cd "${S}/libstand32" || die
-	freebsd_src_compile
-
-	# bug542676
-	if [[ $(tc-getCC) == *clang* ]]; then
-		cd "${S}/i386/btx" || die
-		freebsd_src_compile
-		cd "${S}/i386/boot2" || die
-		CC=${CHOST}-gcc freebsd_src_compile
-	fi
-
 	cd "${WORKDIR}/lib/libstand" || die
 	freebsd_src_compile
 
-	cd "${S}"
 	CFLAGS="${CFLAGS} -I${WORKDIR}/lib/libstand"
 	LDFLAGS="${LDFLAGS} -L${WORKDIR}/lib/libstand"
-	export LIBSTAND="${WORKDIR}/lib/libstand/libstand.a"
+	export LIBSTAND="${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libstand/libstand.a"
+
+	cd "${S}"
 	NOFLAGSTRIP="yes" freebsd_src_compile
 }
 

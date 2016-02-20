@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -8,12 +8,6 @@ inherit bsdmk freebsd flag-o-matic eutils
 
 DESCRIPTION="FreeBSD /usr/sbin tools"
 SLOT="0"
-
-# Security Advisory and Errata patches.
-UPSTREAM_PATCHES=( "EN-15:13/vidcontrol.patch"
-	"EN-15:16/pw.patch"
-	"SA-15:24/rpcbind.patch"
-	"SA-15:24/rpcbind-00.patch" )
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -44,18 +38,20 @@ RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,netware?]
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*
 	=sys-freebsd/freebsd-ubin-${RV}*
+	zfs? ( =sys-freebsd/freebsd-cddl-${RV}* )
 	!build? ( =sys-freebsd/freebsd-sources-${RV}* )
 	sys-apps/texinfo
 	sys-devel/flex"
 
 S="${WORKDIR}/usr.sbin"
 
-IUSE="acpi atm audit bluetooth floppy ipv6 kerberos minimal netware nis pam ssl usb build"
+IUSE="acpi atm audit bluetooth floppy ipv6 kerberos minimal netware nis pam ssl usb build zfs"
 
 pkg_setup() {
 	# Add the required source files.
 	use nis && EXTRACTONLY+="libexec/ "
 	use build && EXTRACTONLY+="sys/ include/ "
+	use zfs && EXTRACTONLY+="cddl/ "
 
 	# Release crunch is something like minimal. It seems to remove everything
 	# which is not needed to work.
@@ -73,6 +69,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use floppy || mymakeopts="${mymakeopts} WITHOUT_FLOPPY= "
 	use kerberos || mymakeopts="${mymakeopts} WITHOUT_GSSAPI= "
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 
 	mymakeopts="${mymakeopts} WITHOUT_PF= WITHOUT_LPR= WITHOUT_SENDMAIL= WITHOUT_AUTHPF= WITHOUT_MAILWRAPPER= WITHOUT_UNBOUND= "
 
@@ -83,6 +80,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-adduser.patch"
 	"${FILESDIR}/${PN}-9.0-newsyslog.patch"
 	"${FILESDIR}/${PN}-10.0-bsdxml2expat.patch"
+	"${FILESDIR}/${PN}-10.3-bsdxml2expat.patch"
 	)
 
 REMOVE_SUBDIRS="

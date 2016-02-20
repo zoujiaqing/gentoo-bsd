@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -25,7 +25,7 @@ RESTRICT="strip"
 S="${WORKDIR}/share/mk"
 
 src_prepare() {
-	epatch "${FILESDIR}/${PN}-10.2-gentoo.patch"
+	epatch "${FILESDIR}/${PN}-10.3-gentoo.patch"
 	epatch "${FILESDIR}/${PN}-add-nossp-cflags.patch"
 	use userland_GNU && epatch "${FILESDIR}/${PN}-10.2-gnu.patch"
 }

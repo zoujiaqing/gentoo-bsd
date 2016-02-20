@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -8,10 +8,6 @@ inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild mu
 
 DESCRIPTION="FreeBSD's base system libraries"
 SLOT="0"
-
-# Security Advisory and Errata patches.
-UPSTREAM_PATCHES=( "EN-15:17/libc.patch"
-	"EN-16:03/yplib.patch" )
 
 # Crypto is needed to have an internal OpenSSL header
 # sys is needed for libalias, probably we can just extract that instead of
@@ -111,7 +107,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-10.0-liblink.patch"
 	"${FILESDIR}/${PN}-10.2-liblink.patch"
 	"${FILESDIR}/${PN}-10.0-atfcxx.patch"
-	"${FILESDIR}/${PN}-10.0-libusb.patch"
+	"${FILESDIR}/${PN}-10.3-libusb.patch"
 	"${FILESDIR}/${PN}-10.0-libproc-libcxx.patch"
 	"${FILESDIR}/${PN}-10.2-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-9.0-bluetooth.patch"

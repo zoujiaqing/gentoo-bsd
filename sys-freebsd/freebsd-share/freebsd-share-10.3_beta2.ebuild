@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -49,8 +49,7 @@ pkg_setup() {
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
 
-PATCHES=( "${FILESDIR}/${PN}-5.3-doc-locations.patch"
-	"${FILESDIR}/${PN}-5.4-gentoo-skel.patch"
+PATCHES=( "${FILESDIR}/${PN}-10.3-gentoo-skel.patch"
 	"${FILESDIR}/${PN}-10.0-gentoo-eapi3.patch"
 	"${FILESDIR}/${PN}-10.2-gnu-miscfiles.patch" )
 

@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -10,17 +10,6 @@ DESCRIPTION="FreeBSD kernel sources"
 SLOT="0"
 
 IUSE="+build-kernel debug dtrace zfs"
-
-# Security Advisory and Errata patches.
-UPSTREAM_PATCHES=( "SA-16:01/sctp.patch"
-	"SA-16:03/linux.patch"
-	"SA-16:04/linux.patch"
-	"SA-16:05/tcp.patch"
-	"SA-16:10/linux.patch"
-	"EN-15:19/kqueue.patch"
-	"EN-15:20/vm.patch"
-	"EN-16:01/filemon.patch"
-	"EN-16:02/pf-10.2.patch" )
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"

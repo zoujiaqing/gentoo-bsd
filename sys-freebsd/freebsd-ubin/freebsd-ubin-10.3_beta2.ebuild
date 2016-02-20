@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -10,9 +10,6 @@ DESCRIPTION="FreeBSD's base system source for /usr/bin"
 SLOT="0"
 IUSE="ar atm audit bluetooth ipv6 kerberos netware nis ssl usb build zfs"
 LICENSE="BSD zfs? ( CDDL )"
-
-# Security Advisory and Errata patches.
-UPSTREAM_PATCHES=( "EN-15:12/netstat.patch" )
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
@@ -64,9 +61,9 @@ PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
 	"${FILESDIR}/${PN}-10.0-kdump-ioctl.patch"
 	"${FILESDIR}/${PN}-10.0-mandoc.patch"
-	"${FILESDIR}/${PN}-10.1-kdump-workaround.patch"
 	"${FILESDIR}/${PN}-10.2-bsdxml.patch"
-	"${FILESDIR}/${PN}-10.2-talk-workaround.patch" )
+	"${FILESDIR}/${PN}-10.2-talk-workaround.patch"
+	"${FILESDIR}/${PN}-10.3-bmake-workaround.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:

@@ -1,4 +1,4 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -38,7 +38,7 @@ S="${WORKDIR}/cddl"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-10.2-libpaths.patch"
-	"${FILESDIR}/${PN}-10.2-underlink.patch"
+	"${FILESDIR}/${PN}-10.3-underlink.patch"
 	)
 
 pkg_setup() {
@@ -51,6 +51,11 @@ src_prepare() {
 		# Link in include headers.
 		ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi
+}
+
+src_compile() {
+	# Disable parallel make.
+	freebsd_src_compile -j1
 }
 
 src_install() {
