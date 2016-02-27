@@ -31,14 +31,11 @@ move_makeconf(){
 
 update_portage(){
 	local dl_portage_ver="2.2.27"
-	emerge -p --nodeps dev-lang/python-exec && :
-	if [[ $? -eq 0 ]] ; then
-		emerge --nodeps dev-lang/python-exec
-	fi
 	cd /tmp
 	wget http://dev.gentoo.org/~dolsen/releases/portage/portage-${dl_portage_ver}.tar.bz2
 	tar xjf portage-${dl_portage_ver}.tar.bz2
 	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps dev-lang/python-exec
+	eselect python set 1
 	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps sys-apps/portage
 }
 
