@@ -1,19 +1,19 @@
 app-misc/screen 4.0.3-r7: Full-screen window manager that multiplexes physical terminals between several processes
 dev-util/catalyst 2.0.12.2 2.0.15 2.0.17: Release metatool used for creating releases based on Gentoo Linux
-sys-freebsd/boot0 10.3_beta2: FreeBSD's bootloader
-sys-freebsd/freebsd-bin 10.3_beta2: FreeBSD /bin tools
-sys-freebsd/freebsd-cddl 10.3_beta2: FreeBSD CDDL (opensolaris/zfs) extra software
-sys-freebsd/freebsd-lib 10.3_beta2: FreeBSD's base system libraries
-sys-freebsd/freebsd-libexec 10.3_beta2: FreeBSD libexec things
-sys-freebsd/freebsd-mk-defs 10.3_beta2: Makefiles definitions used for building and installing libraries and system files
-sys-freebsd/freebsd-pam-modules 10.3_beta2: FreeBSD's PAM authentication modules
-sys-freebsd/freebsd-pf 10.3_beta2: FreeBSD's base system libraries
-sys-freebsd/freebsd-rescue 10.3_beta2: FreeBSD's rescue binaries
-sys-freebsd/freebsd-sbin 10.3_beta2: FreeBSD sbin utils
-sys-freebsd/freebsd-share 10.3_beta2: FreeBSD shared tools/files
-sys-freebsd/freebsd-sources 10.3_beta2: FreeBSD kernel sources
-sys-freebsd/freebsd-ubin 10.3_beta2: FreeBSD's base system source for /usr/bin
-sys-freebsd/freebsd-usbin 10.3_beta2: FreeBSD /usr/sbin tools
+sys-freebsd/boot0 10.3_beta3: FreeBSD's bootloader
+sys-freebsd/freebsd-bin 10.3_beta3: FreeBSD /bin tools
+sys-freebsd/freebsd-cddl 10.3_beta3: FreeBSD CDDL (opensolaris/zfs) extra software
+sys-freebsd/freebsd-lib 10.3_beta3: FreeBSD's base system libraries
+sys-freebsd/freebsd-libexec 10.3_beta3: FreeBSD libexec things
+sys-freebsd/freebsd-mk-defs 10.3_beta3: Makefiles definitions used for building and installing libraries and system files
+sys-freebsd/freebsd-pam-modules 10.3_beta3: FreeBSD's PAM authentication modules
+sys-freebsd/freebsd-pf 10.3_beta3: FreeBSD's base system libraries
+sys-freebsd/freebsd-rescue 10.3_beta3: FreeBSD's rescue binaries
+sys-freebsd/freebsd-sbin 10.3_beta3: FreeBSD sbin utils
+sys-freebsd/freebsd-share 10.3_beta3: FreeBSD shared tools/files
+sys-freebsd/freebsd-sources 10.3_beta3: FreeBSD kernel sources
+sys-freebsd/freebsd-ubin 10.3_beta3: FreeBSD's base system source for /usr/bin
+sys-freebsd/freebsd-usbin 10.3_beta3: FreeBSD /usr/sbin tools
 sys-freebsd/grub2-bhyve 0.30 0.40 9999: Grub-emu loader for bhyve
 sys-netbsd/netbsd-bin 5.0: NetBSD 5.0 bin base system
 sys-netbsd/netbsd-binutils 5.0: NetBSD 5.0 GNU binutils
