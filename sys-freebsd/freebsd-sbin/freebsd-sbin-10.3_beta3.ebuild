@@ -77,7 +77,7 @@ src_install() {
 
 	# Maybe ship our own sysctl.conf so things like radvd work out of the box.
 	# New wireless config method requires regdomain.xml in /etc
-	cd "${WORKDIR}/etc/"
+	cd "${WORKDIR}/etc/" || die
 	insinto /etc
 	doins minfree sysctl.conf regdomain.xml || die
 
@@ -87,7 +87,7 @@ src_install() {
 
 	# Install the periodic stuff (needs probably to be ported in a more
 	# gentooish way)
-	cd "${WORKDIR}/etc/periodic"
+	cd "${WORKDIR}/etc/periodic" || die
 
 	doperiodic security \
 		security/*.ipfwlimit \

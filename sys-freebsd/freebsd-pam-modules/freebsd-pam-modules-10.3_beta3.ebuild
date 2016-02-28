@@ -37,7 +37,7 @@ pkg_setup() {
 
 src_prepare() {
 	for module in pam_deny pam_passwdqc pam_permit pam_krb5; do
-		sed -i -e "s:${module}::" "${S}"/modules.inc
+		sed -i -e "s:${module}::" "${S}"/modules.inc || die
 	done
 }
 

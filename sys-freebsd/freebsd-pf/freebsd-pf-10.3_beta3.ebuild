@@ -53,7 +53,7 @@ src_prepare() {
 src_compile() {
 	for dir in ${SUBDIRS}; do
 		einfo "Starting make in ${dir}"
-		cd "${S}/${dir}"
+		cd "${S}/${dir}" || die
 		mkmake || die "Make ${dir} failed"
 	done
 }
@@ -61,7 +61,7 @@ src_compile() {
 src_install() {
 	for dir in ${SUBDIRS}; do
 		einfo "Starting install in ${dir}"
-		cd "${S}/${dir}"
+		cd "${S}/${dir}" || die
 		mkinstall || die "Install ${dir} failed"
 	done
 

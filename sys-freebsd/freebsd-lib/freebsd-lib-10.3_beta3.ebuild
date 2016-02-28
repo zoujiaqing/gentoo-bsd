@@ -161,7 +161,7 @@ src_prepare() {
 
 	# This one is here because it also
 	# patches "${WORKDIR}/include"
-	cd "${WORKDIR}"
+	cd "${WORKDIR}" || die
 	epatch "${FILESDIR}/${PN}-includes.patch"
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
@@ -173,7 +173,7 @@ src_prepare() {
 	"${WORKDIR}"/lib/libc/net/Makefile.inc || die
 
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
-	cd "${S}"
+	cd "${S}" || die
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
 		libsmb libprocstat libulog; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
 		die "Problem fixing \"${dir}/Makefile"
@@ -183,7 +183,7 @@ src_prepare() {
 		-i "${S}/csu/i386-elf/Makefile" \
 		-i "${S}/csu/ia64/Makefile" || die
 	if use build; then
-		cd "${WORKDIR}"
+		cd "${WORKDIR}" || die
 		# This patch has to be applied on ${WORKDIR}/sys, so we do it here since it
 		# shouldn't be a symlink to /usr/src/sys (which should be already patched)
 		epatch "${FILESDIR}"/${PN}-7.1-types.h-fix.patch
@@ -207,7 +207,7 @@ src_prepare() {
 
 	# Try to fix sed calls for GNU sed. Do it only with GNU userland and force
 	# BSD's sed on BSD.
-	cd "${S}"
+	cd "${S}" || die
 	if use userland_GNU; then
 		find . -name Makefile -exec sed -ibak 's/sed -i /sed -i/' {} \;
 	fi
@@ -239,7 +239,7 @@ bootstrap_csu() {
 
 	bootstrap_lib "gnu/lib/csu"
 
-	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
+	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu" || die
 	for i in *.So ; do
 		ln -s $i ${i%.So}S.o
 	done
@@ -361,7 +361,7 @@ src_compile() {
 
 	use usb && export NON_NATIVE_SUBDIRS="${NON_NATIVE_SUBDIRS} lib/libusb lib/libusbhid"
 
-	cd "${WORKDIR}/include"
+	cd "${WORKDIR}/include" || die
 	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
@@ -540,7 +540,7 @@ do_install() {
 			kvm m md procstat sbuf thr ufs util elf
 
 	if [[ ${#MULTIBUILD_VARIANTS[@]} -gt 1 ]] ; then
-		cd "${D}/usr/include"
+		cd "${D}/usr/include" || die
 		for i in machine/*.h fenv.h ; do
 			move_header ${i}
 		done
@@ -584,7 +584,7 @@ src_install() {
 		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_install
 	fi
 
-	cd "${WORKDIR}/etc/"
+	cd "${WORKDIR}/etc/" || die
 	insinto /etc
 	doins nls.alias mac.conf netconfig
 
@@ -613,7 +613,7 @@ install_includes()
 
 	# Must exist before we use it.
 	[[ -d "${DESTDIR}${INCLUDEDIR}" ]] || die "dodir or mkdir ${INCLUDEDIR} before using install_includes."
-	cd "${WORKDIR}/include"
+	cd "${WORKDIR}/include" || die
 
 	local MACHINE="$(tc-arch-kernel)"
 

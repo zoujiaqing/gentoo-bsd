@@ -142,17 +142,17 @@ setup_multilib_vars() {
 		cd "${WORKDIR}/usr.bin/ldd" || die
 		export mymakeopts="${mymakeopts} PROG=ldd32 WITHOUT_MAN="
 	else
-		cd "${S}"
+		cd "${S}" || die
 	fi
 	"$@"
 }
 
 src_compile() {
 	# Preparing to build mandoc
-	cd "${WORKDIR}/lib/libmandoc"
+	cd "${WORKDIR}/lib/libmandoc" || die
 	freebsd_src_compile -j1
 
-	cd "${S}"
+	cd "${S}" || die
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile -j1
 }
@@ -172,7 +172,7 @@ src_install() {
 		newpamd "${FILESDIR}/${pamdfile}.1.pamd" ${pamdfile} || die
 	done
 
-	cd "${WORKDIR}/etc"
+	cd "${WORKDIR}/etc" || die
 	insinto /etc
 	doins remote phones opieaccess fbtab || die
 

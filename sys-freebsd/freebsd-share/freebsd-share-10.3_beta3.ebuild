@@ -97,12 +97,12 @@ src_compile() {
 	# i18n/esdb/APPLE requires mkesdb_static
 	for pkg in mkcsmapper_static mkesdb_static
 	do
-		cd "${WORKDIR}"/usr.bin/${pkg}
+		cd "${WORKDIR}"/usr.bin/${pkg} || die
 		freebsd_src_compile
 	done
 
 	# This is a groff problem and not a -shared problem.
-	cd "${S}"
+	cd "${S}" || die
 	export GROFF_TMAC_PATH="/usr/share/tmac/:/usr/share/groff/1.22.2/tmac/"
 	freebsd_src_compile -j1 || die "emake failed"
 }

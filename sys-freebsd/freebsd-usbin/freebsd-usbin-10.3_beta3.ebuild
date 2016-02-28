@@ -106,10 +106,10 @@ src_prepare() {
 
 src_compile() {
 	# Preparing to build nmtree
-	cd "${WORKDIR}/lib/libnetbsd"
+	cd "${WORKDIR}/lib/libnetbsd" || die
 	freebsd_src_compile
 
-	cd "${S}"
+	cd "${S}" || die
 	freebsd_src_compile
 }
 
@@ -146,7 +146,7 @@ EOS
 	insinto /etc
 	doins "${FILESDIR}/pw.conf" || die
 
-	cd "${WORKDIR}/etc"
+	cd "${WORKDIR}/etc" || die
 	doins apmd.conf syslog.conf newsyslog.conf nscd.conf || die
 
 	insinto /etc/ppp
@@ -160,7 +160,7 @@ EOS
 
 	# Install the periodic stuff (needs probably to be ported in a more
 	# gentooish way)
-	cd "${WORKDIR}/etc/periodic"
+	cd "${WORKDIR}/etc/periodic" || die
 
 	doperiodic daily daily/*.accounting
 	doperiodic monthly monthly/*.accounting
