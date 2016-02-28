@@ -81,7 +81,7 @@ setup_multilib_vars() {
 		cd "${WORKDIR}/libexec/rtld-elf" || die
 		export mymakeopts="${mymakeopts} PROG=ld-elf32.so.1"
 	else
-		cd "${S}"
+		cd "${S}" || die
 	fi
 	"$@"
 }

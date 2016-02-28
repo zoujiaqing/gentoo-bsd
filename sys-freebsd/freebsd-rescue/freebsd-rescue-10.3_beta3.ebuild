@@ -60,7 +60,7 @@ pkg_setup() {
 
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
-	cd "${WORKDIR}"
+	cd "${WORKDIR}" || die
 	epatch "${FILESDIR}/${PN}"-10.0-zlib.patch
 	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
 	epatch "${FILESDIR}/freebsd-ubin-10.2-bsdxml.patch"
@@ -72,11 +72,11 @@ src_compile() {
 	# Use to force BSD's make
 	export MAKE=/usr/bin/make
 
-	cd "${WORKDIR}/lib/libarchive"
+	cd "${WORKDIR}/lib/libarchive" || die
 	echo "#include <expat.h>" > bsdxml.h
 	freebsd_src_compile
 	export CC="${CC} -L${WORKDIR}/lib/libarchive"
 
-	cd "${S}"
+	cd "${S}" || die
 	freebsd_src_compile
 }

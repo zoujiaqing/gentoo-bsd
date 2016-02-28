@@ -66,7 +66,7 @@ src_compile() {
 	LDFLAGS="${LDFLAGS} -L${WORKDIR}/lib/libstand"
 	export LIBSTAND="${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libstand/libstand.a"
 
-	cd "${S}"
+	cd "${S}" || die
 	NOFLAGSTRIP="yes" freebsd_src_compile
 }
 
@@ -76,8 +76,8 @@ src_install() {
 
 	cd "${WORKDIR}/sys/$(tc-arch-kernel)/conf" || die
 	insinto /boot
-	newins GENERIC.hints device.hints
+	newins GENERIC.hints device.hints || die
 
 	echo 'CONFIG_PROTECT="/boot/device.hints"' > "${T}"/50boot0
-	doenvd "${T}"/50boot0
+	doenvd "${T}"/50boot0 || die
 }
