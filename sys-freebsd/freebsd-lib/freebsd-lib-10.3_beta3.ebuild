@@ -161,7 +161,7 @@ src_prepare() {
 
 	# This one is here because it also
 	# patches "${WORKDIR}/include"
-	cd "${WORKDIR}" || die
+	cd "${WORKDIR}"
 	epatch "${FILESDIR}/${PN}-includes.patch"
 	epatch "${FILESDIR}/${PN}-8.0-gcc45.patch"
 	epatch "${FILESDIR}/${PN}-9.0-opieincludes.patch"
@@ -173,7 +173,7 @@ src_prepare() {
 	"${WORKDIR}"/lib/libc/net/Makefile.inc || die
 
 	# Fix the Makefiles of these few libraries that will overwrite our LDADD.
-	cd "${S}" || die
+	cd "${S}"
 	for dir in libradius libtacplus libcam libdevstat libfetch libgeom libmemstat libopie \
 		libsmb libprocstat libulog; do sed -i.bak -e 's:LDADD=:LDADD+=:g' "${dir}/Makefile" || \
 		die "Problem fixing \"${dir}/Makefile"
@@ -183,7 +183,7 @@ src_prepare() {
 		-i "${S}/csu/i386-elf/Makefile" \
 		-i "${S}/csu/ia64/Makefile" || die
 	if use build; then
-		cd "${WORKDIR}" || die
+		cd "${WORKDIR}"
 		# This patch has to be applied on ${WORKDIR}/sys, so we do it here since it
 		# shouldn't be a symlink to /usr/src/sys (which should be already patched)
 		epatch "${FILESDIR}"/${PN}-7.1-types.h-fix.patch
@@ -207,9 +207,10 @@ src_prepare() {
 
 	# Try to fix sed calls for GNU sed. Do it only with GNU userland and force
 	# BSD's sed on BSD.
-	cd "${S}" || die
+	cd "${S}"
 	if use userland_GNU; then
 		find . -name Makefile -exec sed -ibak 's/sed -i /sed -i/' {} \;
+		sed -i -e 's/-i ""/-i""/' "${S}/csu/Makefile.inc" || die
 	fi
 }
 
@@ -239,7 +240,7 @@ bootstrap_csu() {
 
 	bootstrap_lib "gnu/lib/csu"
 
-	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu" || die
+	cd "${MAKEOBJDIRPREFIX}/${WORKDIR}/gnu/lib/csu"
 	for i in *.So ; do
 		ln -s $i ${i%.So}S.o
 	done
@@ -361,7 +362,7 @@ src_compile() {
 
 	use usb && export NON_NATIVE_SUBDIRS="${NON_NATIVE_SUBDIRS} lib/libusb lib/libusbhid"
 
-	cd "${WORKDIR}/include" || die
+	cd "${WORKDIR}/include"
 	$(freebsd_get_bmake) CC="$(tc-getCC)" || die "make include failed"
 
 	use crosscompile_opts_headers-only && return 0
@@ -400,11 +401,11 @@ gen_libc_ldscript() {
 	#   $3 = source libssp_nonshared dir
 
 	# Clear the symlink.
-	rm -f "${D}/$2/libc.so" || die
+	rm -f "${DESTDIR}/$2/libc.so" || die
 
 	# Move the library if needed
 	if [ "$1" != "$2" ] ; then
-		mv "${D}/$2/libc.so.7" "${D}/$1/" || die
+		mv "${DESTDIR}/$2/libc.so.7" "${DESTDIR}/$1/" || die
 	fi
 
 	# Generate libc.so ldscript for inclusion of libssp_nonshared.a when linking
@@ -418,7 +419,7 @@ gen_libc_ldscript() {
 
 	# iconv symbol provided by libc_nonshared.a.
 	# http://svnweb.freebsd.org/base?view=revision&amp;revision=258283
-	cat > "${D}/$2/libc.so" <<-END_LDSCRIPT
+	cat > "${DESTDIR}/$2/libc.so" <<-END_LDSCRIPT
 /* GNU ld script
    SSP (-fstack-protector) requires __stack_chk_fail_local to be local.
    GCC invokes this symbol in a non-PIC way, which results in TEXTRELs if
@@ -523,13 +524,13 @@ do_install() {
 
 	if ! is_crosscompile ; then
 		if ! multilib_is_native_abi ; then
-			gen_libc_ldscript "usr/$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
+			DESTDIR="${D}" gen_libc_ldscript "usr/$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
 		else
 			dodir "$(get_libdir)"
-			gen_libc_ldscript "$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
+			DESTDIR="${D}" gen_libc_ldscript "$(get_libdir)" "usr/$(get_libdir)" "usr/$(get_libdir)"
 		fi
 	else
-		CHOST=${CTARGET} gen_libc_ldscript "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib" "usr/${CTARGET}/usr/lib"
+		CHOST=${CTARGET} DESTDIR="${D}/usr/${CTARGET}/" gen_libc_ldscript "usr/lib" "usr/lib" "usr/lib"
 		# We're done for the cross libc here.
 		return 0
 	fi
@@ -540,7 +541,7 @@ do_install() {
 			kvm m md procstat sbuf thr ufs util elf
 
 	if [[ ${#MULTIBUILD_VARIANTS[@]} -gt 1 ]] ; then
-		cd "${D}/usr/include" || die
+		cd "${D}/usr/include"
 		for i in machine/*.h fenv.h ; do
 			move_header ${i}
 		done
@@ -584,7 +585,7 @@ src_install() {
 		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper do_install
 	fi
 
-	cd "${WORKDIR}/etc/" || die
+	cd "${WORKDIR}/etc/"
 	insinto /etc
 	doins nls.alias mac.conf netconfig
 
@@ -613,7 +614,7 @@ install_includes()
 
 	# Must exist before we use it.
 	[[ -d "${DESTDIR}${INCLUDEDIR}" ]] || die "dodir or mkdir ${INCLUDEDIR} before using install_includes."
-	cd "${WORKDIR}/include" || die
+	cd "${WORKDIR}/include"
 
 	local MACHINE="$(tc-arch-kernel)"
 
