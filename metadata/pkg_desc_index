@@ -14,7 +14,7 @@ sys-freebsd/freebsd-share 10.3_beta3: FreeBSD shared tools/files
 sys-freebsd/freebsd-sources 10.3_beta3: FreeBSD kernel sources
 sys-freebsd/freebsd-ubin 10.3_beta3: FreeBSD's base system source for /usr/bin
 sys-freebsd/freebsd-usbin 10.3_beta3: FreeBSD /usr/sbin tools
-sys-freebsd/grub2-bhyve 0.30 0.40 9999: Grub-emu loader for bhyve
+sys-freebsd/grub2-bhyve 0.40 9999: Grub-emu loader for bhyve
 sys-netbsd/netbsd-bin 5.0: NetBSD 5.0 bin base system
 sys-netbsd/netbsd-binutils 5.0: NetBSD 5.0 GNU binutils
 sys-netbsd/netbsd-cctools 5.0: Build, compile and install tools to compile NetBSD 5.0 system.
