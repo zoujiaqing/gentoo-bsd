@@ -24,7 +24,7 @@ EXTRACTONLY="
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*
 	>=dev-libs/libedit-20120311.3.0-r1
-	sys-libs/ncurses
+	sys-libs/ncurses:0=
 	sys-apps/ed
 	!app-misc/realpath
 	!<sys-freebsd/freebsd-ubin-8"

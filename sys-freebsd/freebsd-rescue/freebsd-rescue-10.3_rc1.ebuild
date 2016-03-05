@@ -37,7 +37,7 @@ DEPEND="sys-devel/flex
 	app-arch/bzip2[static-libs]
 	dev-libs/libedit[static-libs]
 	dev-libs/libxml2:2[static-libs]
-	dev-libs/openssl[static-libs]
+	dev-libs/openssl:0=[static-libs]
 	sys-libs/zlib[static-libs]
 	sys-libs/readline[static-libs]
 	=sys-freebsd/freebsd-lib-${RV}*[atm?,netware?]
