@@ -25,9 +25,9 @@ EXTRACTONLY="
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[ipv6?,atm?,netware?]
 	=sys-freebsd/freebsd-libexec-${RV}*
 	>=dev-libs/expat-2.0.1
-	ssl? ( dev-libs/openssl )
+	ssl? ( dev-libs/openssl:0= )
 	>=dev-libs/libedit-20120311.3.0-r1
-	sys-libs/readline
+	sys-libs/readline:0=
 	|| (
 		sys-process/cronie
 		sys-process/vixie-cron

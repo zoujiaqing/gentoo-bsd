@@ -18,7 +18,7 @@ fi
 EXTRACTONLY="lib/"
 
 RDEPEND=">=sys-auth/openpam-20050201-r1
-	kerberos? ( dev-libs/openssl
+	kerberos? ( dev-libs/openssl:0=
 		virtual/krb5 )"
 DEPEND="${RDEPEND}
 	=sys-freebsd/freebsd-mk-defs-${RV}*

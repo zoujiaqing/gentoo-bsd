@@ -27,12 +27,12 @@ EXTRACTONLY="
 "
 
 RDEPEND="=sys-freebsd/freebsd-lib-${RV}*[usb?,bluetooth?,${MULTILIB_USEDEP}]
-	ssl? ( dev-libs/openssl )
+	ssl? ( dev-libs/openssl:0= )
 	kerberos? ( virtual/krb5 )
 	ar? ( >=app-arch/libarchive-3 )
 	virtual/pam
 	sys-libs/zlib
-	>=sys-libs/ncurses-5.9
+	>=sys-libs/ncurses-5.9:0=
 	!sys-process/fuser-bsd
 	!dev-util/csup
 	!dev-libs/libiconv
