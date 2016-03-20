@@ -8,6 +8,7 @@ inherit bsdmk freebsd flag-o-matic eutils
 
 DESCRIPTION="FreeBSD /usr/sbin tools"
 SLOT="0"
+LICENSE="BSD zfs? ( CDDL )"
 
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"

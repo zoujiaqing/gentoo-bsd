@@ -3,6 +3,7 @@
 # sys-apps/portage: bug 493126, 574626
 # app-shells/bash: bug 574426
 # sys-devel/gettext: bug 564168
+# sys-apps/findutils: bug 577714
 
 PORTDIR="${PORTDIR:-/usr/portage}"
 TMPDIR="${TMPDIR:-/tmp/autofix}"
@@ -47,6 +48,15 @@ fix_gettext() {
 	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
 
 	echo "dev-libs/libintl-0.19.7" >> ${PORTDIR}/profiles/default/bsd/fbsd/package.provided
+}
+
+fix_findutils() {
+	# Fix bug 577714
+	local pkg="sys-apps/findutils"
+	local ebuild="$(latest_ebuild ${pkg})"
+
+	gsed -i '/<sys\/sysmacros.h>/d' "${PORTDIR}/${pkg}/${ebuild}"
+	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
 }
 
 mk_patches() {
@@ -188,7 +198,7 @@ mk_patches() {
 	EOF
 }
 
-for func in mk_patches fix_portage fix_bash fix_gettext
+for func in mk_patches fix_portage fix_bash fix_gettext fix_findutils
 do
 	echo "${func}"
 	${func}

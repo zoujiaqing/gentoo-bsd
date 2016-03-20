@@ -8,6 +8,7 @@ inherit bsdmk freebsd flag-o-matic toolchain-funcs
 
 DESCRIPTION="FreeBSD kernel sources"
 SLOT="0"
+LICENSE="BSD zfs? ( CDDL )"
 
 IUSE="+build-kernel debug dtrace zfs"
 

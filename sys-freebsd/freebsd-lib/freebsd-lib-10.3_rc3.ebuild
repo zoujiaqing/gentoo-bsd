@@ -8,6 +8,7 @@ inherit bsdmk freebsd flag-o-matic multilib toolchain-funcs eutils multibuild mu
 
 DESCRIPTION="FreeBSD's base system libraries"
 SLOT="0"
+LICENSE="BSD zfs? ( CDDL )"
 
 # Crypto is needed to have an internal OpenSSL header
 # sys is needed for libalias, probably we can just extract that instead of
@@ -143,6 +144,9 @@ is_crosscompile() {
 }
 
 src_prepare() {
+	# gcc-5.0 or later, Workaround for critical issue. bug 573358.
+	use x86-fbsd && [[ "$(gcc-major-version)" -ge 5 ]] && replace-flags -O? -O1
+
 	sed -i.bak -e 's:-o/dev/stdout:-t:' "${S}/libc/net/Makefile.inc"
 
 	# Upstream Display Managers default to using VT7
