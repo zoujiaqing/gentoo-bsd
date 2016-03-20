@@ -8,6 +8,7 @@ inherit bsdmk freebsd
 
 DESCRIPTION="FreeBSD shared tools/files"
 SLOT="0"
+LICENSE="BSD zfs? ( CDDL )"
 
 IUSE="doc usb zfs"
 
