@@ -144,6 +144,9 @@ is_crosscompile() {
 }
 
 src_prepare() {
+	# gcc-5.0 or later, Workaround for critical issue. bug 573358.
+	use x86-fbsd && [[ "$(gcc-major-version)" -ge 5 ]] && replace-flags -O? -O1
+
 	sed -i.bak -e 's:-o/dev/stdout:-t:' "${S}/libc/net/Makefile.inc"
 
 	# Upstream Display Managers default to using VT7
