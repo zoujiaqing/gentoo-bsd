@@ -67,7 +67,7 @@ update_minimal(){
 	fi
 }
 
-update_gcc(){
+update_toolchain(){
 	if [[ $(uname -p) == "amd64" ]] ; then
 		gsed -i "s:CHOST=.*:CHOST=\"x86_64-gentoo-freebsd${TARGETVER}\":g" /etc/portage/make.conf
 	else
@@ -82,6 +82,7 @@ update_gcc(){
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge sys-devel/binutils --exclude sys-freebsd/*
+	type -P clang > /dev/null && emerge -u sys-devel/clang --exclude sys-freebsd/*
 }
 
 remove_pmask(){
@@ -147,7 +148,7 @@ case "$TARGETMODE" in
 		create_pmask
 		update_portage
 		update_minimal
-		update_gcc
+		update_toolchain
 		update_kernel
 		remove_pmask
 	;;
