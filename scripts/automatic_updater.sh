@@ -15,7 +15,7 @@ fi
 set_profile(){
 	emerge --info | head -n 1 | grep clang && :
 	if [[ $? -eq 0 ]] ; then
-		eselect profile set $(eselect profile list | grep "${TARGETVER}" | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
+		eselect profile set $(eselect profile list | grep "${TARGETVER}" | grep clang | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
 	else
 		eselect profile set $(eselect profile list | grep "${TARGETVER}" | grep -v clang | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
 	fi
@@ -39,6 +39,16 @@ update_portage(){
 	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps sys-apps/portage
 }
 
+create_pmask(){
+	if [[ -f /etc/portage/package.mask ]] ; then
+		mv /etc/portage/package.mask /etc/portage/package.mask.file_tmp
+		mkdir -p /etc/portage/package.mask
+		mv /etc/portage/package.mask.file_tmp /etc/portage/package.mask/local
+	fi
+	[[ ! -d  /etc/portage/package.mask ]] && mkdir -p /etc/portage/package.mask
+	echo '>=sys-apps/findutils-4.6' >> /etc/portage/package.mask/force-upgrade
+}
+
 update_minimal(){
 	emerge --nodeps sys-freebsd/freebsd-mk-defs
 	emerge -u sys-apps/findutils --exclude sys-freebsd/*
@@ -57,7 +67,7 @@ update_minimal(){
 	fi
 }
 
-update_gcc(){
+update_toolchain(){
 	if [[ $(uname -p) == "amd64" ]] ; then
 		gsed -i "s:CHOST=.*:CHOST=\"x86_64-gentoo-freebsd${TARGETVER}\":g" /etc/portage/make.conf
 	else
@@ -72,6 +82,11 @@ update_gcc(){
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge sys-devel/binutils --exclude sys-freebsd/*
+	type -P clang > /dev/null && emerge -u sys-devel/clang --exclude sys-freebsd/*
+}
+
+remove_pmask(){
+	[[ -e /etc/portage/package.mask/force-upgrade ]] && rm /etc/portage/package.mask/force-upgrade
 }
 
 update_kernel(){
@@ -130,10 +145,12 @@ case "$TARGETMODE" in
 	"kernel" )
 		set_profile
 		move_makeconf
+		create_pmask
 		update_portage
 		update_minimal
-		update_gcc
+		update_toolchain
 		update_kernel
+		remove_pmask
 	;;
 	"kernelonly" ) update_kernel ;;
 	"freebsd_userland" )
