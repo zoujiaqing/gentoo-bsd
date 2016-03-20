@@ -39,6 +39,16 @@ update_portage(){
 	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps sys-apps/portage
 }
 
+create_pmask(){
+	if [[ -f /etc/portage/package.mask ]] ; then
+		mv /etc/portage/package.mask /etc/portage/package.mask.file_tmp
+		mkdir -p /etc/portage/package.mask
+		mv /etc/portage/package.mask.file_tmp /etc/portage/package.mask/local
+	fi
+	[[ ! -d  /etc/portage/package.mask ]] && mkdir -p /etc/portage/package.mask
+	echo '>=sys-apps/findutils-4.6' >> /etc/portage/package.mask/force-upgrade
+}
+
 update_minimal(){
 	emerge --nodeps sys-freebsd/freebsd-mk-defs
 	emerge -u sys-apps/findutils --exclude sys-freebsd/*
@@ -72,6 +82,10 @@ update_gcc(){
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge sys-devel/binutils --exclude sys-freebsd/*
+}
+
+remove_pmask(){
+	[[ -e /etc/portage/package.mask/force-upgrade ]] && rm /etc/portage/package.mask/force-upgrade
 }
 
 update_kernel(){
@@ -130,10 +144,12 @@ case "$TARGETMODE" in
 	"kernel" )
 		set_profile
 		move_makeconf
+		create_pmask
 		update_portage
 		update_minimal
 		update_gcc
 		update_kernel
+		remove_pmask
 	;;
 	"kernelonly" ) update_kernel ;;
 	"freebsd_userland" )
