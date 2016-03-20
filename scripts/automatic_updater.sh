@@ -82,7 +82,10 @@ update_toolchain(){
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge sys-devel/binutils --exclude sys-freebsd/*
-	type -P clang > /dev/null && emerge -u sys-devel/clang --exclude sys-freebsd/*
+	if type -P clang > /dev/null ; then
+		CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge -u sys-devel/clang --exclude sys-freebsd/*
+		emerge sys-devel/llvm sys-devel/clang --exclude sys-freebsd/*
+	fi
 }
 
 remove_pmask(){
