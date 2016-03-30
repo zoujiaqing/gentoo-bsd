@@ -3,7 +3,8 @@
 # sys-apps/portage: bug 493126, 574626
 # app-shells/bash: bug 574426
 # sys-devel/gettext: bug 564168
-# sys-apps/findutils: bug 577714
+# sys-libs/db: bug 578506
+# sys-devel/llvm
 
 PORTDIR="${PORTDIR:-/usr/portage}"
 TMPDIR="${TMPDIR:-/tmp/autofix}"
@@ -15,7 +16,7 @@ fi
 latest_ebuild(){
 	local pkg="$1"
 
-	echo "$(emerge -qp ${pkg} 2>/dev/null | awk '{print $4}' | grep ${pkg} | awk -F/ '{print $2}').ebuild"
+	echo $(emerge -qp --color=n ${pkg} 2>/dev/null | grep ${pkg} | gsed "s:.*${pkg}:${pkg}:g" | awk '{print $1}'  | awk -F/ '{print $2}').ebuild
 }
 
 fix_portage() {
@@ -50,12 +51,23 @@ fix_gettext() {
 	echo "dev-libs/libintl-0.19.7" >> ${PORTDIR}/profiles/default/bsd/fbsd/package.provided
 }
 
-fix_findutils() {
-	# Fix bug 577714
-	local pkg="sys-apps/findutils"
+fix_db(){
+	echo "sys-libs/db cxx" >> "${PORTDIR}/profiles/arch/amd64-fbsd/clang/package.use.mask"
+}
+
+fix_llvm_ninja(){
+	# Traceback (most recent call last):
+	#   File "configure.py", line 435, in <module>
+	#     if has_re2c():
+	#   File "configure.py", line 432, in has_re2c
+	#     return int(proc.communicate()[0], 10) >= 1103
+	# ValueError: invalid literal for int() with base 10: ''
+	#  * ERROR: dev-util/ninja-1.6.0::gentoo failed (compile phase):
+
+	local pkg="sys-devel/llvm"
 	local ebuild="$(latest_ebuild ${pkg})"
 
-	gsed -i '/<sys\/sysmacros.h>/d' "${PORTDIR}/${pkg}/${ebuild}"
+	gsed -i 's/CMAKE_MAKEFILE_GENERATOR:=ninja/CMAKE_MAKEFILE_GENERATOR:=emake/g' "${PORTDIR}"/${pkg}/*.ebuild
 	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
 }
 
@@ -198,7 +210,7 @@ mk_patches() {
 	EOF
 }
 
-for func in mk_patches fix_portage fix_bash fix_gettext fix_findutils
+for func in mk_patches fix_portage fix_bash fix_gettext fix_db fix_llvm_ninja
 do
 	echo "${func}"
 	${func}
