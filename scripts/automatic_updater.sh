@@ -30,18 +30,21 @@ move_makeconf(){
 }
 
 update_portage(){
-	local dl_portage_ver="2.2.27"
+	local dl_portage_ver="2.2.20.1"
 	cd /tmp
 	wget http://dev.gentoo.org/~dolsen/releases/portage/portage-${dl_portage_ver}.tar.bz2
 	tar xjf portage-${dl_portage_ver}.tar.bz2
 	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps dev-lang/python-exec
 	eselect python set 1
-	PYTHON_TARGETS="python2_7" "portage-${dl_portage_ver}"/bin/emerge --nodeps sys-apps/portage
+	"portage-${dl_portage_ver}"/bin/emerge sys-apps/portage --exclude sys-freebsd/*
+	emerge dev-lang/python-exec --exclude sys-freebsd/*
+	emerge app-admin/eselect --exclude sys-freebsd/*
+	eselect python set 1
 }
 
 update_minimal(){
 	emerge --nodeps sys-freebsd/freebsd-mk-defs
-	emerge -u sys-apps/findutils --exclude sys-freebsd/*
+	emerge -u '<sys-apps/findutils-4.6' --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge -u sys-devel/flex sys-devel/patch sys-devel/m4 net-libs/libpcap sys-devel/gettext app-arch/libarchive sys-libs/zlib dev-util/dialog --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
@@ -65,16 +68,15 @@ update_toolchain(){
 	fi
 	emerge -u sys-devel/binutils --exclude sys-freebsd/*
 	emerge -u sys-devel/gcc-config --exclude sys-freebsd/*
-	emerge -u sys-devel/gcc --exclude sys-freebsd/*
-#	gcc-config $(gcc-config -l | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
-	emerge -C \<$(emerge -pq --nodeps sys-devel/gcc --exclude sys-freebsd/* | grep ebuild | awk '{print $4}') && :
+	emerge -u '<sys-devel/gcc-5.0' --exclude sys-freebsd/*
+	gcc-config $(gcc-config -l | grep "${TARGETVER}" | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
+#	emerge -C \<$(emerge -pq --nodeps sys-devel/gcc --exclude sys-freebsd/* | grep ebuild | awk '{print $4}') && :
 	env-update
 	source /etc/profile
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	emerge sys-devel/binutils --exclude sys-freebsd/*
 	if type -P clang > /dev/null ; then
-		CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge -u sys-devel/clang --exclude sys-freebsd/*
-		emerge sys-devel/llvm sys-devel/clang --exclude sys-freebsd/*
+		emerge -u '<sys-devel/clang-3.7' --exclude sys-freebsd/*
 	fi
 }
 
@@ -97,9 +99,10 @@ update_freebsd_userland(){
 	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" USE=build emerge --nodeps sys-freebsd/freebsd-share
 	[[ -e /etc/portage/profile/package.use.mask ]] && gsed -i '/sys-freebsd\/freebsd-libexec abi_x86_32/d' /etc/portage/profile/package.use.mask
 
-	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge boot0 freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
+	CC=gcc CXX=g++ CXXFLAGS="-O2 -pipe" emerge freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
 	if [[ -e /usr/lib/libc++.so ]] ; then
-		emerge -uN sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
+		emerge sys-libs/libcxx sys-libs/libcxxrt --exclude sys-freebsd/*
+		emerge -u sys-devel/llvm sys-devel/clang
 	fi
 	emerge boot0 freebsd-bin freebsd-lib freebsd-libexec freebsd-mk-defs freebsd-pam-modules freebsd-sbin freebsd-share freebsd-ubin freebsd-usbin
 }
@@ -121,8 +124,11 @@ emerge_world(){
 	emerge -C dev-lang/python:3.2 && :
 	emerge dev-libs/libxml2
 	emerge dev-libs/libxslt app-arch/libarchive dev-libs/glib
-	emerge -e @world --exclude sys-apps/portage
-	emerge sys-apps/portage
+	emerge -u sys-devel/gcc
+	emerge -C \<$(emerge -pq --nodeps sys-devel/gcc --exclude sys-freebsd/* | grep ebuild | awk '{print $4}') && :
+	gcc-config $(gcc-config -l | grep "${TARGETVER}" | awk '{print $1}' | sed 's:\[::g' | sed 's:\]::g' | tail -n 1)
+	source /etc/profile
+	emerge -e @world
 }
 
 cleanup(){
