@@ -86,9 +86,11 @@ prepare(){
 		fi
 	fi
 
-	echo "emerging catalyst..."
-	PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools app-text/build-docbook-catalog || exit 1
-	PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -q dev-util/catalyst::gentoo-bsd || exit 1
+	if [[ ! -e /usr/bin/catalyst ]] ; then
+		echo "emerging catalyst..."
+		PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -uq app-cdr/cdrtools app-text/build-docbook-catalog || exit 1
+		PORTDIR_OVERLAY=${WORKDIR}/gentoo-bsd ACCEPT_KEYWORDS=~x86-fbsd emerge -q dev-util/catalyst::gentoo-bsd || exit 1
+	fi
 
 	if [ ! -e /usr/portage/profiles/releases/freebsd-${TARGETVER} ] ; then
 		echo "prepare new ${TARGETVER} profiles"
@@ -164,9 +166,6 @@ run_catalyst() {
 		local specfile="${WORKDIR}/${C_TARGET}.spec"
 		[[ -e "${specfile}" ]] && rm "${specfile}"
 
-		if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ] && [[ ! "${C_SOURCE}" =~ .*forcestage3.* ]]; then
-			echo "update_seed: yes" >> "${specfile}"
-		fi
 		if [ "${C_TARGET}" != "stage3" ] ; then
 			echo "chost: ${CATALYST_CHOST}" >> "${specfile}"
 		fi
@@ -201,9 +200,6 @@ run_catalyst() {
 		if [ $? -ne 0 ] ; then
 			check_ecompressdir "${C_TARGET}-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_APPEND_VERSION}/usr/local/portage"
 			if [ $? -ne 0 ] ; then
-				if [ "${C_TARGET}" = "stage1" ] && [ "${C_SOURCE}" != "stage3-${TARGETSUBARCH}-fbsd-${TARGETVER}-${WORKDATE}${C_TMP_APPEND_VERSION}" ]; then
-					 C_APPEND_OPT="${C_APPEND_OPT} update_seed=no"
-				fi
 				catalyst -f "${specfile}" ${C_APPEND_OPT}
 			fi
 		fi
