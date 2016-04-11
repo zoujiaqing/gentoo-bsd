@@ -83,8 +83,6 @@ update_toolchain(){
 update_kernel(){
 	emerge -C freebsd-sources sys-freebsd/virtio-kmod sys-fs/fuse4bsd && :
 	emerge --nodeps freebsd-sources
-	echo "Don't have a problem? Now we restart. "
-	echo "shutdown -r now"
 }
 
 update_freebsd_userland(){
