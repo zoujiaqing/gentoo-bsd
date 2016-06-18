@@ -1,8 +1,6 @@
 #!/bin/bash -eu
 # Automatic bug fix script
 # sys-apps/portage: bug 493126, 574626
-# app-shells/bash: bug 574426
-# sys-devel/gettext: bug 564168
 # sys-libs/db: bug 578506
 # sys-devel/llvm
 
@@ -29,26 +27,6 @@ fix_portage() {
 
 	patch -p1 "${PORTDIR}/${pkg}/${ebuild}" < "${TMPDIR}/portage_ebuild.patch"
 	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
-}
-
-fix_bash() {
-	# Fix bug 574426
-	local pkg="app-shells/bash"
-	local ebuild="$(latest_ebuild ${pkg})"
-
-	patch -p1 "${PORTDIR}/${pkg}/${ebuild}" < "${TMPDIR}/bug574426.patch"
-	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
-}
-
-fix_gettext() {
-	# Fix bug 564168
-	local pkg="sys-devel/gettext"
-	local ebuild="$(latest_ebuild ${pkg})"
-
-	patch -p1 "${PORTDIR}/${pkg}/${ebuild}" < "${TMPDIR}/bug564168.patch"
-	ebuild "${PORTDIR}/${pkg}/${ebuild}" manifest
-
-	echo "dev-libs/libintl-0.19.7" >> ${PORTDIR}/profiles/default/bsd/fbsd/package.provided
 }
 
 fix_db(){
@@ -131,86 +109,9 @@ mk_patches() {
 	 	if ! use ipc ; then
 	 		einfo "Disabling ipc..."
 	EOF
-
-	cat > "${TMPDIR}/bug574426.patch" <<-'EOF'
-	diff --git a/bash-4.3_p42-r2.ebuild b/bash-4.3_p42-r2.ebuild
-	index c914d04..d4edb87 100644
-	--- a/bash-4.3_p42-r2.ebuild
-	+++ b/bash-4.3_p42-r2.ebuild
-	@@ -39,7 +39,7 @@ SRC_URI="mirror://gnu/bash/${MY_P}.tar.gz $(patches)"
-	 LICENSE="GPL-3"
-	 SLOT="0"
-	 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	-IUSE="afs bashlogger examples mem-scramble +net nls plugins +readline vanilla"
-	+IUSE="afs bashlogger examples mem-scramble +net nls plugins +readline vanilla elibc_FreeBSD"
-	 
-	 DEPEND=">=sys-libs/ncurses-5.2-r2
-	 	readline? ( >=sys-libs/readline-${READLINE_VER} )
-	@@ -130,6 +130,10 @@ src_configure() {
-	 		myconf+=( --with-installed-readline=. )
-	 	fi
-	 
-	+	# Fix cannot make pipe for process substitution: File exists error.
-	+	# Bug 574426
-	+	use elibc_FreeBSD && append-cflags -DUSE_MKTEMP=1 -DUSE_MKSTEMP=1
-	+
-	 	if use plugins; then
-	 		append-ldflags -Wl,-rpath,/usr/$(get_libdir)/bash
-	 	else
-	EOF
-
-	cat > "${TMPDIR}/bug564168.patch" <<-'EOF'
-	diff --git a/gettext-0.19.7.ebuild b/gettext-0.19.7.ebuild
-	index 7677f88..f959f3e 100644
-	--- a/gettext-0.19.7.ebuild
-	+++ b/gettext-0.19.7.ebuild
-	@@ -17,7 +17,7 @@ SRC_URI="mirror://gnu/${PN}/${P}.tar.gz"
-	 LICENSE="GPL-3+ cxx? ( LGPL-2.1+ )"
-	 SLOT="0"
-	 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
-	-IUSE="acl -cvs +cxx doc emacs git java ncurses nls openmp static-libs"
-	+IUSE="acl -cvs +cxx doc emacs git java ncurses nls openmp static-libs elibc_glibc elibc_musl"
-	 
-	 # only runtime goes multilib
-	 # Note: expat lacks a subslot because it is dynamically loaded at runtime.  We
-	@@ -69,8 +69,6 @@ multilib_src_configure() {
-	 		# this will _disable_ libunistring (since it is not bundled),
-	 		# see bug #326477
-	 		--with-included-libunistring
-	-		# Never build libintl since it's in dev-libs/libintl now.
-	-		--without-included-gettext
-	 
-	 		$(use_enable acl)
-	 		$(use_enable cxx c++)
-	@@ -79,11 +77,23 @@ multilib_src_configure() {
-	 		$(usex git --without-cvs $(use_with cvs))
-	 		$(use_enable java)
-	 		$(use_enable ncurses curses)
-	-		$(use_enable nls)
-	 		$(use_enable openmp)
-	 		$(use_enable static-libs static)
-	 	)
-	 
-	+	# Build with --without-included-gettext (on glibc systems)
-	+	if use elibc_glibc || use elibc_musl ; then
-	+		myconf+=(
-	+			--without-included-gettext
-	+			$(use_enable nls)
-	+		)
-	+	else
-	+		myconf+=(
-	+			--with-included-gettext
-	+			--enable-nls
-	+		)
-	+	fi
-	+
-	 	local ECONF_SOURCE=${S}
-	 	if ! multilib_is_native_abi ; then
-	 		# for non-native ABIs, we build runtime only
-	EOF
 }
 
-for func in mk_patches fix_portage fix_bash fix_gettext fix_db fix_llvm_ninja
+for func in mk_patches fix_portage fix_db fix_llvm_ninja
 do
 	echo "${func}"
 	${func}
