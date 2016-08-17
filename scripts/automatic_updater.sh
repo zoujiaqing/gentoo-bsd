@@ -46,6 +46,11 @@ update_minimal(){
 	emerge --nodeps sys-freebsd/freebsd-mk-defs
 	emerge -u '<sys-apps/findutils-4.6' --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
+
+	# https://bugs.gentoo.org/564168
+	USE="-*" emerge --nodeps sys-devel/gettext --exclude sys-freebsd/*
+	emerge sys-devel/gettext --exclude sys-freebsd/*
+
 	emerge -u sys-devel/flex sys-devel/patch sys-devel/m4 net-libs/libpcap sys-devel/gettext app-arch/libarchive sys-libs/zlib dev-util/dialog --exclude sys-freebsd/*
 	emerge sys-devel/libtool --exclude sys-freebsd/*
 	if [[ -e /usr/lib/libc++.so ]] ; then
