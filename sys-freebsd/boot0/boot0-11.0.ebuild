@@ -23,15 +23,12 @@ EXTRACTONLY="
 
 RDEPEND=""
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
-	=sys-freebsd/freebsd-lib-${RV}*"
+	=sys-freebsd/freebsd-lib-${RV}*
+	!sparc-fbsd? ( sys-devel/clang )"
 
 S="${WORKDIR}/sys/boot"
 
-PATCHES=( "${FILESDIR}/${PN}-10.1-gcc46.patch"
-	"${FILESDIR}/${PN}-10.3-clang.patch"
-	"${FILESDIR}/${PN}-10.3-drop-unsupport-cflags.patch"
-	"${FILESDIR}/${PN}-10.3-uefi-support.patch"
-	"${FILESDIR}/${PN}-add-nossp-cflags.patch" )
+PATCHES=( "${FILESDIR}/${PN}-add-nossp-cflags.patch" )
 
 boot0_use_enable() {
 	use ${1} && mymakeopts="${mymakeopts} LOADER_${2}_SUPPORT=\"yes\""
@@ -46,12 +43,15 @@ pkg_setup() {
 }
 
 src_prepare() {
+	use sparc-fbsd || export CC=clang
+
 	sed -e '/-mno-align-long-strings/d' \
 		-i "${S}"/i386/boot2/Makefile \
 		-i "${S}"/i386/gptboot/Makefile \
 		-i "${S}"/i386/gptzfsboot/Makefile \
 		-i "${S}"/i386/zfsboot/Makefile || die
 
+	mymakeopts="${mymakeopts} LOADER_NO_GELI_SUPPORT=yes"
 	export MAKEOBJDIRPREFIX="${WORKDIR}/build"
 }
 
@@ -63,7 +63,7 @@ src_compile() {
 	freebsd_src_compile
 
 	CFLAGS="${CFLAGS} -I${WORKDIR}/lib/libstand"
-	LDFLAGS="${LDFLAGS} -L${WORKDIR}/lib/libstand"
+	LDFLAGS="${LDFLAGS} -L${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libstand"
 	export LIBSTAND="${MAKEOBJDIRPREFIX}/${WORKDIR}/lib/libstand/libstand.a"
 
 	cd "${S}" || die

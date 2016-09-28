@@ -82,6 +82,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-9.0-newsyslog.patch"
 	"${FILESDIR}/${PN}-10.0-bsdxml2expat.patch"
 	"${FILESDIR}/${PN}-10.3-bsdxml2expat.patch"
+	"${FILESDIR}/${PN}-11.0-workaround.patch"
 	)
 
 REMOVE_SUBDIRS="
@@ -91,7 +92,7 @@ REMOVE_SUBDIRS="
 	tcpdump ndp inetd
 	wpa/wpa_supplicant wpa/hostapd wpa/hostapd_cli wpa/wpa_cli wpa/wpa_passphrase
 	zic amd
-	pkg pkg_install freebsd-update service sysrc bsdinstall"
+	pkg freebsd-update service sysrc bsdinstall"
 
 src_prepare() {
 	if ! use build; then
@@ -150,14 +151,15 @@ EOS
 	cd "${WORKDIR}/etc" || die
 	doins apmd.conf syslog.conf newsyslog.conf nscd.conf || die
 
-	insinto /etc/ppp
-	doins ppp/ppp.conf || die
-
 	if use bluetooth; then
 		insinto /etc/bluetooth
 		doins bluetooth/* || die
 		rm -f "${D}"/etc/bluetooth/Makefile
 	fi
+
+	cd "${S}"/ppp
+	insinto /etc/ppp
+	doins ppp.conf || die
 
 	# Install the periodic stuff (needs probably to be ported in a more
 	# gentooish way)

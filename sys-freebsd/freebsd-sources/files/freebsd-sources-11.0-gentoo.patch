@@ -1,0 +1,13 @@
+diff --git a/sys/conf/kern.mk b/sys/conf/kern.mk
+index 85be39e..b6aab23 100644
+--- a/sys/conf/kern.mk
++++ b/sys/conf/kern.mk
+@@ -5,7 +5,7 @@
+ #
+ CWARNFLAGS?=	-Wall -Wredundant-decls -Wnested-externs -Wstrict-prototypes \
+ 		-Wmissing-prototypes -Wpointer-arith -Winline -Wcast-qual \
+-		-Wundef -Wno-pointer-sign ${FORMAT_EXTENSIONS} \
++		-Wundef -Wno-pointer-sign \
+ 		-Wmissing-include-dirs -fdiagnostics-show-option \
+ 		-Wno-unknown-pragmas \
+ 		${CWARNEXTRA}

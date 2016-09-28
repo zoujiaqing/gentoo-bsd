@@ -40,3 +40,8 @@ REMOVE_SUBDIRS="csh rmail ed freebsd-version"
 pkg_setup() {
 	mymakeopts="${mymakeopts} WITHOUT_TCSH= WITHOUT_SENDMAIL= WITHOUT_RCMDS= "
 }
+
+src_install() {
+	dodir /usr/bin
+	freebsd_src_install
+}

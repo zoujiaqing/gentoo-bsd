@@ -17,7 +17,10 @@ EXTRACTONLY="
 	libexec/
 	usr.bin/
 	bin/
+	contrib/blacklist/
+	contrib/dma/
 	contrib/hyperv/
+	contrib/telnet/
 	lib/
 	etc/
 	usr.sbin/
@@ -39,8 +42,7 @@ REMOVE_SUBDIRS="smrsh mail.local tcpd telnetd rshd rlogind ftpd"
 
 IUSE="pam ssl kerberos ipv6 nis xinetd"
 
-PATCHES=( "${FILESDIR}/${PN}-9.2-no_ld32.patch"
-	"${FILESDIR}/${PN}-10.2-atf-check.patch" )
+PATCHES=( "${FILESDIR}/${PN}-10.2-atf-check.patch" )
 
 pkg_setup() {
 	use ipv6 || mymakeopts="${mymakeopts} WITHOUT_INET6= WITHOUT_INET6_SUPPORT= "
@@ -50,6 +52,18 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 
 	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_PF= WITHOUT_RCMDS= "
+
+	if has_version "<sys-freebsd/freebsd-libexec-11.0"; then
+		REMOVE_SUBDIRS="${REMOVE_SUBDIRS} rpc.rstatd ulog-helper"
+	fi
+
+	if has_version "<sys-freebsd/freebsd-ubin-11.0"; then
+		mymakeopts="${mymakeopts} WITHOUT_MAN_UTILS= "
+	fi
+
+	if has_version "<sys-freebsd/freebsd-share-${RV}"; then
+		die ">=sys-freebsd/freebsd-share-${RV} is required."
+	fi
 }
 
 src_prepare() {
@@ -67,8 +81,11 @@ src_prepare() {
 		echo "#define R_386_IRELATIVE 42" >> "${S}"/rtld-elf/rtld.h
 		echo "#define PT_GNU_RELRO 0x6474e552" >> "${S}"/rtld-elf/rtld.h
 		echo "#define DF_1_NODEFLIB 0x00000800" >> "${S}"/rtld-elf/rtld.h
+		echo "#define NT_FREEBSD_ABI_TAG 1" >> "${S}"/rtld-elf/rtld.h
+		echo "#define NT_FREEBSD_NOINIT_TAG 2" >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/fcntl.h
 		echo "#define F_DUPFD_CLOEXEC 17" >> "${S}"/rtld-elf/rtld.h
+		echo "#define O_VERIFY 0x00200000" >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/cdefs.h
 		echo '#define __compiler_membar()  __asm __volatile(" " : : : "memory")' >> "${S}"/rtld-elf/rtld.h
 		# taken from sys/sys/mman.h
@@ -76,6 +93,8 @@ src_prepare() {
 		echo '#define MAP_ALIGNMENT_SHIFT 24' >> "${S}"/rtld-elf/rtld.h
 		echo '#define MAP_ALIGNMENT_MASK MAP_ALIGNED(0xff)' >> "${S}"/rtld-elf/rtld.h
 		echo '#define MAP_ALIGNED_SUPER MAP_ALIGNED(1)' >> "${S}"/rtld-elf/rtld.h
+
+		export mymakeopts="${mymakeopts} MK_SYMVER=no MK_BLACKLIST_SUPPORT=no "
 	fi
 }
 
@@ -96,6 +115,7 @@ src_compile() {
 
 src_install() {
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
+	dodir /usr/libexec
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 
 	insinto /etc
