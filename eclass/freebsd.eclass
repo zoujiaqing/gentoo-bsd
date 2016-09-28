@@ -80,7 +80,7 @@ if [[ ${MY_PV} != *9999* ]] && version_is_at_least 10.0 ${RV} ; then
 	SRC_URI="mirror://freebsd/releases/i386/${DL_PV}/src.txz -> freebsd-src-${MY_PV}.tar.xz"
 fi
 
-IUSE="profile"
+IUSE="debug profile"
 
 #unalias -a
 alias install-info='/usr/bin/bsdinstall-info'
@@ -187,7 +187,9 @@ freebsd_src_unpack() {
 	dummy_mk ${REMOVE_SUBDIRS}
 
 	freebsd_do_patches
-	freebsd_rename_libraries
+	if ! version_is_at_least 11.0 ${RV} ; then
+		freebsd_rename_libraries
+	fi
 
 	# Starting from FreeBSD 9.2, its install command supports the -l option and
 	# they now use it. Emulate it if we are on a system that does not have it.
@@ -195,11 +197,25 @@ freebsd_src_unpack() {
 		export INSTALL_LINK="ln -f"
 		export INSTALL_SYMLINK="ln -fs"
 	fi
+	if version_is_at_least 11.0 ${RV} ; then
+		export RSYMLINK=" -l s"
+	fi
 }
 
 freebsd_src_compile() {
 	use profile && filter-flags "-fomit-frame-pointer"
-	use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+	if version_is_at_least 11.0 ${RV} ; then
+		if ! use profile ; then
+			mymakeopts="${mymakeopts} MK_PROFILE=no "
+		fi
+		use debug || mymakeopts="${mymakeopts} MK_DEBUG_FILES=no "
+		# Test does not support yet.
+		mymakeopts="${mymakeopts} MK_TESTS=no "
+		# Force set SRCTOP.
+		mymakeopts="${mymakeopts} SRCTOP=${WORKDIR} "
+	else
+		use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+	fi
 
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
 
@@ -260,7 +276,18 @@ freebsd_multilib_multibuild_wrapper() {
 }
 
 freebsd_src_install() {
-	use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+	if version_is_at_least 11.0 ${RV} ; then
+		if ! use profile ; then
+			mymakeopts="${mymakeopts} MK_PROFILE=no "
+		fi
+		use debug || mymakeopts="${mymakeopts} MK_DEBUG_FILES=no "
+		# Test does not support yet.
+		mymakeopts="${mymakeopts} MK_TESTS=no "
+		# Force set SRCTOP.
+		mymakeopts="${mymakeopts} SRCTOP=${WORKDIR} "
+	else
+		use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+	fi
 
 	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
 
