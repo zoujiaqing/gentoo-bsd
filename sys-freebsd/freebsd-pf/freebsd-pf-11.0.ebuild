@@ -31,7 +31,7 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}"
 
-SUBDIRS="usr.sbin/authpf sbin/pfctl sbin/pflogd usr.sbin/ftp-proxy/ftp-proxy"
+SUBDIRS="usr.sbin/authpf sbin/pfctl sbin/pflogd usr.sbin/ftp-proxy"
 
 pkg_setup() {
 	enewgroup authpf 63
@@ -42,10 +42,9 @@ src_prepare() {
 	# pcap-int.h redefines snprintf as pcap_snprintf
 	epatch "${FILESDIR}/${PN}-9.0-pcap_pollution.patch"
 	# Use system's libevent
-	epatch "${FILESDIR}/${PN}-10.0-libevent.patch"
-	epatch "${FILESDIR}/${PN}-10.0-pflogd.patch"
+	epatch "${FILESDIR}/${PN}-11.0-libevent.patch"
+	epatch "${FILESDIR}/${PN}-11.0-pflogd.patch"
 	epatch "${FILESDIR}/${PN}-9.0-bpf.patch"
-	epatch "${FILESDIR}/${PN}-9.0-getline.patch"
 	# Link in kernel sources
 	[[ ! -e "${WORKDIR}/sys" ]] && ln -s "/usr/src/sys" "${WORKDIR}/sys"
 }
@@ -54,7 +53,7 @@ src_compile() {
 	for dir in ${SUBDIRS}; do
 		einfo "Starting make in ${dir}"
 		cd "${S}/${dir}" || die
-		mkmake || die "Make ${dir} failed"
+		freebsd_src_compile || die "Make ${dir} failed"
 	done
 }
 
@@ -62,7 +61,7 @@ src_install() {
 	for dir in ${SUBDIRS}; do
 		einfo "Starting install in ${dir}"
 		cd "${S}/${dir}" || die
-		mkinstall || die "Install ${dir} failed"
+		freebsd_src_install || die "Install ${dir} failed"
 	done
 
 	cd "${WORKDIR}"/etc

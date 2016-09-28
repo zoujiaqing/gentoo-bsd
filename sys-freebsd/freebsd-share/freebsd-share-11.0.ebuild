@@ -26,6 +26,7 @@ EXTRACTONLY="
 	bin/
 	lib/
 	etc/
+	tools/tools/locale/
 "
 
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
@@ -44,7 +45,7 @@ pkg_setup() {
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 	[[ ! -e /usr/bin/vtfontcvt ]] && mymakeopts="${mymakeopts} WITHOUT_VT= "
-
+	[[ ! -e /usr/bin/localedef ]] && mymakeopts="${mymakeopts} WITHOUT_LOCALES= "
 	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_CLANG= "
 }
 
@@ -79,7 +80,7 @@ src_prepare() {
 
 	# Make proper symlinks by defining the full target.
 	local sdir
-	for sdir in colldef mklocale monetdef msgdef numericdef timedef
+	for sdir in colldef monetdef msgdef numericdef timedef
 	do
 		sed -e 's:\${enc2}$:\${enc2}/\${FILESNAME}:g' -i \
 			"${S}/${sdir}/Makefile" || \
@@ -109,5 +110,10 @@ src_compile() {
 }
 
 src_install() {
+	if [[ -e /usr/bin/localedef ]] ; then
+		for d in $(grep 'SAME+' "${WORKDIR}"/share/colldef/Makefile | awk '{print $3}') ; do
+			dodir "/usr/share/locale/${d}"
+		done
+	fi
 	mkmake -j1 DESTDIR="${D}" DOCDIR=/usr/share/doc/${PF} install || die "Install failed"
 }

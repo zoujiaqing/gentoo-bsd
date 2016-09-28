@@ -26,8 +26,6 @@ DEPEND="${RDEPEND}
 
 S=${WORKDIR}/lib/libpam/modules
 
-PATCHES=( "${FILESDIR}"/${PN}-9.0-gentoo.patch )
-
 pkg_setup() {
 	# Avoid installing pam_ssh as that has its own ebuild.
 	mymakeopts="${mymakeopts} WITHOUT_OPENSSH= "

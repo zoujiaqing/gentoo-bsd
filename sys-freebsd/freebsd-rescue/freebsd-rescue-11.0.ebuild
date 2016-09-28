@@ -61,12 +61,15 @@ pkg_setup() {
 src_prepare() {
 	# As they are patches from ${WORKDIR} apply them by hand
 	cd "${WORKDIR}" || die
-	epatch "${FILESDIR}/${PN}"-10.0-zlib.patch
-	epatch "${FILESDIR}/freebsd-sbin-bsdxml2expat.patch"
+	epatch "${FILESDIR}/${PN}-10.0-zlib.patch"
+	epatch "${FILESDIR}/${PN}-11.0-rename-libs.patch"
 	epatch "${FILESDIR}/freebsd-ubin-10.2-bsdxml.patch"
 }
 
 src_compile() {
+	export ESED=/usr/bin/sed
+	unalias sed
+
 	tc-export CC
 	# crunchgen is now checks env MAKE.
 	# Use to force BSD's make

@@ -52,18 +52,13 @@ S="${WORKDIR}/usr.bin"
 
 PATCHES=( "${FILESDIR}/${PN}-6.0-bsdcmp.patch"
 	"${FILESDIR}/${PN}-9.0-fixmakefiles.patch"
-	"${FILESDIR}/${PN}-setXid.patch"
+	"${FILESDIR}/${PN}-11.0-setXid.patch"
 	"${FILESDIR}/${PN}-lint-stdarg.patch"
-	"${FILESDIR}/${PN}-8.0-xinstall.patch"
 	"${FILESDIR}/${PN}-9.1-bsdar.patch"
 	"${FILESDIR}/${PN}-9.1-minigzip.patch"
-	"${FILESDIR}/${PN}-10.0-atf.patch"
 	"${FILESDIR}/${PN}-10.0-dtc-gcc46.patch"
-	"${FILESDIR}/${PN}-10.0-kdump-ioctl.patch"
-	"${FILESDIR}/${PN}-10.0-mandoc.patch"
-	"${FILESDIR}/${PN}-10.2-bsdxml.patch"
 	"${FILESDIR}/${PN}-10.2-talk-workaround.patch"
-	"${FILESDIR}/${PN}-10.3-bmake-workaround.patch" )
+	"${FILESDIR}/${PN}-10.2-bsdxml.patch" )
 
 # Here we remove some sources we don't need because they are already
 # provided by portage's packages or similar. In order:
@@ -86,7 +81,8 @@ REMOVE_SUBDIRS="bzip2 bzip2recover tar cpio
 	compile_et lex vi smbutil file vacation nc ftp telnet
 	c99 c89
 	bc dc
-	whois tftp man"
+	whois tftp man
+	addr2line bsdcat cxxfilt cxxfilt elfcopy nm readelf sdiff size soelim strings"
 
 pkg_setup() {
 	# Add the required source files.
@@ -103,7 +99,7 @@ pkg_setup() {
 	use ssl || mymakeopts="${mymakeopts} WITHOUT_OPENSSL= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
-	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= WITHOUT_LDNS_UTILS= "
+	mymakeopts="${mymakeopts} WITHOUT_CLANG= WITHOUT_LZMA_SUPPORT= WITHOUT_SVN= WITHOUT_SVNLITE= WITHOUT_OPENSSH= WITHOUT_LDNS_UTILS= WITHOUT_MANDOCDB= "
 }
 
 pkg_preinst() {
@@ -128,7 +124,7 @@ src_prepare() {
 	sed -i -e 's:"manpath -q":"manpath":' "${S}/whereis/pathnames.h"
 
 	# Build a dynamic make
-	sed -i -e '/^NO_SHARED/ s/^/#/' "${S}"/make/Makefile || die
+	sed -i -e '/^NO_SHARED/ s/^/#/' "${S}"/bmake/Makefile.inc || die
 
 	# Disable it here otherwise our patch wont apply
 	use ar || dummy_mk ar
@@ -148,16 +144,29 @@ setup_multilib_vars() {
 }
 
 src_compile() {
-	# Preparing to build mandoc
-	cd "${WORKDIR}/lib/libmandoc" || die
-	freebsd_src_compile -j1
-
-	cd "${S}" || die
-	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
+	# Preparing to build addr2line, elfcopy, m4
+	local MULTIBUILD_VARIANTS="${DEFAULT_ABI}"
+	for dir in libelftc libpe libopenbsd ; do
+		cd "${WORKDIR}/lib/${dir}" || die
+		multibuild_foreach_variant freebsd_multilib_multibuild_wrapper freebsd_src_compile -j1
+	done
+	MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_compile -j1
 }
 
 src_install() {
+	cd "${S}"/calendar/calendars || die
+	for dir in $(find . -type d ! -name "." ) ; do
+		dodir /usr/share/calendar/"$(basename ${dir})"
+	done
+	for l in en_US.ISO8859-1 en_US.ISO8859-15 fr_BE.ISO8859-1 \
+		fr_BE.ISO8859-15 fr_CA.ISO8859-1 fr_CA.ISO8859-15 \
+		fr_CH.ISO8859-1 fr_CH.ISO8859-15 fr_FR.ISO8859-15 \
+		de_AT.ISO8859-1 de_AT.ISO8859-15 de_CH.ISO8859-1 \
+		de_CH.ISO8859-15 de_DE.ISO8859-15 pt_PT.ISO8859-1 ; do
+			dodir "/usr/share/nls/${l}"
+	done
+
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 

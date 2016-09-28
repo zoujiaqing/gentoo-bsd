@@ -36,14 +36,13 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/cddl"
 
-PATCHES=(
-	"${FILESDIR}/${PN}-10.2-libpaths.patch"
-	"${FILESDIR}/${PN}-10.3-underlink.patch"
-	)
+PATCHES=( "${FILESDIR}/${PN}-11.0-workaround.patch"
+	"${FILESDIR}/${PN}-11.0-add-libs.patch" )
 
 pkg_setup() {
 	# Add the required source files.
 	use build && EXTRACTONLY+="include/ "
+	[[ $(tc-getCXX) != *clang++* ]] && REMOVE_SUBDIRS="usr.sbin/zfsd"
 }
 
 src_prepare() {
@@ -51,11 +50,16 @@ src_prepare() {
 		# Link in include headers.
 		ln -s "/usr/include" "${WORKDIR}/include" || die "Symlinking /usr/include.."
 	fi
+	for d in libavl libctf libdtrace libnvpair libumem libuutil libzfs libzfs_core libzpool; do
+		LDFLAGS="${LDFLAGS} -L${S}/lib/${d}"
+	done
 }
 
 src_compile() {
-	# Disable parallel make.
-	freebsd_src_compile -j1
+	cd ${S}/lib || die
+	freebsd_src_compile
+	cd ${S} || die
+	freebsd_src_compile
 }
 
 src_install() {

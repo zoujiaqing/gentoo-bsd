@@ -12,6 +12,9 @@ LICENSE="BSD zfs? ( CDDL )"
 
 IUSE="+build-kernel debug dtrace zfs"
 
+# Security Advisory and Errata patches.
+# UPSTREAM_PATCHES=()
+
 if [[ ${PV} != *9999* ]]; then
 	KEYWORDS="~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 	SRC_URI="${SRC_URI}
@@ -42,13 +45,13 @@ S="${WORKDIR}/sys"
 KERN_BUILD=GENTOO
 
 PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
-	"${FILESDIR}/${PN}-10.0-gentoo.patch"
+	"${FILESDIR}/${PN}-11.0-gentoo.patch"
 	"${FILESDIR}/${PN}-6.0-flex-2.5.31.patch"
 	"${FILESDIR}/${PN}-7.1-types.h-fix.patch"
 	"${FILESDIR}/${PN}-8.0-subnet-route-pr40133.patch"
 	"${FILESDIR}/${PN}-7.1-includes.patch"
 	"${FILESDIR}/${PN}-9.0-sysctluint.patch"
-	"${FILESDIR}/${PN}-9.2-gentoo-gcc.patch"
+	"${FILESDIR}/${PN}-11.0-gentoo-gcc.patch"
 	"${FILESDIR}/${PN}-10.1-gcc48.patch" )
 
 pkg_setup() {
@@ -63,6 +66,10 @@ pkg_setup() {
 src_prepare() {
 	local conf="${S}/$(tc-arch-kernel)/conf/${KERN_BUILD}"
 
+	cd "${WORKDIR}" || die
+	epatch "${FILESDIR}/freebsd-ubin-10.3-bmake-workaround.patch"
+	cd "${S}" || die
+
 	# This replaces the gentoover patch, it doesn't need reapply every time.
 	sed -i -e 's:^REVISION=.*:REVISION="'${PVR}'":' \
 		-e 's:^BRANCH=.*:BRANCH="Gentoo":' \
@@ -70,9 +77,9 @@ src_prepare() {
 		"${S}/conf/newvers.sh"
 
 	# __FreeBSD_cc_version comes from FreeBSD's gcc.
-	# on 10.0-RELEASE it's 1000001.
+	# on 11.0-RELEASE it's 1100001.
 	# FYI, can get it from gnu/usr.bin/cc/cc_tools/freebsd-native.h.
-	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=1000001:g" \
+	sed -e "s:-D_KERNEL:-D_KERNEL -D__FreeBSD_cc_version=1100001:g" \
 		-i "${S}/conf/kern.pre.mk" \
 		-i "${S}/conf/kmod.mk" || die "Couldn't set __FreeBSD_cc_version"
 
