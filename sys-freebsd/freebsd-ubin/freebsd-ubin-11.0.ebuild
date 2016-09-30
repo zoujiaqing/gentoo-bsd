@@ -159,13 +159,6 @@ src_install() {
 	for dir in $(find . -type d ! -name "." ) ; do
 		dodir /usr/share/calendar/"$(basename ${dir})"
 	done
-	for l in en_US.ISO8859-1 en_US.ISO8859-15 fr_BE.ISO8859-1 \
-		fr_BE.ISO8859-15 fr_CA.ISO8859-1 fr_CA.ISO8859-15 \
-		fr_CH.ISO8859-1 fr_CH.ISO8859-15 fr_FR.ISO8859-15 \
-		de_AT.ISO8859-1 de_AT.ISO8859-15 de_CH.ISO8859-1 \
-		de_CH.ISO8859-15 de_DE.ISO8859-15 pt_PT.ISO8859-1 ; do
-			dodir "/usr/share/nls/${l}"
-	done
 
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install

@@ -110,10 +110,5 @@ src_compile() {
 }
 
 src_install() {
-	if [[ -e /usr/bin/localedef ]] ; then
-		for d in $(grep 'SAME+' "${WORKDIR}"/share/colldef/Makefile | awk '{print $3}') ; do
-			dodir "/usr/share/locale/${d}"
-		done
-	fi
 	mkmake -j1 DESTDIR="${D}" DOCDIR=/usr/share/doc/${PF} install || die "Install failed"
 }

@@ -23,12 +23,13 @@ EXTRACTONLY="
 
 RDEPEND=""
 DEPEND="=sys-freebsd/freebsd-mk-defs-${RV}*
-	=sys-freebsd/freebsd-lib-${RV}*
-	!sparc-fbsd? ( sys-devel/clang )"
+	=sys-freebsd/freebsd-lib-${RV}*"
 
 S="${WORKDIR}/sys/boot"
 
-PATCHES=( "${FILESDIR}/${PN}-add-nossp-cflags.patch" )
+PATCHES=( "${FILESDIR}/${PN}-11.0-gcc46.patch"
+	"${FILESDIR}/${PN}-11.0-uefi-support.patch"
+	"${FILESDIR}/${PN}-add-nossp-cflags.patch" )
 
 boot0_use_enable() {
 	use ${1} && mymakeopts="${mymakeopts} LOADER_${2}_SUPPORT=\"yes\""
@@ -43,8 +44,6 @@ pkg_setup() {
 }
 
 src_prepare() {
-	use sparc-fbsd || export CC=clang
-
 	sed -e '/-mno-align-long-strings/d' \
 		-i "${S}"/i386/boot2/Makefile \
 		-i "${S}"/i386/gptboot/Makefile \

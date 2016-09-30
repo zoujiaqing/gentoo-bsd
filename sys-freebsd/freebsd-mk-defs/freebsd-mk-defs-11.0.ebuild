@@ -28,6 +28,7 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-11.0-gentoo.patch"
 	epatch "${FILESDIR}/${PN}-11.0-rename-libs.patch"
 	epatch "${FILESDIR}/${PN}-11.0-libproc-libcxx.patch"
+	epatch "${FILESDIR}/${PN}-11.0-drop-unsupport-cflags.patch"
 	use userland_GNU && epatch "${FILESDIR}/${PN}-10.2-gnu.patch"
 }
 
