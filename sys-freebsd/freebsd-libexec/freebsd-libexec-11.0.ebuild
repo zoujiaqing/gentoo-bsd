@@ -115,7 +115,6 @@ src_compile() {
 
 src_install() {
 	local MULTIBUILD_VARIANTS=( $(multilib_get_enabled_abis) )
-	dodir /usr/libexec
 	multibuild_foreach_variant freebsd_multilib_multibuild_wrapper setup_multilib_vars freebsd_src_install
 
 	insinto /etc
