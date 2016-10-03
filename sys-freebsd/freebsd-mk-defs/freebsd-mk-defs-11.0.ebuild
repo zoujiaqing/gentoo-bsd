@@ -25,20 +25,31 @@ RESTRICT="strip"
 S="${WORKDIR}/share/mk"
 
 src_prepare() {
+	local installdir
+
 	epatch "${FILESDIR}/${PN}-11.0-gentoo.patch"
 	epatch "${FILESDIR}/${PN}-11.0-rename-libs.patch"
 	epatch "${FILESDIR}/${PN}-11.0-libproc-libcxx.patch"
 	epatch "${FILESDIR}/${PN}-11.0-drop-unsupport-cflags.patch"
 	use userland_GNU && epatch "${FILESDIR}/${PN}-10.2-gnu.patch"
+
+	if [[ ${CHOST} != *-freebsd* ]]; then
+		installdir="/usr/share/mk/freebsd"
+	else
+		installdir="/usr/share/mk"
+	fi
+
+	sed -i -e "s:FILESDIR=.*:FILESDIR= ${installdir}:" "${S}"/Makefile
 }
 
 src_compile() { :; }
 
 src_install() {
+	freebsd_src_install
 	if [[ ${CHOST} != *-freebsd* ]]; then
-		insinto /usr/share/mk/freebsd
+		insinto /usr/share/mk/freebsd/system
 	else
-		insinto /usr/share/mk
+		insinto /usr/share/mk/system
 	fi
 	doins *.mk *.awk
 }

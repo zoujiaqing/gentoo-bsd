@@ -57,7 +57,7 @@ pkg_setup() {
 	use zfs && EXTRACTONLY+="cddl/ "
 
 	# WITHOUT_SSP= is required to boot kernel that compiled with newer gcc, bug #477914
-	[[ $(tc-getCC) == *gcc* ]] && mymakeopts="${mymakeopts} WITHOUT_SSP="
+	[[ $(tc-getCC) == *gcc* ]] && mymakeopts="${mymakeopts} WITHOUT_SSP= WITHOUT_FORMAT_EXTENSIONS="
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL="
 }
 

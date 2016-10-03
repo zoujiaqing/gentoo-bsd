@@ -102,7 +102,15 @@ doperiodic() {
 freebsd_get_bmake() {
 	local bmake
 	bmake=$(get_bmake)
-	[[ ${CBUILD} == *-freebsd* ]] || bmake="${bmake} -m /usr/share/mk/freebsd"
+	if version_is_at_least 11.0 ${RV} ; then
+		if [[ ${CBUILD} == *-freebsd* ]] ; then
+			bmake="${bmake} -m /usr/share/mk/system"
+		else
+			bmake="${bmake} -m /usr/share/mk/freebsd/system"
+		fi
+	else
+		[[ ${CBUILD} == *-freebsd* ]] || bmake="${bmake} -m /usr/share/mk/freebsd"
+	fi
 
 	echo "${bmake}"
 }
