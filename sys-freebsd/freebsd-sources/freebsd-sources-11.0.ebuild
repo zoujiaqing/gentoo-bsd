@@ -92,6 +92,12 @@ src_prepare() {
 	use debug || echo 'nomakeoptions DEBUG' >> "${conf}"
 	use dtrace || echo 'nomakeoptions WITH_CTF' >> "${conf}"
 
+	# hyperv fails to compile on x86-fbsd.
+	if use x86-fbsd && [[ $(tc-getCC) == *gcc* ]] ; then
+		echo 'nodevice hyperv' >> "${conf}"
+		dummy_mk modules/hyperv
+	fi
+
 	# Only used with USE=build-kernel, let the kernel build with its own flags, its safer.
 	unset LDFLAGS CFLAGS CXXFLAGS ASFLAGS KERNEL
 }
