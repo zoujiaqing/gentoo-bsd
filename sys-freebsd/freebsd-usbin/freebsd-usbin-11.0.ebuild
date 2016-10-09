@@ -101,9 +101,6 @@ src_prepare() {
 	else
 		dummy_mk mount_smbfs
 	fi
-	# Don't install mtree format manpage
-	# it's installed by libarchive.
-	sed -e "s: mtree.5::g" -i "${S}"/mtree/Makefile
 }
 
 src_compile() {
