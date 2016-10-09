@@ -228,18 +228,21 @@ freebsd_src_compile() {
 	use profile && filter-flags "-fomit-frame-pointer"
 	if version_is_at_least 11.0 ${RV} ; then
 		if ! use profile ; then
-			mymakeopts="${mymakeopts} MK_PROFILE=no "
+			mymakeopts="${mymakeopts} WITHOUT_PROFILE= "
 		fi
-		use debug || mymakeopts="${mymakeopts} MK_DEBUG_FILES=no "
+		use debug || mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
 		# Test does not support yet.
-		mymakeopts="${mymakeopts} MK_TESTS=no "
+		mymakeopts="${mymakeopts} WITHOUT_TESTS= "
 		# Force set SRCTOP.
 		mymakeopts="${mymakeopts} SRCTOP=${WORKDIR} "
+		# Set common option.
+		mymakeopts="${mymakeopts} WITHOUT_MANCOMPRESS= WITHOUT_INFOCOMPRESS= "
 	else
 		use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+		mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 	fi
 
-	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
+	mymakeopts="${mymakeopts} NO_FSCHG="
 
 	# Make sure to use FreeBSD definitions while crosscompiling
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
@@ -300,18 +303,21 @@ freebsd_multilib_multibuild_wrapper() {
 freebsd_src_install() {
 	if version_is_at_least 11.0 ${RV} ; then
 		if ! use profile ; then
-			mymakeopts="${mymakeopts} MK_PROFILE=no "
+			mymakeopts="${mymakeopts} WITHOUT_PROFILE= "
 		fi
-		use debug || mymakeopts="${mymakeopts} MK_DEBUG_FILES=no "
+		use debug || mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
 		# Test does not support yet.
-		mymakeopts="${mymakeopts} MK_TESTS=no "
+		mymakeopts="${mymakeopts} WITHOUT_TESTS= "
 		# Force set SRCTOP.
 		mymakeopts="${mymakeopts} SRCTOP=${WORKDIR} "
+		# Set common option.
+		mymakeopts="${mymakeopts} WITHOUT_MANCOMPRESS= WITHOUT_INFOCOMPRESS= "
 	else
 		use profile || mymakeopts="${mymakeopts} NO_PROFILE= "
+		mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 	fi
 
-	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= NO_FSCHG="
+	mymakeopts="${mymakeopts} NO_FSCHG="
 
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
