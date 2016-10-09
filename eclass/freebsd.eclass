@@ -315,5 +315,5 @@ freebsd_src_install() {
 
 	[[ -z "${BMAKE}" ]] && BMAKE="$(freebsd_get_bmake)"
 
-	bsdmk_src_install
+	bsdmk_src_install "$@"
 }
