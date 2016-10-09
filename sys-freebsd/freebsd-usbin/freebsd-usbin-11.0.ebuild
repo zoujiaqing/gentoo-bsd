@@ -101,9 +101,6 @@ src_prepare() {
 	else
 		dummy_mk mount_smbfs
 	fi
-	# Don't install mtree format manpage
-	# it's installed by libarchive.
-	sed -e "s: mtree.5::g" -i "${S}"/mtree/Makefile
 }
 
 src_compile() {
@@ -125,7 +122,7 @@ src_install() {
 
 	# FILESDIR is used by some makefiles which will install files
 	# in the wrong place, just put it in the doc directory.
-	mkinstall DOCDIR=/usr/share/doc/${PF} || die "Install failed"
+	freebsd_src_install DOCDIR=/usr/share/doc/${PF}
 
 	# Most of these now come from openrc.
 	for util in iscsid nfs nfsuserd rpc.statd rpc.lockd; do

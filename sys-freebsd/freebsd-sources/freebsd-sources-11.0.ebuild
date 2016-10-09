@@ -49,6 +49,7 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 	"${FILESDIR}/${PN}-8.0-subnet-route-pr40133.patch"
 	"${FILESDIR}/${PN}-7.1-includes.patch"
 	"${FILESDIR}/${PN}-9.0-sysctluint.patch"
+	"${FILESDIR}/${PN}-11.0-gentoo.patch"
 	"${FILESDIR}/${PN}-11.0-gentoo-gcc.patch"
 	"${FILESDIR}/${PN}-10.1-gcc48.patch" )
 
@@ -90,6 +91,12 @@ src_prepare() {
 	cp -f "${FILESDIR}/config-GENTOO" "${conf}" || die
 	use debug || echo 'nomakeoptions DEBUG' >> "${conf}"
 	use dtrace || echo 'nomakeoptions WITH_CTF' >> "${conf}"
+
+	# hyperv fails to compile on x86-fbsd.
+	if use x86-fbsd && [[ $(tc-getCC) == *gcc* ]] ; then
+		echo 'nodevice hyperv' >> "${conf}"
+		dummy_mk modules/hyperv
+	fi
 
 	# Only used with USE=build-kernel, let the kernel build with its own flags, its safer.
 	unset LDFLAGS CFLAGS CXXFLAGS ASFLAGS KERNEL

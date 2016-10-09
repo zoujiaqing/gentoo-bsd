@@ -110,5 +110,5 @@ src_compile() {
 }
 
 src_install() {
-	mkmake -j1 DESTDIR="${D}" DOCDIR=/usr/share/doc/${PF} install || die "Install failed"
+	freebsd_src_install -j1 DOCDIR=/usr/share/doc/${PF}
 }

@@ -65,7 +65,7 @@ src_compile() {
 src_install() {
 	# Install libraries proper place
 	local mylibdir=$(get_libdir)
-	mkinstall SHLIBDIR="/usr/${mylibdir}" LIBDIR="/usr/${mylibdir}" || die
+	freebsd_src_install SHLIBDIR="/usr/${mylibdir}" LIBDIR="/usr/${mylibdir}"
 
 	gen_usr_ldscript -a avl nvpair umem uutil zfs zpool zfs_core
 

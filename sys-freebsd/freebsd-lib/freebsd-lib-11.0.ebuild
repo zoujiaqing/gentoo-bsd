@@ -630,7 +630,7 @@ install_includes()
 		WITHOUT_GSSAPI= \
 		SRCTOP="${WORKDIR}"|| die "install_includes() failed"
 	einfo "includes installed ok."
-	EXTRA_INCLUDES="lib/librtld_db lib/libutil lib/msun gnu/lib/libregex lib/libcasper"
+	EXTRA_INCLUDES="lib/librtld_db lib/libutil lib/msun gnu/lib/libregex lib/libcasper lib/libmp"
 	for i in $EXTRA_INCLUDES; do
 		einfo "Installing $i includes into ${INCLUDEDIR} as ${BINOWN}:${BINGRP}..."
 		cd "${WORKDIR}/$i" || die
