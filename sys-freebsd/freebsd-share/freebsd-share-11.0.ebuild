@@ -46,7 +46,7 @@ pkg_setup() {
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 	[[ ! -e /usr/bin/vtfontcvt ]] && mymakeopts="${mymakeopts} WITHOUT_VT= "
 	[[ ! -e /usr/bin/localedef ]] && mymakeopts="${mymakeopts} WITHOUT_LOCALES= "
-	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_MANCOMPRESS= WITHOUT_INFOCOMPRESS= WITHOUT_CLANG= "
+	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= "
 }
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
