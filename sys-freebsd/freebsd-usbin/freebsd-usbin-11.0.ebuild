@@ -122,7 +122,7 @@ src_install() {
 
 	# FILESDIR is used by some makefiles which will install files
 	# in the wrong place, just put it in the doc directory.
-	mkinstall DOCDIR=/usr/share/doc/${PF} || die "Install failed"
+	freebsd_src_install DOCDIR=/usr/share/doc/${PF}
 
 	# Most of these now come from openrc.
 	for util in iscsid nfs nfsuserd rpc.statd rpc.lockd; do

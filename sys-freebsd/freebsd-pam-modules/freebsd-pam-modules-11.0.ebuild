@@ -40,7 +40,7 @@ src_prepare() {
 }
 
 src_install() {
-	mkinstall "LIBDIR=/$(get_libdir)/security" || die "install failed"
+	freebsd_src_install "LIBDIR=/$(get_libdir)/security"
 
 	dodoc "${FILESDIR}/README.pamd"
 }

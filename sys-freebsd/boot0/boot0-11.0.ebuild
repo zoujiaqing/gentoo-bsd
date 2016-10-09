@@ -71,7 +71,7 @@ src_compile() {
 
 src_install() {
 	dodir /boot/defaults
-	mkinstall FILESDIR=/boot || die "mkinstall failed"
+	freebsd_src_install FILESDIR=/boot
 
 	cd "${WORKDIR}/sys/$(tc-arch-kernel)/conf" || die
 	insinto /boot
