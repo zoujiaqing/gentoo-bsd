@@ -55,11 +55,12 @@ PATCHES=( "${FILESDIR}/${PN}-9.0-disable-optimization.patch"
 
 pkg_setup() {
 	# Add the required source files.
-	use zfs && EXTRACTONLY+="cddl/ "
+	use dtrace && EXTRACTONLY+="cddl/ "
 
 	# WITHOUT_SSP= is required to boot kernel that compiled with newer gcc, bug #477914
 	[[ $(tc-getCC) == *gcc* ]] && mymakeopts="${mymakeopts} WITHOUT_SSP= WITHOUT_FORMAT_EXTENSIONS="
-	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL="
+	use dtrace || mymakeopts="${mymakeopts} WITHOUT_CDDL="
+	use zfs || mymakeopts="${mymakeopts} WITHOUT_ZFS="
 }
 
 src_prepare() {
