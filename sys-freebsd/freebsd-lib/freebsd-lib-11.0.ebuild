@@ -573,7 +573,7 @@ src_install() {
 		# get tc-arch-kernel to return the right value, etc.
 		export CHOST=${CTARGET}
 
-		mymakeopts="${mymakeopts} NO_MAN= \
+		mymakeopts="${mymakeopts} WITHOUT_MAN= \
 			INCLUDEDIR=/usr/${CTARGET}/usr/include \
 			SHLIBDIR=/usr/${CTARGET}/usr/lib \
 			LIBDIR=/usr/${CTARGET}/usr/lib"

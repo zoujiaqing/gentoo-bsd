@@ -94,7 +94,7 @@ src_prepare() {
 		echo '#define MAP_ALIGNMENT_MASK MAP_ALIGNED(0xff)' >> "${S}"/rtld-elf/rtld.h
 		echo '#define MAP_ALIGNED_SUPER MAP_ALIGNED(1)' >> "${S}"/rtld-elf/rtld.h
 
-		export mymakeopts="${mymakeopts} MK_SYMVER=no MK_BLACKLIST_SUPPORT=no "
+		export mymakeopts="${mymakeopts} WITHOUT_SYMVER= WITHOUT_BLACKLIST_SUPPORT= "
 	fi
 }
 

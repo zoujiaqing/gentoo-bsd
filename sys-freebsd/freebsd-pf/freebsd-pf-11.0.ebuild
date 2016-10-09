@@ -35,7 +35,6 @@ SUBDIRS="usr.sbin/authpf sbin/pfctl sbin/pflogd usr.sbin/ftp-proxy"
 
 pkg_setup() {
 	enewgroup authpf 63
-	mymakeopts="${mymakeopts} NO_MANCOMPRESS= NO_INFOCOMPRESS= "
 }
 
 src_prepare() {

@@ -41,12 +41,12 @@ pkg_setup() {
 	# Add the required source files.
 	use zfs && EXTRACTONLY+="cddl/ "
 
-	use doc || mymakeopts="${mymakeopts} NO_SHAREDOCS= "
+	use doc || mymakeopts="${mymakeopts} WITHOUT_SHAREDOCS= "
 	use usb || mymakeopts="${mymakeopts} WITHOUT_USB= "
 	use zfs || mymakeopts="${mymakeopts} WITHOUT_CDDL= "
 	[[ ! -e /usr/bin/vtfontcvt ]] && mymakeopts="${mymakeopts} WITHOUT_VT= "
 	[[ ! -e /usr/bin/localedef ]] && mymakeopts="${mymakeopts} WITHOUT_LOCALES= "
-	mymakeopts="${mymakeopts} NO_SENDMAIL= NO_MANCOMPRESS= NO_INFOCOMPRESS= WITHOUT_CLANG= "
+	mymakeopts="${mymakeopts} WITHOUT_SENDMAIL= WITHOUT_CLANG= "
 }
 
 REMOVE_SUBDIRS="mk termcap zoneinfo tabset"
