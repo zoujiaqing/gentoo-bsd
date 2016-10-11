@@ -80,7 +80,7 @@ if [[ ${MY_PV} != *9999* ]] && version_is_at_least 10.0 ${RV} ; then
 	SRC_URI="mirror://freebsd/releases/i386/${DL_PV}/src.txz -> freebsd-src-${MY_PV}.tar.xz"
 fi
 
-IUSE="debug profile"
+IUSE="profile"
 
 #unalias -a
 alias install-info='/usr/bin/bsdinstall-info'
@@ -230,7 +230,8 @@ freebsd_src_compile() {
 		if ! use profile ; then
 			mymakeopts="${mymakeopts} WITHOUT_PROFILE= "
 		fi
-		use debug || mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
+		# Disable debugging info, use FEATURES=splitdebug instead.
+		mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
 		# Test does not support yet.
 		mymakeopts="${mymakeopts} WITHOUT_TESTS= "
 		# Force set SRCTOP.
@@ -305,7 +306,8 @@ freebsd_src_install() {
 		if ! use profile ; then
 			mymakeopts="${mymakeopts} WITHOUT_PROFILE= "
 		fi
-		use debug || mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
+		# Disable debugging info, use FEATURES=splitdebug instead.
+		mymakeopts="${mymakeopts} WITHOUT_DEBUG_FILES= "
 		# Test does not support yet.
 		mymakeopts="${mymakeopts} WITHOUT_TESTS= "
 		# Force set SRCTOP.
