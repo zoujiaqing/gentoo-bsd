@@ -56,9 +56,9 @@ src_prepare() {
 }
 
 src_compile() {
-	cd ${S}/lib || die
+	cd "${S}"/lib || die
 	freebsd_src_compile
-	cd ${S} || die
+	cd "${S}" || die
 	freebsd_src_compile
 }
 
