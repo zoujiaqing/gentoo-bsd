@@ -39,7 +39,7 @@ src_prepare() {
 		installdir="/usr/share/mk"
 	fi
 
-	sed -i -e "s:FILESDIR=.*:FILESDIR= ${installdir}:" "${S}"/Makefile
+	sed -i -e "s:FILESDIR=.*:FILESDIR= ${installdir}:" "${S}"/Makefile || die
 }
 
 src_compile() { :; }
