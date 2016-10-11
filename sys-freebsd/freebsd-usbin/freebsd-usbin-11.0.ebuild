@@ -154,7 +154,7 @@ EOS
 		rm -f "${D}"/etc/bluetooth/Makefile
 	fi
 
-	cd "${S}"/ppp
+	cd "${S}"/ppp || die
 	insinto /etc/ppp
 	doins ppp.conf || die
 
