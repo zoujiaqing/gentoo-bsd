@@ -36,18 +36,24 @@ RDEPEND="
 	=dev-python/pydecomp-9999[${PYTHON_USEDEP}]
 	app-arch/lbzip2
 	app-crypt/shash
-	app-arch/tar[xattr]
 	virtual/cdrtools
 	amd64? ( >=sys-boot/syslinux-3.72 )
 	ia64? ( sys-fs/dosfstools )
 	x86? ( >=sys-boot/syslinux-3.72 )
 	ccache? ( dev-util/ccache )
-	kernel_linux? ( app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )
+	kernel_linux? ( app-arch/tar[xattr] app-misc/zisofs-tools >=sys-fs/squashfs-tools-2.1 )
 "
+
+src_prepare() {
+	epatch "${FILESDIR}"/${PN}-9999-sed.patch
+	epatch "${FILESDIR}"/${PN}-9999-tmpfs.patch
+}
 
 python_prepare_all() {
 	echo VERSION="${PV}" "${PYTHON}" setup.py set_version
 	VERSION="${PV}" "${PYTHON}" setup.py set_version
+
+	distutils-r1_python_prepare_all
 }
 
 python_compile_all() {
