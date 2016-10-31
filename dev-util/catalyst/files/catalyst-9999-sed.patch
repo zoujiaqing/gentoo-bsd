@@ -1,0 +1,302 @@
+diff --git a/catalyst-3.0_rc1/catalyst/defaults.py b/catalyst-3.0_rc1/catalyst/defaults.py
+index a0e3ea8..67ad8f7 100644
+--- a/catalyst-3.0_rc1/catalyst/defaults.py
++++ b/catalyst-3.0_rc1/catalyst/defaults.py
+@@ -39,6 +39,7 @@ confdefaults={
+ 	"PythonDir": "./catalyst",
+ 	"repo_basedir": "/usr",
+ 	"repo_name": "portage",
++	"sed": "sed",
+ 	"sharedir": "/usr/share/catalyst",
+ 	"shdir": "/usr/share/catalyst/targets/",
+ 	"snapshot_cache": "/var/tmp/catalyst/snapshot_cache",
+diff --git a/catalyst-3.0_rc1/catalyst/main.py b/catalyst-3.0_rc1/catalyst/main.py
+index 6608b86..4a0e515 100644
+--- a/catalyst-3.0_rc1/catalyst/main.py
++++ b/catalyst-3.0_rc1/catalyst/main.py
+@@ -343,6 +343,12 @@ def _main(parser, opts):
+ 	conf_values['compress_definitions'] = COMPRESS_DEFINITIONS
+ 	# TODO add capability to config/spec new definitions
+ 
++	# detect GNU sed
++	for sed in ('/usr/bin/gsed', '/bin/sed', '/usr/bin/sed'):
++		if os.path.exists(sed):
++			conf_values["sed"] = sed
++			break
++
+ 	# Start checking that digests are valid now that hash_map is initialized
+ 	if "digests" in conf_values:
+ 		digests = set(conf_values['digests'].split())
+diff --git a/catalyst-3.0_rc1/targets/stage1/stage1-chroot.sh b/catalyst-3.0_rc1/targets/stage1/stage1-chroot.sh
+index fbda84b..28bd743 100755
+--- a/catalyst-3.0_rc1/targets/stage1/stage1-chroot.sh
++++ b/catalyst-3.0_rc1/targets/stage1/stage1-chroot.sh
+@@ -49,7 +49,7 @@ make_destpath /tmp/stage1root
+ # First, we drop in a known-good baselayout
+ [ -e ${clst_make_conf} ] && echo "USE=\"${USE} -build\"" >> ${clst_make_conf}
+ run_merge "--oneshot --nodeps sys-apps/baselayout"
+-sed -i "/USE=\"${USE} -build\"/d" ${clst_make_conf}
++${clst_sed} -i "/USE=\"${USE} -build\"/d" ${clst_make_conf}
+ 
+ # Now, we install our packages
+ if [ -e ${clst_make_conf} ]; then
+@@ -62,10 +62,10 @@ if [ -e ${clst_make_conf} ]; then
+ fi
+ 
+ run_merge "--oneshot ${clst_buildpkgs}"
+-sed -i "/USE=\"-* build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
++${clst_sed} -i "/USE=\"-* build ${BOOTSTRAP_USE} ${clst_HOSTUSE}\"/d" \
+ 	${clst_make_conf}
+ for useexpand in ${clst_HOSTUSEEXPAND}; do
+ 	x="clst_${useexpand}"
+-	sed -i "/${useexpand}=\"${!x}\"/d" \
++	${clst_sed} -i "/${useexpand}=\"${!x}\"/d" \
+ 	${clst_make_conf}
+ done
+diff --git a/catalyst-3.0_rc1/targets/stage2/stage2-chroot.sh b/catalyst-3.0_rc1/targets/stage2/stage2-chroot.sh
+index 38dfea3..30dc47a 100755
+--- a/catalyst-3.0_rc1/targets/stage2/stage2-chroot.sh
++++ b/catalyst-3.0_rc1/targets/stage2/stage2-chroot.sh
+@@ -21,5 +21,5 @@ fi
+ ${clst_repo_basedir}/${clst_repo_name}/scripts/bootstrap.sh ${bootstrap_opts} || exit 1
+ 
+ # Clean-up USE again
+-sed -i "/USE=\"\${USE} bindist\"/d" "${clst_make_conf}"
+-sed -i "/USE=\"bindist\"/d" "${clst_make_conf}"
++${clst_sed} -i "/USE=\"\${USE} bindist\"/d" "${clst_make_conf}"
++${clst_sed} -i "/USE=\"bindist\"/d" "${clst_make_conf}"
+diff --git a/catalyst-3.0_rc1/targets/support/bootloader-setup.sh b/catalyst-3.0_rc1/targets/support/bootloader-setup.sh
+index d9e2620..ffe7be2 100755
+--- a/catalyst-3.0_rc1/targets/support/bootloader-setup.sh
++++ b/catalyst-3.0_rc1/targets/support/bootloader-setup.sh
+@@ -79,7 +79,7 @@ case ${clst_hostarch} in
+ 		echo "message=/boot/boot.msg" >> ${icfg}
+ 
+ 		# Here is where I fix up the boot.msg file.
+-		sed -e 's/ARCH/PowerPC/' \
++		${clst_sed} -e 's/ARCH/PowerPC/' \
+ 			-e 's/HARDWARE/Apple and IBM hardware/' \
+ 			-i $kmsg
+ 
+diff --git a/catalyst-3.0_rc1/targets/support/chroot-functions.sh b/catalyst-3.0_rc1/targets/support/chroot-functions.sh
+index 456ae4c..004e7c3 100755
+--- a/catalyst-3.0_rc1/targets/support/chroot-functions.sh
++++ b/catalyst-3.0_rc1/targets/support/chroot-functions.sh
+@@ -87,7 +87,7 @@ setup_myfeatures(){
+ 		else
+ 			clst_root_path=/ run_merge --oneshot --noreplace sys-devel/distcc || exit 1
+ 		fi
+-		sed -i '/USE="${USE} -avahi -gtk -gnome"/d' ${clst_make_conf}
++		${clst_sed} -i '/USE="${USE} -avahi -gtk -gnome"/d' ${clst_make_conf}
+ 		mkdir -p /etc/distcc
+ 		echo "${clst_distcc_hosts}" > /etc/distcc/hosts
+ 
+@@ -186,7 +186,7 @@ setup_pkgmgr(){
+ 		echo "Adding USE=\"\${USE} $1\" to make.conf for portage build"
+ 		[ -e "${clst_make_conf}" ] && echo "USE=\"\${USE} $1\"" >> "${clst_make_conf}"
+ 		run_merge --oneshot --update --newuse sys-apps/portage
+-		sed -i "/USE=\"\${USE} $1\"/d" "${clst_make_conf}"
++		${clst_sed} -i "/USE=\"\${USE} $1\"/d" "${clst_make_conf}"
+ 	else
+ 		run_merge --oneshot --update --newuse sys-apps/portage
+ 	fi
+@@ -241,8 +241,8 @@ cleanup_stages() {
+ 
+ 	# Remove bindist from use
+ 	# this is handled independantly in stage2, changes here should be mirrored there
+-	sed -i "/USE=\"\${USE} bindist\"/d" "${clst_make_conf}"
+-	sed -i "/USE=\"bindist\"/d" "${clst_make_conf}"
++	${clst_sed} -i "/USE=\"\${USE} bindist\"/d" "${clst_make_conf}"
++	${clst_sed} -i "/USE=\"bindist\"/d" "${clst_make_conf}"
+ 
+ 	[ "${clst_target}" != "tinderbox" ] && rm -f /var/log/emerge.log /var/log/portage/elog/*
+ }
+@@ -260,7 +260,7 @@ die() {
+ 
+ make_destpath() {
+ 	# ROOT is / by default, so remove any ROOT= settings from make.conf
+-	sed -i '/ROOT=/d' ${clst_make_conf}
++	${clst_sed} -i '/ROOT=/d' ${clst_make_conf}
+ 	export ROOT=/
+ 	if [ "${1}" != "/" -a -n "${1}" ]
+ 	then
+diff --git a/catalyst-3.0_rc1/targets/support/kmerge.sh b/catalyst-3.0_rc1/targets/support/kmerge.sh
+index 3d4afea..68cd3f2 100755
+--- a/catalyst-3.0_rc1/targets/support/kmerge.sh
++++ b/catalyst-3.0_rc1/targets/support/kmerge.sh
+@@ -245,7 +245,7 @@ then
+ 		if [ ! "${clst_kextraversion}" = "" ]
+ 		then
+ 			echo "Setting extraversion to ${clst_kextraversion}"
+-			sed -i -e "s:EXTRAVERSION \(=.*\):EXTRAVERSION \1-${clst_kextraversion}:" /usr/src/linux/Makefile
++			${clst_sed} -i -e "s:EXTRAVERSION \(=.*\):EXTRAVERSION \1-${clst_kextraversion}:" /usr/src/linux/Makefile
+ 			echo ${clst_kextraversion} > /tmp/kerncache/${clst_kname}/${clst_kname}-${clst_version_stamp}.EXTRAVERSION
+ 		else
+ 			touch /tmp/kerncache/${clst_kname}/${clst_kname}-${clst_version_stamp}.EXTRAVERSION
+@@ -262,7 +262,7 @@ $(portageq contents / $(portageq best_visible / "${clst_ksource}" 2>/dev/null) 2
+ 	if [ ! "${clst_kextraversion}" = "" ]
+ 	then
+ 		echo "Setting extraversion to ${clst_kextraversion}"
+-		sed -i -e "s:EXTRAVERSION \(=.*\):EXTRAVERSION \1-${clst_kextraversion}:" /usr/src/linux/Makefile
++		${clst_sed} -i -e "s:EXTRAVERSION \(=.*\):EXTRAVERSION \1-${clst_kextraversion}:" /usr/src/linux/Makefile
+ 	fi
+ fi
+ 
+@@ -275,12 +275,12 @@ make_destpath
+ 
+ 
+ build_kernel
+-sed -i "/USE=\"\${USE} ${clst_kernel_use} \"/d" ${clst_make_conf}
++${clst_sed} -i "/USE=\"\${USE} ${clst_kernel_use} \"/d" ${clst_make_conf}
+ # grep out the kernel version so that we can do our modules magic
+ VER=`grep ^VERSION\ \= /usr/src/linux/Makefile | awk '{ print $3 };'`
+ PAT=`grep ^PATCHLEVEL\ \= /usr/src/linux/Makefile | awk '{ print $3 };'`
+ SUB=`grep ^SUBLEVEL\ \= /usr/src/linux/Makefile | awk '{ print $3 };'`
+-EXV=`grep ^EXTRAVERSION\ \= /usr/src/linux/Makefile | sed -e "s/EXTRAVERSION =//" -e "s/ //g"`
++EXV=`grep ^EXTRAVERSION\ \= /usr/src/linux/Makefile | ${clst_sed} -e "s/EXTRAVERSION =//" -e "s/ //g"`
+ clst_fudgeuname=${VER}.${PAT}.${SUB}${EXV}
+ 
+ unset USE
+diff --git a/catalyst-3.0_rc1/targets/support/livecdfs-update.sh b/catalyst-3.0_rc1/targets/support/livecdfs-update.sh
+index 31cdf04..2c551b4 100755
+--- a/catalyst-3.0_rc1/targets/support/livecdfs-update.sh
++++ b/catalyst-3.0_rc1/targets/support/livecdfs-update.sh
+@@ -7,7 +7,7 @@ source /tmp/chroot-functions.sh
+ # Allow root logins to our CD by default
+ if [ -e /etc/ssh/sshd_config ]
+ then
+-	sed -i 's:^#PermitRootLogin\ yes:PermitRootLogin\ yes:' \
++	${clst_sed} -i 's:^#PermitRootLogin\ yes:PermitRootLogin\ yes:' \
+ 		/etc/ssh/sshd_config
+ fi
+ 
+@@ -73,7 +73,7 @@ fi
+ # Setup sudoers
+ if [ -f /etc/sudoers ]
+ then
+-	sed -i '/NOPASSWD: ALL/ s/^# //' /etc/sudoers
++	${clst_sed} -i '/NOPASSWD: ALL/ s/^# //' /etc/sudoers
+ fi
+ 
+ # Setup links for ethernet devices
+@@ -113,7 +113,7 @@ echo "####################################################" >> ${clst_make_conf}
+ cat ${clst_make_conf}.old >> ${clst_make_conf}
+ 
+ # devfs tweaks
+-[ -e /etc/devfsd.conf ] && sed -i '/dev-state/ s:^:#:' /etc/devfsd.conf
++[ -e /etc/devfsd.conf ] && ${clst_sed} -i '/dev-state/ s:^:#:' /etc/devfsd.conf
+ 
+ # Add some helpful aliases
+ echo "alias cp='cp -i'" >> /etc/profile
+@@ -153,10 +153,10 @@ fi
+ # Setup configured display manager
+ if [ -n "${clst_livecd_xdm}" ]
+ then
+-	sed -i \
++	${clst_sed} -i \
+ 		-e "s:^#\\?DISPLAYMANAGER=.\+$:DISPLAYMANAGER=\"${clst_livecd_xdm}\":" \
+ 		/etc/rc.conf
+-	sed -i \
++	${clst_sed} -i \
+ 		-e "s:^#\\?DISPLAYMANAGER=.\+$:DISPLAYMANAGER=\"${clst_livecd_xdm}\":" \
+ 		/etc/conf.d/xdm
+ fi
+@@ -175,21 +175,21 @@ case ${clst_livecd_type} in
+ 	gentoo-release-universal)
+ 		cat /etc/generic.motd.txt /etc/universal.motd.txt \
+ 			/etc/minimal.motd.txt > /etc/motd
+-		sed -i 's:^##GREETING:Welcome to the Gentoo Linux Universal Installation CD!:' /etc/motd
++		${clst_sed} -i 's:^##GREETING:Welcome to the Gentoo Linux Universal Installation CD!:' /etc/motd
+ 	;;
+ 	gentoo-release-minimal)
+ 		cat /etc/generic.motd.txt /etc/minimal.motd.txt > /etc/motd
+-		sed -i 's:^##GREETING:Welcome to the Gentoo Linux Minimal Installation CD!:' /etc/motd
++		${clst_sed} -i 's:^##GREETING:Welcome to the Gentoo Linux Minimal Installation CD!:' /etc/motd
+ 	;;
+ 	gentoo-release-live*)
+ 		cat /etc/generic.motd.txt \
+ 			/etc/minimal.motd.txt /etc/livecd.motd.txt > /etc/motd
+-		sed -i -e 's:^##GREETING:Welcome to the Gentoo Linux LiveCD!:' \
++		${clst_sed} -i -e 's:^##GREETING:Welcome to the Gentoo Linux LiveCD!:' \
+ 			-e "s:##DISPLAY_MANAGER:${clst_livecd_xdm}:" /etc/motd
+ 	;;
+ 	gentoo-gamecd)
+ 		cat /etc/generic.motd.txt /etc/gamecd.motd.txt > /etc/motd
+-		sed -i 's:^##GREETING:Welcome to the Gentoo Linux ##GAME_NAME GameCD!:' /etc/motd
++		${clst_sed} -i 's:^##GREETING:Welcome to the Gentoo Linux ##GAME_NAME GameCD!:' /etc/motd
+ 	;;
+ esac
+ 
+@@ -200,7 +200,7 @@ if [ -n "${clst_livecd_splash_theme}" ]
+ then
+ 	if [ -d /etc/splash/${clst_livecd_splash_theme} ]
+ 	then
+-		sed -i \
++		${clst_sed} -i \
+ 			-e "s:# SPLASH_THEME=\"gentoo\":SPLASH_THEME=\"${clst_livecd_splash_theme}\":" \
+ 			-e "/^# SPLASH_TTYS=/ s/^#//" \
+ 			/etc/conf.d/splash
+@@ -229,7 +229,7 @@ case ${clst_livecd_type} in
+ 			rm /tmp/gamecd.conf
+ 
+ 			# Here we replace out game information into several files
+-			sed -i -e "s:##GAME_NAME:${GAME_NAME}:" /etc/motd
++			${clst_sed} -i -e "s:##GAME_NAME:${GAME_NAME}:" /etc/motd
+ 
+ 			# Here we setup our xinitrc
+ 			echo "exec ${GAME_EXECUTABLE}" > /etc/X11/xinit/xinitrc
+@@ -276,7 +276,7 @@ case ${clst_livecd_type} in
+ 					/etc/X11/gdm/custom.conf
+ 			else
+ 				cp -f /etc/X11/gdm/gdm.conf /etc/X11/gdm/gdm.conf.old
+-				sed -i \
++				${clst_sed} -i \
+ 					-e 's:TimedLoginEnable=false:TimedLoginEnable=true:' \
+ 					-e 's:TimedLoginDelay=30:TimedLoginDelay=10:' \
+ 					-e 's:AllowRemoteRoot=true:AllowRemoteRoot=false:' \
+@@ -286,7 +286,7 @@ case ${clst_livecd_type} in
+ 
+ 				if [ -n "${clst_livecd_users}" ] && [ -n "${first_user}" ]
+ 				then
+-					sed -i \
++					${clst_sed} -i \
+ 						-e "s:TimedLogin=:TimedLogin=${first_user}:" \
+ 						/etc/X11/gdm/gdm.conf
+ 				fi
+@@ -296,7 +296,7 @@ case ${clst_livecd_type} in
+ 		# This gives us our list of system packages for the installer
+ 		mkdir -p /usr/livecd
+ 		### XXX: Andrew says we don't need this anymore
+-		USE="-* $(cat /var/db/pkg/sys-libs/glibc*/USE)" emerge -eqp @system | grep -e '^\[ebuild' | sed -e 's:^\[ebuild .\+\] ::' -e 's: .\+$::' > /usr/livecd/systempkgs.txt
++		USE="-* $(cat /var/db/pkg/sys-libs/glibc*/USE)" emerge -eqp @system | grep -e '^\[ebuild' | ${clst_sed} -e 's:^\[ebuild .\+\] ::' -e 's: .\+$::' > /usr/livecd/systempkgs.txt
+ 
+ 		# This is my hack to reduce tmpfs usage
+ 		cp -r ${clst_repo_basedir}/${clst_repo_name}/profiles /usr/livecd
+@@ -331,10 +331,10 @@ case ${clst_livecd_type} in
+ 						/home/${username}/Desktop
+ 					cp -f /usr/share/applications/installer-dialog.desktop \
+ 						/home/${username}/Desktop
+-					sed -i -e \
++					${clst_sed} -i -e \
+ 						's:Exec=installer-dialog:Exec=sudo installer-dialog:' \
+ 						/home/${username}/Desktop/installer-dialog.desktop
+-					sed -i -e 's:Exec=installer-gtk:Exec=installer:' \
++					${clst_sed} -i -e 's:Exec=installer-gtk:Exec=installer:' \
+ 						/home/${username}/Desktop/installer-gtk.desktop
+ 				fi
+ 				chown -R ${username}:100 /home/${username}
+@@ -369,12 +369,12 @@ esac
+ # We want the first user to be used when auto-starting X
+ if [ -e /etc/startx ]
+ then
+-	sed -i "s:##STARTX:echo startx | su - '${first_user}':" /root/.bashrc
++	${clst_sed} -i "s:##STARTX:echo startx | su - '${first_user}':" /root/.bashrc
+ fi
+ 
+ if [ -e /lib/rcscripts/addons/udev-start.sh ]
+ then
+-	sed -i "s:\t\[\[ -x /sbin/evms_activate:\t\[\[ -x \${CDBOOT} \]\] \&\& \[\[ -x /sbin/evms_activate:" /lib/rcscripts/addons/udev-start.sh
++	${clst_sed} -i "s:\t\[\[ -x /sbin/evms_activate:\t\[\[ -x \${CDBOOT} \]\] \&\& \[\[ -x /sbin/evms_activate:" /lib/rcscripts/addons/udev-start.sh
+ fi
+ 
+ env-update
